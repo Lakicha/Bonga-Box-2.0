@@ -1,0 +1,5 @@
+{
+  "name": "Bonga Box",
+  "description": "Bonga Box: Speak. Alert. Protect. A community reporting and alert system for Isiolo County, focusing on FGM prevention and flood safety.",
+  "requestFramePermissions": ["camera", "microphone", "geolocation"]
+}

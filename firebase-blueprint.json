@@ -1,0 +1,61 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Stores user details and roles.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Firebase Auth UID" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "role": { "type": "string", "enum": ["Admin", "Teacher", "Mentor", "User"] },
+        "schoolId": { "type": "string", "description": "Optional school ID for school-based users" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Report": {
+      "title": "Incident Report",
+      "description": "A report submitted by a user.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "category": { "type": "string", "enum": ["FGM Risk", "Flood Alert", "Emergency", "Other"] },
+        "location": { "type": "string" },
+        "description": { "type": "string" },
+        "status": { "type": "string", "enum": ["Pending", "In Progress", "Resolved"] },
+        "authorUid": { "type": "string", "description": "UID of the reporter (optional for anonymous)" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "isAnonymous": { "type": "boolean" }
+      },
+      "required": ["category", "location", "description", "status", "timestamp"]
+    },
+    "Alert": {
+      "title": "System Alert",
+      "description": "Flood or emergency alerts broadcast to all users.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "type": { "type": "string" },
+        "location": { "type": "string" },
+        "message": { "type": "string" },
+        "severity": { "type": "string", "enum": ["Low", "Medium", "High", "Critical"] },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["type", "location", "message", "severity", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/users/{uid}": {
+      "schema": "UserProfile",
+      "description": "User profile documents"
+    },
+    "/reports/{reportId}": {
+      "schema": "Report",
+      "description": "Incident reports"
+    },
+    "/alerts/{alertId}": {
+      "schema": "Alert",
+      "description": "System-wide alerts"
+    }
+  }
+}

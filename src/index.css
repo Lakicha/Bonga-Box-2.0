@@ -1,0 +1,97 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+  
+  --color-purple-primary: #A855F7;
+  --color-purple-dark: #7C3AED;
+  --color-purple-light: #C084FC;
+  --color-magenta-accent: #D946EF;
+  --color-bg-dark: #0A0A0A;
+  --color-card-dark: #141414;
+  --color-text-dim: #94A3B8;
+  
+  --shadow-glow: 0 0 30px rgba(168, 85, 247, 0.15);
+  --shadow-glow-strong: 0 0 40px rgba(168, 85, 247, 0.3);
+}
+
+body {
+  @apply bg-bg-dark text-white font-sans antialiased selection:bg-purple-primary/30;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  @apply font-display font-bold tracking-tight;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-bg-dark;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-white/10 rounded-full hover:bg-white/20 transition-colors;
+}
+
+.btn-primary {
+  @apply bg-linear-to-br from-purple-primary via-purple-dark to-magenta-accent text-white px-8 py-4 rounded-full font-bold shadow-glow hover:shadow-glow-strong hover:scale-[1.02] transition-all active:scale-95 flex items-center justify-center gap-2;
+}
+
+.btn-secondary {
+  @apply bg-white/5 backdrop-blur-xl text-white px-8 py-4 rounded-full font-bold border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all active:scale-95 flex items-center justify-center gap-2;
+}
+
+.card {
+  @apply bg-card-dark/80 backdrop-blur-md p-8 rounded-[2.5rem] border border-white/5 hover:border-purple-primary/40 transition-all duration-500 shadow-xl;
+}
+
+.glass-card {
+  @apply bg-white/[0.03] backdrop-blur-2xl border border-white/10 rounded-[2.5rem] shadow-glow;
+}
+
+.input-field {
+  @apply w-full px-6 py-4 rounded-2xl bg-white/[0.03] border border-white/10 focus:bg-white/[0.06] focus:border-purple-primary/50 outline-none transition-all text-white font-medium placeholder:text-text-dim/50;
+}
+
+.gradient-text {
+  @apply bg-clip-text text-transparent bg-linear-to-br from-purple-light via-purple-primary to-magenta-accent;
+}
+
+.gradient-bg {
+  @apply bg-linear-to-br from-purple-primary via-purple-dark to-magenta-accent;
+}
+
+.pill-tag {
+  @apply px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-bold uppercase tracking-widest text-text-dim hover:bg-white/10 hover:text-white transition-all;
+}
+
+.nav-item {
+  @apply flex items-center gap-4 px-6 py-4 rounded-2xl font-bold transition-all;
+}
+
+.nav-item-active {
+  @apply bg-purple-primary text-white shadow-glow;
+}
+
+.nav-item-inactive {
+  @apply text-text-dim hover:bg-white/5 hover:text-white;
+}
+
+/* Leaflet Dark Theme Overrides */
+.leaflet-container {
+  @apply !bg-bg-dark border-none grayscale invert hue-rotate-180 brightness-90;
+}
+
+.leaflet-popup-content-wrapper, .leaflet-popup-tip {
+  @apply !bg-card-dark !text-white !border !border-white/10 !rounded-2xl !shadow-glow;
+}
+
+.leaflet-bar a {
+  @apply !bg-card-dark !text-white !border-white/10 hover:!bg-white/10 !transition-all;
+}
+
