@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { db, collection, onSnapshot, query, orderBy, updateDoc, doc } from '../firebase';
-import { Report, UserProfile } from '../types';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { Download, TrendingUp, Users, ShieldAlert, AlertTriangle, FileText, ArrowRight, UserCog, Filter, CheckCircle } from 'lucide-react';
+import { Report, UserProfile, Alert } from '../types';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area, Legend } from 'recharts';
+import { Download, TrendingUp, Users, ShieldAlert, AlertTriangle, FileText, ArrowRight, UserCog, Filter, CheckCircle, MapPin, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import Logo from './Logo';
 
 const AdminDashboard: React.FC = () => {
   const [reports, setReports] = useState<Report[]>([]);
   const [users, setUsers] = useState<UserProfile[]>([]);
+  const [alerts, setAlerts] = useState<Alert[]>([]);
   const [roleFilter, setRoleFilter] = useState<string>('All');
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
 
@@ -22,9 +23,15 @@ const AdminDashboard: React.FC = () => {
       setUsers(snapshot.docs.map(doc => ({ ...doc.data() } as UserProfile)));
     });
 
+    const qAlerts = query(collection(db, 'alerts'), orderBy('timestamp', 'desc'));
+    const unsubscribeAlerts = onSnapshot(qAlerts, (snapshot) => {
+      setAlerts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Alert)));
+    });
+
     return () => {
       unsubscribeReports();
       unsubscribeUsers();
+      unsubscribeAlerts();
     };
   }, []);
 
@@ -47,8 +54,17 @@ const AdminDashboard: React.FC = () => {
   // Data for Category Chart
   const categoryData = [
     { name: 'FGM Risk', value: reports.filter(r => r.category === 'FGM Risk').length },
-    { name: 'Flood Alert', value: reports.filter(r => r.category === 'Flood Alert').length }
+    { name: 'Flood Alert', value: reports.filter(r => r.category === 'Flood Alert').length },
+    { name: 'Emergency', value: reports.filter(r => r.category === 'Emergency').length },
+    { name: 'Other', value: reports.filter(r => r.category === 'Other').length }
   ];
+
+  // Data for Location Chart
+  const locationCounts: Record<string, number> = {};
+  reports.forEach(r => {
+    locationCounts[r.location] = (locationCounts[r.location] || 0) + 1;
+  });
+  const locationData = Object.entries(locationCounts).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
 
   // Data for Status Chart
   const statusData = [
@@ -57,7 +73,28 @@ const AdminDashboard: React.FC = () => {
     { name: 'Resolved', value: reports.filter(r => r.status === 'Resolved').length }
   ];
 
-  const COLORS = ['#007F7F', '#F4A261', '#FFBB28', '#FF8042'];
+  // Data for Resolution Time Chart (Average days to resolve by category)
+  const resolutionTimesByCategory: Record<string, { total: number, count: number }> = {};
+  reports.forEach(r => {
+    if (r.status === 'Resolved' && r.resolvedAt && r.timestamp) {
+      const start = r.timestamp.toDate ? r.timestamp.toDate() : new Date(r.timestamp);
+      const end = r.resolvedAt.toDate ? r.resolvedAt.toDate() : new Date(r.resolvedAt);
+      const diffDays = (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
+      
+      if (!resolutionTimesByCategory[r.category]) {
+        resolutionTimesByCategory[r.category] = { total: 0, count: 0 };
+      }
+      resolutionTimesByCategory[r.category].total += diffDays;
+      resolutionTimesByCategory[r.category].count += 1;
+    }
+  });
+
+  const resolutionData = Object.entries(resolutionTimesByCategory).map(([name, data]) => ({
+    name,
+    avgDays: parseFloat((data.total / data.count).toFixed(1))
+  }));
+
+  const COLORS = ['#A855F7', '#EC4899', '#EAB308', '#22C55E'];
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-32 text-white">
@@ -80,8 +117,8 @@ const AdminDashboard: React.FC = () => {
         {[
           { icon: FileText, label: "Total Reports", value: reports.length, color: "border-purple-primary", bg: "bg-purple-primary/10", text: "text-purple-primary" },
           { icon: ShieldAlert, label: "FGM Risks", value: reports.filter(r => r.category === 'FGM Risk').length, color: "border-magenta-accent", bg: "bg-magenta-accent/10", text: "text-magenta-accent" },
-          { icon: AlertTriangle, label: "Flood Alerts", value: reports.filter(r => r.category === 'Flood Alert').length, color: "border-yellow-accent", bg: "bg-yellow-accent/10", text: "text-yellow-accent" },
-          { icon: Users, label: "Active Responders", value: 12, color: "border-green-500", bg: "bg-green-500/10", text: "text-green-500" }
+          { icon: AlertTriangle, label: "Active Alerts", value: alerts.length, color: "border-yellow-accent", bg: "bg-yellow-accent/10", text: "text-yellow-accent" },
+          { icon: Users, label: "Total Users", value: users.length, color: "border-green-500", bg: "bg-green-500/10", text: "text-green-500" }
         ].map((stat, i) => (
           <motion.div 
             key={i}
@@ -99,7 +136,7 @@ const AdminDashboard: React.FC = () => {
         ))}
       </div>
 
-      {/* Charts */}
+      {/* Charts Row 1 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
         <div className="glass-card p-8">
           <h2 className="text-2xl font-bold mb-8 flex items-center gap-3">
@@ -127,6 +164,29 @@ const AdminDashboard: React.FC = () => {
           </div>
         </div>
 
+        <div className="glass-card p-8">
+          <h2 className="text-2xl font-bold mb-8 flex items-center gap-3">
+            <MapPin size={24} className="text-magenta-accent" /> Reports by Location
+          </h2>
+          <div className="h-[350px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={locationData} layout="vertical">
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="rgba(255,255,255,0.05)" />
+                <XAxis type="number" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700, fill: '#94A3B8' }} />
+                <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700, fill: '#94A3B8' }} width={100} />
+                <Tooltip 
+                  contentStyle={{ backgroundColor: '#141414', borderRadius: '1.5rem', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.5)' }}
+                  cursor={{ fill: 'rgba(255,255,255,0.03)' }}
+                />
+                <Bar dataKey="value" fill="#EC4899" radius={[0, 10, 10, 0]} barSize={30} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+
+      {/* Charts Row 2 */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
         <div className="glass-card p-8">
           <h2 className="text-2xl font-bold mb-8 flex items-center gap-3">
             <TrendingUp size={24} className="text-purple-primary" /> Case Status Distribution
@@ -162,6 +222,36 @@ const AdminDashboard: React.FC = () => {
               </div>
             ))}
           </div>
+        </div>
+
+        <div className="glass-card p-8">
+          <h2 className="text-2xl font-bold mb-8 flex items-center gap-3">
+            <Clock size={24} className="text-yellow-accent" /> Avg Resolution Time (Days)
+          </h2>
+          <div className="h-[350px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={resolutionData}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700, fill: '#94A3B8', textTransform: 'uppercase' }} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700, fill: '#94A3B8' }} />
+                <Tooltip 
+                  contentStyle={{ backgroundColor: '#141414', borderRadius: '1.5rem', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.5)' }}
+                />
+                <Area type="monotone" dataKey="avgDays" stroke="#EAB308" fill="url(#yellowGradient)" strokeWidth={3} />
+                <defs>
+                  <linearGradient id="yellowGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#EAB308" stopOpacity={0.3} />
+                    <stop offset="100%" stopColor="#EAB308" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+          {resolutionData.length === 0 && (
+            <div className="flex items-center justify-center h-full -mt-40 text-text-dim text-sm italic">
+              No resolved cases with timestamps yet.
+            </div>
+          )}
         </div>
       </div>
 

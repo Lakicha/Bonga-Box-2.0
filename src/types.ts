@@ -11,6 +11,7 @@ export interface Report {
   schoolId?: string;
   authorUid?: string | null;
   isAnonymous?: boolean;
+  resolvedAt?: any;
 }
 
 export interface Alert {

@@ -25,6 +25,7 @@
         "status": { "type": "string", "enum": ["Pending", "In Progress", "Resolved"] },
         "authorUid": { "type": "string", "description": "UID of the reporter (optional for anonymous)" },
         "timestamp": { "type": "string", "format": "date-time" },
+        "resolvedAt": { "type": "string", "format": "date-time", "description": "Timestamp when the report was resolved" },
         "isAnonymous": { "type": "boolean" }
       },
       "required": ["category", "location", "description", "status", "timestamp"]
