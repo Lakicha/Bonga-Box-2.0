@@ -1,27 +1,39 @@
 @import "tailwindcss";
 
-@theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Space Grotesk", sans-serif;
-  
-  --color-purple-primary: #A855F7;
-  --color-purple-dark: #7C3AED;
-  --color-purple-light: #C084FC;
-  --color-magenta-accent: #D946EF;
-  --color-bg-dark: #0A0A0A;
-  --color-card-dark: #141414;
-  --color-text-dim: #94A3B8;
-  
-  --shadow-glow: 0 0 30px rgba(168, 85, 247, 0.15);
-  --shadow-glow-strong: 0 0 40px rgba(168, 85, 247, 0.3);
+@layer theme {
+  :root {
+    --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+    --font-display: "Space Grotesk", sans-serif;
+    
+    --color-purple-primary: #A855F7;
+    --color-purple-dark: #7C3AED;
+    --color-purple-light: #C084FC;
+    --color-magenta-accent: #D946EF;
+    --color-bg-dark: #0A0A0A;
+    --color-card-dark: #141414;
+    --color-text-dim: #94A3B8;
+    
+    --shadow-glow: 0 0 30px rgba(168, 85, 247, 0.15);
+    --shadow-glow-strong: 0 0 40px rgba(168, 85, 247, 0.3);
+  }
 }
 
 body {
-  @apply bg-bg-dark text-white font-sans antialiased selection:bg-purple-primary/30;
+  background-color: var(--color-bg-dark);
+  color: white;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background-color: rgba(168, 85, 247, 0.3);
 }
 
 h1, h2, h3, h4, h5, h6 {
-  @apply font-display font-bold tracking-tight;
+  font-family: var(--font-display);
+  font-weight: bold;
+  letter-spacing: -0.02em;
 }
 
 /* Custom Scrollbar */
@@ -30,67 +42,191 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-bg-dark;
+  background-color: var(--color-bg-dark);
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-white/10 rounded-full hover:bg-white/20 transition-colors;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 9999px;
+  transition: background-color 0.3s;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.2);
 }
 
 .btn-primary {
-  @apply bg-linear-to-br from-purple-primary via-purple-dark to-magenta-accent text-white px-8 py-4 rounded-full font-bold shadow-glow hover:shadow-glow-strong hover:scale-[1.02] transition-all active:scale-95 flex items-center justify-center gap-2;
+  background: linear-gradient(to bottom right, var(--color-purple-primary), var(--color-purple-dark), var(--color-magenta-accent));
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 9999px;
+  font-weight: bold;
+  box-shadow: var(--shadow-glow);
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  box-shadow: var(--shadow-glow-strong);
+  transform: scale(1.02);
+}
+
+.btn-primary:active {
+  transform: scale(0.95);
 }
 
 .btn-secondary {
-  @apply bg-white/5 backdrop-blur-xl text-white px-8 py-4 rounded-full font-bold border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all active:scale-95 flex items-center justify-center gap-2;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(8px);
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 9999px;
+  font-weight: bold;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.btn-secondary:active {
+  transform: scale(0.95);
 }
 
 .card {
-  @apply bg-card-dark/80 backdrop-blur-md p-8 rounded-[2.5rem] border border-white/5 hover:border-purple-primary/40 transition-all duration-500 shadow-xl;
+  background: rgba(20, 20, 20, 0.8);
+  backdrop-filter: blur(12px);
+  padding: 2rem;
+  border-radius: 2.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  transition: all 0.5s;
+}
+
+.card:hover {
+  border-color: rgba(168, 85, 247, 0.4);
 }
 
 .glass-card {
-  @apply bg-white/[0.03] backdrop-blur-2xl border border-white/10 rounded-[2.5rem] shadow-glow;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(32px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 2.5rem;
+  box-shadow: var(--shadow-glow);
 }
 
 .input-field {
-  @apply w-full px-6 py-4 rounded-2xl bg-white/[0.03] border border-white/10 focus:bg-white/[0.06] focus:border-purple-primary/50 outline-none transition-all text-white font-medium placeholder:text-text-dim/50;
+  width: 100%;
+  padding: 1rem 1.5rem;
+  border-radius: 1.125rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  font-weight: 500;
+  outline: none;
+  transition: all 0.3s;
+}
+
+.input-field::placeholder {
+  color: rgba(148, 163, 184, 0.5);
+}
+
+.input-field:focus {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(168, 85, 247, 0.5);
 }
 
 .gradient-text {
-  @apply bg-clip-text text-transparent bg-linear-to-br from-purple-light via-purple-primary to-magenta-accent;
+  background: linear-gradient(to bottom right, var(--color-purple-light), var(--color-purple-primary), var(--color-magenta-accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .gradient-bg {
-  @apply bg-linear-to-br from-purple-primary via-purple-dark to-magenta-accent;
+  background: linear-gradient(to bottom right, var(--color-purple-primary), var(--color-purple-dark), var(--color-magenta-accent));
 }
 
 .pill-tag {
-  @apply px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-bold uppercase tracking-widest text-text-dim hover:bg-white/10 hover:text-white transition-all;
+  padding: 0.375rem 1rem;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-text-dim);
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.pill-tag:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
 }
 
 .nav-item {
-  @apply flex items-center gap-4 px-6 py-4 rounded-2xl font-bold transition-all;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  border-radius: 1.125rem;
+  font-weight: bold;
+  transition: all 0.3s;
 }
 
 .nav-item-active {
-  @apply bg-purple-primary text-white shadow-glow;
+  background: var(--color-purple-primary);
+  color: white;
+  box-shadow: var(--shadow-glow);
 }
 
 .nav-item-inactive {
-  @apply text-text-dim hover:bg-white/5 hover:text-white;
+  color: var(--color-text-dim);
+}
+
+.nav-item-inactive:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
 }
 
 /* Leaflet Dark Theme Overrides */
 .leaflet-container {
-  @apply !bg-bg-dark border-none grayscale invert hue-rotate-180 brightness-90;
+  background-color: var(--color-bg-dark) !important;
+  border: none !important;
+  filter: grayscale(1) invert(1) hue-rotate(180deg) brightness(0.9);
 }
 
-.leaflet-popup-content-wrapper, .leaflet-popup-tip {
-  @apply !bg-card-dark !text-white !border !border-white/10 !rounded-2xl !shadow-glow;
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background-color: var(--color-card-dark) !important;
+  color: white !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 1.125rem !important;
+  box-shadow: var(--shadow-glow) !important;
 }
 
 .leaflet-bar a {
-  @apply !bg-card-dark !text-white !border-white/10 hover:!bg-white/10 !transition-all;
+  background-color: var(--color-card-dark) !important;
+  color: white !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  transition: all 0.3s !important;
+}
+
+.leaflet-bar a:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
 }
 
