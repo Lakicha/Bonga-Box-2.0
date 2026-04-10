@@ -1,47 +1,44 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { db, collection, addDoc, serverTimestamp, storage, ref, uploadBytes, getDownloadURL } from '../firebase';
 import { useAuth } from '../AuthContext';
+import { useToast } from './Toast';
+import { useMediaHandler } from '../hooks/useMediaHandler';
+import { validateReport, validateFile } from '../utils/validation';
+import { logError } from '../utils/firebaseErrors';
 import { ShieldAlert, MapPin, FileText, Camera, Mic, CheckCircle2, AlertTriangle, ArrowRight, User, UserX, X, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import Logo from './Logo';
+import ReportSuccessModal from './ReportSuccessModal';
 
 const ReportForm: React.FC = () => {
   const { user } = useAuth();
+  const { addToast } = useToast();
+  const { 
+    photoFile, 
+    voiceFile, 
+    photoPreview, 
+    photoInputRef, 
+    voiceInputRef, 
+    handlePhotoChange, 
+    handleVoiceChange, 
+    clearPhoto, 
+    clearVoice,
+    clearAll 
+  } = useMediaHandler();
+
   const [category, setCategory] = useState<'FGM Risk' | 'Flood Alert' | ''>('');
   const [location, setLocation] = useState('');
   const [description, setDescription] = useState('');
   const [isAnonymous, setIsAnonymous] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  
-  // Media state
-  const [photoFile, setPhotoFile] = useState<File | null>(null);
-  const [voiceFile, setVoiceFile] = useState<File | null>(null);
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  
-  const photoInputRef = useRef<HTMLInputElement>(null);
-  const voiceInputRef = useRef<HTMLInputElement>(null);
 
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setPhotoFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPhotoPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+  const uploadFile = async (file: File, path: string): Promise<string> => {
+    const validation = validateFile(file);
+    if (!validation.isValid) {
+      throw new Error(Object.values(validation.errors)[0]);
     }
-  };
 
-  const handleVoiceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setVoiceFile(file);
-    }
-  };
-
-  const uploadFile = async (file: File, path: string) => {
     const fileRef = ref(storage, `${path}/${Date.now()}_${file.name}`);
     await uploadBytes(fileRef, file);
     return getDownloadURL(fileRef);
@@ -49,7 +46,13 @@ const ReportForm: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!category || !location || !description) return;
+    
+    const validation = validateReport(category, location, description);
+    if (!validation.isValid) {
+      const firstError = Object.values(validation.errors)[0];
+      addToast(firstError, 'error');
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -75,36 +78,20 @@ const ReportForm: React.FC = () => {
         isAnonymous,
         authorUid: isAnonymous ? null : user?.uid || null,
       });
+
+      addToast('Report submitted successfully!', 'success');
       setSubmitted(true);
+      clearAll();
     } catch (error) {
-      console.error('Submission failed', error);
-      alert('Failed to submit report. Please try again.');
+      logError('ReportForm.handleSubmit', error);
+      addToast('Failed to submit report. Please try again.', 'error');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   if (submitted) {
-    return (
-      <div className="max-w-md mx-auto mt-32 text-center p-12 card border-white/10 shadow-glow">
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          className="w-24 h-24 bg-green-500/20 text-green-500 rounded-full flex items-center justify-center mx-auto mb-8 border border-green-500/30"
-        >
-          <CheckCircle2 size={48} />
-        </motion.div>
-        <h2 className="text-3xl font-bold mb-4">Report Submitted</h2>
-        <p className="text-text-dim mb-12 leading-relaxed">
-          {isAnonymous 
-            ? "Thank you for speaking up anonymously. Your report has been received and will be reviewed by the protection team."
-            : "Thank you for your report. You can track its progress in your profile dashboard."}
-        </p>
-        <button onClick={() => setSubmitted(false)} className="btn-primary w-full">
-          Submit Another Report
-        </button>
-      </div>
-    );
+    return <ReportSuccessModal isAnonymous={isAnonymous} onSubmitAnother={() => setSubmitted(false)} />;
   }
 
   return (
@@ -266,7 +253,7 @@ const ReportForm: React.FC = () => {
                     <img src={photoPreview} alt="Preview" className="w-full h-full object-cover" />
                     <button 
                       type="button"
-                      onClick={() => { setPhotoFile(null); setPhotoPreview(null); }}
+                      onClick={clearPhoto}
                       className="absolute top-1 right-1 p-1 bg-black/50 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity"
                     >
                       <X size={14} />
@@ -281,7 +268,7 @@ const ReportForm: React.FC = () => {
                     </div>
                     <button 
                       type="button"
-                      onClick={() => setVoiceFile(null)}
+                      onClick={clearVoice}
                       className="text-text-dim hover:text-white"
                     >
                       <X size={16} />

@@ -48,7 +48,12 @@ const Navbar: React.FC = () => {
 
   return (
     <>
-      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 px-4 py-6`}>
+      <a href="#main-content" className="sr-only focus:not-sr-only">Skip to main content</a>
+      
+      <nav 
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 px-4 py-6`}
+        aria-label="Main navigation"
+      >
         <div className={`max-w-7xl mx-auto transition-all duration-300 ${
           scrolled ? 'bg-white/5 backdrop-blur-xl border border-white/10 py-3 px-8 rounded-full shadow-glow' : 'bg-transparent py-4 px-2'
         }`}>
@@ -63,6 +68,7 @@ const Navbar: React.FC = () => {
                 <Link
                   key={link.path}
                   to={link.path}
+                  aria-current={location.pathname === link.path ? 'page' : undefined}
                   className={`text-sm font-bold transition-all ${
                     location.pathname === link.path 
                       ? 'text-white' 
@@ -85,6 +91,8 @@ const Navbar: React.FC = () => {
                   <button 
                     onClick={() => setIsOpen(true)}
                     className="flex items-center gap-3 group"
+                    aria-label="Open user menu"
+                    aria-expanded={isOpen}
                   >
                     <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white group-hover:bg-purple-primary transition-all overflow-hidden border border-white/10">
                       {user.photoURL ? (
@@ -105,7 +113,12 @@ const Navbar: React.FC = () => {
 
             {/* Mobile menu button */}
             <div className="md:hidden flex items-center">
-              <button onClick={() => setIsOpen(true)} className="text-text-dim hover:text-white p-2">
+              <button 
+                onClick={() => setIsOpen(true)} 
+                className="text-text-dim hover:text-white p-2"
+                aria-label="Open navigation menu"
+                aria-expanded={isOpen}
+              >
                 <Menu size={28} />
               </button>
             </div>
@@ -133,9 +146,15 @@ const Navbar: React.FC = () => {
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
               className="fixed top-0 right-0 bottom-0 w-full max-w-sm bg-bg-dark border-l border-white/10 text-white z-[70] shadow-2xl flex flex-col"
+              role="navigation"
+              aria-label="Mobile navigation"
             >
               <div className="p-8 flex justify-between items-center border-b border-white/5">
-                <button onClick={() => setIsOpen(false)} className="p-2 hover:bg-white/5 rounded-full transition-all">
+                <button 
+                  onClick={() => setIsOpen(false)} 
+                  className="p-2 hover:bg-white/5 rounded-full transition-all"
+                  aria-label="Close navigation menu"
+                >
                   <X size={24} />
                 </button>
                 <h2 className="text-xl font-bold">Menu</h2>
@@ -189,6 +208,7 @@ const Navbar: React.FC = () => {
                       key={link.path}
                       to={link.path}
                       onClick={() => setIsOpen(false)}
+                      aria-current={location.pathname === link.path ? 'page' : undefined}
                       className={`flex items-center gap-4 p-4 rounded-2xl transition-all ${
                         location.pathname === link.path ? 'bg-purple-primary/10 text-white' : 'hover:bg-white/5 text-text-dim hover:text-white'
                       }`}
@@ -210,6 +230,7 @@ const Navbar: React.FC = () => {
                       setIsOpen(false);
                     }}
                     className="flex items-center gap-2 text-red-400 hover:text-red-300 font-bold transition-all"
+                    aria-label="Sign out from your account"
                   >
                     <LogOut size={18} />
                     Logout
