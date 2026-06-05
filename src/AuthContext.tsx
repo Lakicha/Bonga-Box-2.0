@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { auth, db, onAuthStateChanged, doc, getDoc, setDoc, User } from './firebase';
+import { auth, db, onAuthStateChanged, doc, getDoc, setDoc, User, handleFirestoreError, OperationType } from './firebase';
 import { UserProfile } from './types';
 
 interface AuthContextType {
@@ -23,7 +23,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchProfile = async (currentUser: User) => {
     const docRef = doc(db, 'users', currentUser.uid);
-    const docSnap = await getDoc(docRef);
+    let docSnap;
+    try {
+      docSnap = await getDoc(docRef);
+    } catch (err) {
+      handleFirestoreError(err, OperationType.GET, `users/${currentUser.uid}`);
+      setLoading(false);
+      return;
+    }
+
     if (docSnap.exists()) {
       setProfile(docSnap.data() as UserProfile);
     } else {
@@ -31,7 +39,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const newProfile: UserProfile = {
         uid: currentUser.uid,
         email: currentUser.email || '',
-        role: isAdminEmail ? 'Admin' : 'Teacher',
+        role: isAdminEmail ? 'Admin' : 'User',
         displayName: currentUser.displayName || '',
       };
       
@@ -39,6 +47,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         await setDoc(docRef, newProfile);
         setProfile(newProfile);
       } catch (error) {
+        handleFirestoreError(error, OperationType.CREATE, `users/${currentUser.uid}`);
         console.error('Error creating profile', error);
         setProfile(null);
       }

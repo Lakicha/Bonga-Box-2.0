@@ -2,62 +2,110 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     // ===============================================================
-    // Helper Functions
+    // Global Safety Net (Default Deny Catch-all)
     // ===============================================================
-    function isAuthenticated() {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // ===============================================================
+    // Reusable Global Hardened Helpers
+    // ===============================================================
+    function isSignedIn() {
       return request.auth != null;
     }
     
     function isOwner(userId) {
-      return isAuthenticated() && request.auth.uid == userId;
+      return isSignedIn() && request.auth.uid == userId;
     }
     
     function isAdmin() {
-      return isAuthenticated() && 
-        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin' ||
+      return isSignedIn() && 
+        ((exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin') ||
          (request.auth.token.email == "mohamed.lakicha@gmail.com" && request.auth.token.email_verified == true));
     }
     
-    function isMentor() {
-      return isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['Mentor', 'Admin'];
+    function isAuthorizedRole() {
+      return isSignedIn() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['Admin', 'Mentor/Teacher', 'Protection Officer', 'Disaster Management Officer'];
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
     }
 
     function isValidUser(data) {
       return data.keys().hasAll(['uid', 'email', 'role']) &&
+             data.keys().size() <= 7 &&
              data.uid is string &&
+             data.uid.size() <= 128 &&
              data.email is string &&
-             data.role in ['Admin', 'Teacher', 'Mentor', 'User'];
+             data.email.size() <= 256 &&
+             data.role in ['Admin', 'Mentor/Teacher', 'Protection Officer', 'Disaster Management Officer', 'User'] &&
+             (!('displayName' in data) || (data.displayName is string && data.displayName.size() <= 256)) &&
+             (!('photoURL' in data) || (data.photoURL is string && data.photoURL.size() <= 1024)) &&
+             (!('schoolId' in data) || (data.schoolId is string && data.schoolId.size() <= 128));
     }
 
     function isValidReport(data) {
       return data.keys().hasAll(['category', 'location', 'description', 'status', 'timestamp']) &&
+             data.keys().size() <= 10 &&
              data.category in ['FGM Risk', 'Flood Alert', 'Emergency', 'Other'] &&
              data.status in ['Pending', 'In Progress', 'Resolved'] &&
-             data.description.size() < 5000 &&
-             data.location.size() < 500;
+             data.description is string &&
+             data.description.size() <= 5000 &&
+             data.location is string &&
+             data.location.size() <= 1000 &&
+             (!('photoURL' in data) || (data.photoURL is string && data.photoURL.size() <= 1024)) &&
+             (!('voiceNoteURL' in data) || (data.voiceNoteURL is string && data.voiceNoteURL.size() <= 1024)) &&
+             (!('isAnonymous' in data) || data.isAnonymous is bool) &&
+             (!('authorUid' in data) || data.authorUid == null || (data.authorUid is string && data.authorUid.size() <= 128));
+    }
+
+    function isValidAlert(data) {
+      return data.keys().hasAll(['type', 'severity', 'location', 'message', 'timestamp']) &&
+             data.keys().size() <= 8 &&
+             data.type is string &&
+             data.type.size() <= 128 &&
+             data.severity in ['Low', 'Medium', 'High', 'Critical'] &&
+             data.location is string &&
+             data.location.size() <= 1000 &&
+             data.message is string &&
+             data.message.size() <= 5000 &&
+             (!('radius' in data) || data.radius is number || data.radius is int || data.radius is float) &&
+             (!('coordinates' in data) || (data.coordinates is list && data.coordinates.size() == 2 && 
+               (data.coordinates[0] is number || data.coordinates[0] is float || data.coordinates[0] is int) && 
+               (data.coordinates[1] is number || data.coordinates[1] is float || data.coordinates[1] is int)));
     }
 
     // ===============================================================
-    // Rules
+    // Rules Matching Collections
     // ===============================================================
 
     match /users/{uid} {
       allow read: if isOwner(uid) || isAdmin();
-      allow create: if isAuthenticated() && isOwner(uid) && isValidUser(request.resource.data);
+      allow create: if isSignedIn() && isOwner(uid) && isValidUser(request.resource.data);
       allow update: if (isAdmin() && isValidUser(request.resource.data)) || 
                       (isOwner(uid) && isValidUser(request.resource.data) && request.resource.data.role == resource.data.role);
     }
 
     match /reports/{reportId} {
-      allow read: if isMentor() || (isAuthenticated() && resource.data.authorUid == request.auth.uid);
+      allow get: if isAuthorizedRole() || 
+                    (isSignedIn() && resource.data.authorUid == request.auth.uid) ||
+                    (resource.data.isAnonymous == true);
+      allow list: if isAuthorizedRole() || (isSignedIn() && resource.data.authorUid == request.auth.uid);
       allow create: if isValidReport(request.resource.data);
-      allow update: if isMentor() && isValidReport(request.resource.data);
+      allow update: if isAuthorizedRole() && isValidReport(request.resource.data);
       allow delete: if isAdmin();
     }
 
     match /alerts/{alertId} {
       allow read: if true;
-      allow create, update, delete: if isAdmin();
+      allow create, update, delete: if isAdmin() || 
+        (isSignedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Disaster Management Officer');
     }
   }
 }

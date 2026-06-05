@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { db, collection, onSnapshot, query, where, updateDoc, doc } from '../firebase';
+import { db, collection, onSnapshot, query, where, updateDoc, doc, handleFirestoreError, OperationType } from '../firebase';
 import { Report } from '../types';
 import { useAuth } from '../AuthContext';
 import { ClipboardList, CheckCircle, Clock, AlertCircle, Filter } from 'lucide-react';
@@ -17,6 +17,8 @@ const SchoolDashboard: React.FC = () => {
     const q = query(collection(db, 'reports'), where('schoolId', '==', profile.schoolId));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setReports(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Report)));
+    }, (error) => {
+      handleFirestoreError(error, OperationType.LIST, 'reports');
     });
 
     return () => unsubscribe();
@@ -26,6 +28,7 @@ const SchoolDashboard: React.FC = () => {
     try {
       await updateDoc(doc(db, 'reports', reportId), { status: newStatus });
     } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, `reports/${reportId}`);
       console.error('Update failed', error);
     }
   };
@@ -33,127 +36,128 @@ const SchoolDashboard: React.FC = () => {
   const filteredReports = filter === 'All' ? reports : reports.filter(r => r.status === filter);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-32 text-white">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6">
-        <div className="flex items-center gap-6">
-          <Logo size={64} />
+    <div className="max-w-7xl mx-auto px-4 pt-20 pb-8 text-slate-800">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+        <div className="flex items-center gap-4">
+          <Logo size={44} />
           <div>
-            <h1 className="text-4xl font-bold mb-2">School Club <span className="gradient-text">Dashboard</span></h1>
-            <p className="text-text-dim">Manage reports and track cases for {profile?.schoolId || 'your school'}.</p>
+            <h1 className="text-2xl font-bold mb-1">School Club <span className="gradient-text">Dashboard</span></h1>
+            <p className="text-xs text-text-dim">Manage reports and track cases for {profile?.schoolId || 'your school'}.</p>
           </div>
         </div>
-        <div className="flex items-center gap-4 glass-card !p-2 !pr-6">
-          <div className="w-12 h-12 bg-purple-primary/10 rounded-2xl flex items-center justify-center text-purple-primary border border-purple-primary/20 shadow-glow">
-            <ClipboardList size={24} />
+        <div className="flex items-center gap-3 bg-white border border-slate-200 rounded-xl p-2 pr-4 shadow-sm">
+          <div className="w-8 h-8 bg-purple-primary/10 rounded-lg flex items-center justify-center text-purple-primary border border-purple-primary/20 shadow-xs">
+            <ClipboardList size={16} />
           </div>
           <div>
-            <p className="text-[10px] font-bold text-text-dim uppercase tracking-widest">School ID</p>
-            <p className="font-bold text-sm">{profile?.schoolId || 'Isiolo Girls High'}</p>
+            <p className="text-[9px] font-bold text-text-dim uppercase tracking-widest leading-none mb-0.5">School ID</p>
+            <p className="font-bold text-xs">{profile?.schoolId || 'Isiolo Girls High'}</p>
           </div>
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 mb-12">
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         {[
-          { icon: Clock, label: "Pending Cases", value: reports.filter(r => r.status === 'Pending').length, color: "border-yellow-accent", bg: "bg-yellow-accent/10", text: "text-yellow-accent" },
-          { icon: AlertCircle, label: "In Progress", value: reports.filter(r => r.status === 'In Progress').length, color: "border-purple-primary", bg: "bg-purple-primary/10", text: "text-purple-primary" },
-          { icon: CheckCircle, label: "Resolved Cases", value: reports.filter(r => r.status === 'Resolved').length, color: "border-green-500", bg: "bg-green-500/10", text: "text-green-500" }
+          { icon: Clock, label: "Pending Cases", value: reports.filter(r => r.status === 'Pending').length, color: "border-yellow-500", bg: "bg-yellow-50 text-yellow-600", border: "border-yellow-250/50" },
+          { icon: AlertCircle, label: "In Progress", value: reports.filter(r => r.status === 'In Progress').length, color: "border-purple-primary", bg: "bg-purple-50 text-purple-primary", border: "border-purple-200/50" },
+          { icon: CheckCircle, label: "Resolved Cases", value: reports.filter(r => r.status === 'Resolved').length, color: "border-green-500", bg: "bg-green-50 text-green-600", border: "border-green-200/50" }
         ].map((stat, i) => (
           <motion.div 
             key={i}
-            whileHover={{ y: -5, scale: 1.02 }}
-            className={`glass-card p-8 border-l-[6px] ${stat.color} transition-all duration-300 cursor-default`}
+            whileHover={{ y: -2, scale: 1.01 }}
+            className={`bg-white p-4 rounded-2xl border-l-[4px] ${stat.color} border border-slate-200/60 shadow-xs flex items-center justify-between transition-all`}
           >
-            <div className="flex justify-between items-start mb-6">
-              <div className={`w-14 h-14 ${stat.bg} ${stat.text} rounded-2xl flex items-center justify-center border border-white/5 shadow-glow`}>
-                <stat.icon size={28} />
+            <div className="flex items-center gap-3">
+              <div className={`w-10 h-10 ${stat.bg} rounded-xl flex items-center justify-center border ${stat.border} shadow-xs`}>
+                <stat.icon size={20} />
               </div>
-              <span className="text-4xl font-bold tracking-tighter">{stat.value}</span>
+              <p className="text-xs font-bold text-text-dim uppercase tracking-widest">{stat.label}</p>
             </div>
-            <p className="text-xs font-bold text-text-dim uppercase tracking-widest">{stat.label}</p>
+            <span className="text-2xl font-bold tracking-tight text-slate-900">{stat.value}</span>
           </motion.div>
         ))}
       </div>
 
-      {/* Filter */}
-      <div className="flex items-center gap-6 mb-10 overflow-x-auto pb-2 custom-scrollbar">
-        <div className="flex items-center gap-3 text-text-dim shrink-0">
-          <Filter size={20} />
-          <span className="text-xs font-bold uppercase tracking-widest">Filter Status:</span>
+      {/* Filter and Content Card container */}
+      <div className="bg-white rounded-2xl border border-slate-200/75 shadow-sm p-4 overflow-hidden">
+        <div className="flex items-center justify-between pb-3 border-b border-slate-150 mb-4 flex-wrap gap-2">
+          <div className="flex items-center gap-2 text-text-dim">
+            <Filter size={16} />
+            <span className="text-[10px] font-bold uppercase tracking-widest">Filter Status:</span>
+          </div>
+          <div className="flex gap-1.5">
+            {['All', 'Pending', 'In Progress', 'Resolved'].map((f) => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={`px-4 py-1 rounded-lg text-[10px] font-bold transition-all uppercase tracking-widest ${
+                  filter === f 
+                    ? 'bg-purple-primary text-white shadow-xs' 
+                    : 'bg-slate-50 text-text-dim border border-slate-200 hover:bg-slate-100'
+                }`}
+              >
+                {f}
+              </button>
+            ))}
+          </div>
         </div>
-        <div className="flex gap-3">
-          {['All', 'Pending', 'In Progress', 'Resolved'].map((f) => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`px-8 py-2.5 rounded-2xl text-xs font-bold transition-all shrink-0 uppercase tracking-widest ${
-                filter === f 
-                  ? 'bg-purple-primary text-white shadow-glow' 
-                  : 'bg-white/5 text-text-dim border border-white/10 hover:border-purple-primary/30'
-              }`}
-            >
-              {f}
-            </button>
-          ))}
-        </div>
-      </div>
 
-      {/* Reports Table */}
-      <div className="glass-card !p-0 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead className="bg-white/[0.02] border-b border-white/5">
-              <tr>
-                <th className="px-8 py-5 text-[10px] font-bold text-text-dim uppercase tracking-widest">Category</th>
-                <th className="px-8 py-5 text-[10px] font-bold text-text-dim uppercase tracking-widest">Location</th>
-                <th className="px-8 py-5 text-[10px] font-bold text-text-dim uppercase tracking-widest">Description</th>
-                <th className="px-8 py-5 text-[10px] font-bold text-text-dim uppercase tracking-widest">Status</th>
-                <th className="px-8 py-5 text-[10px] font-bold text-text-dim uppercase tracking-widest">Action</th>
+        {/* Scrollable table container */}
+        <div className="overflow-x-auto overflow-y-auto max-h-[350px]">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-slate-50 border-b border-slate-200">
+                <th className="px-4 py-2.5 text-[9px] font-bold text-text-dim uppercase tracking-widest">Category</th>
+                <th className="px-4 py-2.5 text-[9px] font-bold text-text-dim uppercase tracking-widest">Location</th>
+                <th className="px-4 py-2.5 text-[9px] font-bold text-text-dim uppercase tracking-widest">Description</th>
+                <th className="px-4 py-2.5 text-[9px] font-bold text-text-dim uppercase tracking-widest">Status</th>
+                <th className="px-4 py-2.5 text-[9px] font-bold text-text-dim uppercase tracking-widest">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5">
+            <tbody className="divide-y divide-slate-100">
               {filteredReports.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-8 py-20 text-center text-text-dim font-medium italic">
+                  <td colSpan={5} className="px-4 py-12 text-center text-text-dim text-xs font-semibold italic">
                     No reports found matching the selected filter.
                   </td>
                 </tr>
               ) : (
                 filteredReports.map((report) => (
-                  <tr key={report.id} className="hover:bg-white/[0.02] transition-colors group">
-                    <td className="px-8 py-6">
-                      <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${
-                        report.category === 'FGM Risk' ? 'bg-magenta-accent/10 text-magenta-accent' : 'bg-purple-primary/10 text-purple-primary'
+                  <tr key={report.id} className="hover:bg-slate-50/50 transition-colors group">
+                    <td className="px-4 py-3">
+                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-widest ${
+                        report.category === 'FGM Risk' ? 'bg-orange-100 text-orange-600 border border-orange-200' : 'bg-purple-100 text-purple-primary border border-purple-250'
                       }`}>
                         {report.category}
                       </span>
                     </td>
-                    <td className="px-8 py-6 text-sm font-bold text-white group-hover:text-purple-primary transition-colors">{report.location}</td>
-                    <td className="px-8 py-6 text-sm text-text-dim max-w-xs truncate">{report.description}</td>
-                    <td className="px-8 py-6">
-                      <div className="flex items-center gap-2">
+                    <td className="px-4 py-3 text-xs font-bold text-slate-800 group-hover:text-purple-primary transition-colors">{report.location}</td>
+                    <td className="px-4 py-3 text-xs text-text-dim max-w-xs truncate">{report.description}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-1.5">
                         <div className={`w-1.5 h-1.5 rounded-full ${
-                          report.status === 'Pending' ? 'bg-yellow-accent animate-pulse' :
+                          report.status === 'Pending' ? 'bg-yellow-500 animate-pulse' :
                           report.status === 'In Progress' ? 'bg-purple-primary' : 'bg-green-500'
                         }`} />
-                        <span className={`text-[10px] font-bold uppercase tracking-widest ${
-                          report.status === 'Pending' ? 'text-yellow-accent' :
-                          report.status === 'In Progress' ? 'text-purple-primary' : 'text-green-500'
+                        <span className={`text-[9px] font-bold uppercase tracking-widest ${
+                          report.status === 'Pending' ? 'text-yellow-600' :
+                          report.status === 'In Progress' ? 'text-purple-primary' : 'text-green-600'
                         }`}>
                           {report.status}
                         </span>
                       </div>
                     </td>
-                    <td className="px-8 py-6">
+                    <td className="px-4 py-3">
                       <select
                         value={report.status}
                         onChange={(e) => updateStatus(report.id!, e.target.value)}
-                        className="text-[10px] font-bold bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-purple-primary focus:outline-none cursor-pointer hover:bg-white/10 transition-all uppercase tracking-widest"
+                        className="text-[9px] font-bold bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-slate-700 focus:outline-none cursor-pointer hover:bg-slate-100 transition-all uppercase tracking-widest"
                       >
-                        <option value="Pending" className="bg-bg-dark">Pending</option>
-                        <option value="In Progress" className="bg-bg-dark">In Progress</option>
-                        <option value="Resolved" className="bg-bg-dark">Resolved</option>
+                        <option value="Pending">Pending</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Resolved">Resolved</option>
                       </select>
                     </td>
                   </tr>

@@ -28,7 +28,7 @@ export interface Alert {
 export interface UserProfile {
   uid: string;
   email: string;
-  role: 'Mentor' | 'Teacher' | 'Admin' | 'User';
+  role: 'Admin' | 'Mentor/Teacher' | 'Protection Officer' | 'Disaster Management Officer' | 'User';
   schoolId?: string;
   displayName?: string;
   photoURL?: string;

@@ -8,7 +8,7 @@
         "uid": { "type": "string", "description": "Firebase Auth UID" },
         "email": { "type": "string", "format": "email" },
         "displayName": { "type": "string" },
-        "role": { "type": "string", "enum": ["Admin", "Teacher", "Mentor", "User"] },
+        "role": { "type": "string", "enum": ["Admin", "Mentor/Teacher", "Protection Officer", "Disaster Management Officer", "User"] },
         "schoolId": { "type": "string", "description": "Optional school ID for school-based users" }
       },
       "required": ["uid", "email", "role"]
