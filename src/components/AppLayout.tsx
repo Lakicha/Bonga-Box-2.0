@@ -38,6 +38,8 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const navigate = useNavigate();
   const [currentTime, setCurrentTime] = useState('08:49');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [currentLanguage, setCurrentLanguage] = useState<'EN' | 'SW'>('EN');
 
   // Update time for the mockup status bar dynamically
   useEffect(() => {
@@ -96,8 +98,6 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   }
 
   // Handle simulation features
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [currentLanguage, setCurrentLanguage] = useState<'EN' | 'SW'>('EN');
 
   // Determine active Tab index
   const getActiveTab = () => {

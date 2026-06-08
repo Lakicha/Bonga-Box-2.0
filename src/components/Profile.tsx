@@ -16,7 +16,7 @@ import { motion } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 
 const Profile: React.FC = () => {
-  const { user } = useAuth();
+  const { user, profile, updateSimulatedRole } = useAuth();
   const navigate = useNavigate();
 
   // Settings interactive toggles
@@ -29,6 +29,7 @@ const Profile: React.FC = () => {
     // Erase simulated codes too
     localStorage.removeItem('bonga_user_nickname');
     localStorage.removeItem('bonga_biometric_unlocked');
+    localStorage.removeItem('bonga_simulated_role');
     navigate('/auth');
   };
 
@@ -168,7 +169,33 @@ const Profile: React.FC = () => {
           </div>
         </div>
 
-        {/* Row 4: Safety Tour Guide Launcher */}
+        {/* Row 4: Simulated Active Role Selection (Awesome for testing dashboards) */}
+        <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-50 mt-1">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 bg-indigo-50 text-[#4F46E5] rounded-lg flex items-center justify-center shrink-0">
+              <Shield size={13} />
+            </div>
+            <span className="font-bold text-slate-800">Simulated Role</span>
+          </div>
+
+          <select
+            value={profile?.role || 'User'}
+            onChange={(e) => {
+              updateSimulatedRole(e.target.value);
+              // Trigger a global custom event to notify AppLayout to re-sync sidebar views
+              window.dispatchEvent(new Event('bonga_sync_simulated_profile'));
+            }}
+            className="bg-slate-50 border border-slate-150 rounded-lg px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-705 outline-none cursor-pointer hover:bg-slate-100 transition-all"
+          >
+            <option value="User">User / Child</option>
+            <option value="Admin">Admin Portal</option>
+            <option value="Mentor/Teacher">Mentor / Teacher</option>
+            <option value="Protection Officer">Protection Officer</option>
+            <option value="Disaster Management Officer">Disaster Officer</option>
+          </select>
+        </div>
+
+        {/* Row 5: Safety Tour Guide Launcher */}
         <div className="flex items-center justify-between text-xs pt-2.5 border-t border-slate-50/70">
           <div className="flex items-center gap-2.5">
             <div className="w-7 h-7 bg-purple-primary/5 text-purple-primary rounded-lg flex items-center justify-center shrink-0 animate-pulse">
@@ -179,7 +206,7 @@ const Profile: React.FC = () => {
 
           <button
             onClick={() => window.dispatchEvent(new Event('bonga_trigger_onboarding_carousel'))}
-            className="px-2.5 py-1 bg-[#4F46E5] hover:bg-purple-dark text-white rounded-lg text-[9px] font-black uppercase tracking-wider shadow-xs transition-transform active:scale-95 text-center"
+            className="px-2.5 py-1 bg-[#4F46E5] hover:bg-purple-dark text-white rounded-lg text-[9px] font-black uppercase tracking-wider shadow-xs transition-transform active:scale-95 text-center cursor-pointer"
           >
             Launch Tour
           </button>

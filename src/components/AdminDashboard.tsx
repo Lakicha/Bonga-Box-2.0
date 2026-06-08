@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { db, collection, onSnapshot, query, orderBy, updateDoc, doc, handleFirestoreError, OperationType } from '../firebase';
+import { db, collection, onSnapshot, query, orderBy, updateDoc, doc, setDoc, where, handleFirestoreError, OperationType } from '../firebase';
 import { Report, UserProfile, Alert } from '../types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
 import { Download, Users, ShieldAlert, AlertTriangle, FileText, ArrowRight, UserCog, Filter, Clock, BarChart2 } from 'lucide-react';
@@ -13,6 +13,59 @@ const AdminDashboard: React.FC = () => {
   const [roleFilter, setRoleFilter] = useState<string>('All');
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
   const [activeTab, setActiveTab ] = useState<'analytics' | 'activity' | 'users'>('analytics');
+
+  // Manual pre-onboarding form states
+  const [onboardEmail, setOnboardEmail] = useState('');
+  const [onboardName, setOnboardName] = useState('');
+  const [onboardRole, setOnboardRole] = useState<UserProfile['role']>('Mentor/Teacher');
+  const [onboardSchool, setOnboardSchool] = useState('');
+  const [isOnboarding, setIsOnboarding] = useState(false);
+  const [onboardMessage, setOnboardMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+
+  const handleOnboardUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!onboardEmail.trim() || !onboardName.trim()) {
+      setOnboardMessage({ type: 'error', text: 'Please fill in email and name.' });
+      return;
+    }
+
+    setIsOnboarding(true);
+    setOnboardMessage(null);
+
+    try {
+      // Check if user already exists
+      const existingUser = users.find(u => u.email.toLowerCase() === onboardEmail.trim().toLowerCase());
+      
+      if (existingUser) {
+        await updateDoc(doc(db, 'users', existingUser.uid), {
+          role: onboardRole,
+          displayName: onboardName.trim(),
+          ...(onboardRole === 'Mentor/Teacher' ? { schoolId: onboardSchool.trim() || 'Isiolo Girls High' } : {})
+        });
+        setOnboardMessage({ type: 'success', text: `Successfully updated role of pre-registered user "${onboardName}" to ${onboardRole}.` });
+      } else {
+        const tempUid = 'pre_' + Math.random().toString(36).substring(2, 10);
+        const preProfile: UserProfile = {
+          uid: tempUid,
+          email: onboardEmail.trim().toLowerCase(),
+          displayName: onboardName.trim(),
+          role: onboardRole,
+          ...(onboardRole === 'Mentor/Teacher' ? { schoolId: onboardSchool.trim() || 'Isiolo Girls High' } : {})
+        };
+        await setDoc(doc(db, 'users', tempUid), preProfile);
+        setOnboardMessage({ type: 'success', text: `Onboarded "${onboardName}" pre-emptively. They will claim the role of ${onboardRole} when they register.` });
+      }
+
+      setOnboardEmail('');
+      setOnboardName('');
+      setOnboardSchool('');
+    } catch (error) {
+      console.error('Failed to onboard user', error);
+      setOnboardMessage({ type: 'error', text: 'Failed to onboard user. Please check permissions.' });
+    } finally {
+      setIsOnboarding(false);
+    }
+  };
 
   useEffect(() => {
     const qReports = query(collection(db, 'reports'), orderBy('timestamp', 'desc'));
@@ -262,6 +315,90 @@ const AdminDashboard: React.FC = () => {
         {/* TAB 3: User Role Managers */}
         {activeTab === 'users' && (
           <div>
+            {/* Pre-onboard Form */}
+            <form onSubmit={handleOnboardUser} className="bg-slate-50/50 border border-slate-150 p-4 rounded-2xl mb-5 space-y-4">
+              <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
+                <div className="w-6 h-6 rounded-lg bg-indigo-50 text-[#4F46E5] flex items-center justify-center shrink-0">
+                  <UserCog size={13} />
+                </div>
+                <h4 className="text-xs font-bold uppercase tracking-widest text-slate-800">Onboard & Assign New Staff/Officer</h4>
+              </div>
+
+              {onboardMessage && (
+                <div className={`p-2.5 text-[10px] font-bold rounded-xl border text-center ${
+                  onboardMessage.type === 'success' 
+                    ? 'bg-green-50 text-green-700 border-green-200' 
+                    : 'bg-red-50 text-red-700 border-red-200'
+                }`}>
+                  {onboardMessage.text}
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[9px] font-black text-text-dim uppercase tracking-wider block">Full Name</label>
+                  <input
+                    type="text"
+                    value={onboardName}
+                    onChange={(e) => setOnboardName(e.target.value)}
+                    placeholder="e.g. Theo"
+                    required
+                    className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:border-[#4F46E5] outline-none transition-colors hover:border-slate-300"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[9px] font-black text-text-dim uppercase tracking-wider block">Email Address</label>
+                  <input
+                    type="email"
+                    value={onboardEmail}
+                    onChange={(e) => setOnboardEmail(e.target.value)}
+                    placeholder="e.g. officer@isiolo.org"
+                    required
+                    className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:border-[#4F46E5] outline-none transition-colors hover:border-slate-300"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[9px] font-black text-text-dim uppercase tracking-wider block">Designated Role</label>
+                  <select
+                    value={onboardRole}
+                    onChange={(e) => setOnboardRole(e.target.value as UserProfile['role'])}
+                    className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:border-[#4F46E5] outline-none transition-colors font-bold cursor-pointer hover:bg-slate-50"
+                  >
+                    <option value="User">User / Child</option>
+                    <option value="Mentor/Teacher">Mentor / Teacher</option>
+                    <option value="Protection Officer">Protection Officer</option>
+                    <option value="Disaster Management Officer">Disaster Officer</option>
+                    <option value="Admin">Admin Portal</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[9px] font-black text-text-dim uppercase tracking-wider block">
+                    {onboardRole === 'Mentor/Teacher' ? 'School ID / Affiliation' : 'Location (Optional)'}
+                  </label>
+                  <input
+                    type="text"
+                    value={onboardSchool}
+                    onChange={(e) => setOnboardSchool(e.target.value)}
+                    placeholder={onboardRole === 'Mentor/Teacher' ? 'Isiolo Girls High' : 'e.g. Garbatulla'}
+                    className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:border-[#4F46E5] outline-none transition-colors hover:border-slate-300"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-1">
+                <button
+                  type="submit"
+                  disabled={isOnboarding}
+                  className="bg-[#4F46E5] hover:bg-purple-dark text-white text-[10px] font-bold uppercase tracking-wider py-2 px-5 rounded-xl shadow-xs transition-transform active:scale-[0.98] disabled:opacity-55 cursor-pointer"
+                >
+                  {isOnboarding ? 'Onboarding...' : 'Onboard & Assign Role'}
+                </button>
+              </div>
+            </form>
+
             <div className="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border border-slate-200 mb-3 gap-2">
               <span className="text-[10px] font-bold uppercase tracking-widest text-text-dim">Search Operator Filter:</span>
               <select 
