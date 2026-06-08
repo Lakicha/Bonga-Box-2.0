@@ -91,7 +91,7 @@ const AuthPage: React.FC = () => {
         
         {/* Header Branding */}
         <div className="mb-6">
-          <Logo size={42} showText={true} />
+          <Logo size={72} />
         </div>
 
         {/* Greeting Section */}

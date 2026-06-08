@@ -27,6 +27,7 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import { auth, signOut } from '../firebase';
 import Onboarding from './Onboarding';
+import Logo from './Logo';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -132,13 +133,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           {/* Logo Brand Brandmark */}
           <Link to="/" className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 bg-linear-to-br from-[#4F46E5] to-[#3F37C9] rounded-xl flex items-center justify-center text-white shadow-xs group-hover:scale-105 transition-transform shrink-0">
-              <span className="font-display font-black text-sm tracking-tighter">B</span>
-            </div>
-            <div>
-              <span className="font-display font-extrabold text-sm tracking-tight text-slate-900 block leading-none mb-1">Bonga Box</span>
-              <span className="text-[8.5px] text-text-dim font-bold tracking-tight text-slate-400 block leading-none">Safe. Anonymous. Connected.</span>
-            </div>
+            <Logo size={54} />
           </Link>
 
           {/* Center Links (Visible on Desktop / Tablet) */}
@@ -289,10 +284,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               className="fixed top-0 right-0 bottom-0 w-[270px] bg-white border-l border-slate-150 shadow-2xl z-[110] flex flex-col p-5"
             >
               <div className="flex justify-between items-center pb-3 border-b border-slate-150 mb-4 shrink-0">
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 bg-[#4F46E5] rounded-lg flex items-center justify-center text-white text-xs font-extrabold">B</div>
-                  <h3 className="font-display font-extrabold text-xs text-slate-950 uppercase tracking-widest">Bonga Box</h3>
-                </div>
+                <Logo size={48} />
                 <button onClick={() => setIsMenuOpen(false)} className="text-slate-500 hover:text-slate-900 p-1 rounded-lg hover:bg-slate-50 transition-colors">
                   <X size={16} />
                 </button>

@@ -35,7 +35,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     let defaultRole = 'User';
-    const isAdminEmail = currentUser.email === "mohamed.lakicha@gmail.com" || currentUser.email === "profkoch.theo@gmail.com";
+    const isAdminEmail = currentUser.email === "mohamed.lakicha@gmail.com" || currentUser.email === "mlakicha@gmail.com" || currentUser.email === "profkoch.theo@gmail.com";
     if (isAdminEmail) {
       defaultRole = 'Admin';
     }

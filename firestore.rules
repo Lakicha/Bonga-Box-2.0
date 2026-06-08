@@ -23,7 +23,7 @@ service cloud.firestore {
       return isSignedIn() && 
         ((exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin') ||
-         (request.auth.token.email in ["mohamed.lakicha@gmail.com", "profkoch.theo@gmail.com"] && request.auth.token.email_verified == true));
+         (request.auth.token.email in ["mohamed.lakicha@gmail.com", "mlakicha@gmail.com", "profkoch.theo@gmail.com"] && request.auth.token.email_verified == true));
     }
     
     function isAuthorizedRole() {

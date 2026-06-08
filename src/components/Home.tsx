@@ -163,8 +163,10 @@ const Home: React.FC = () => {
     let current = 0;
     const interval = setInterval(() => {
       if (current < steps.length) {
-        setSmsStatusText(steps[current].t);
-        setSmsLogs(prev => [...prev, steps[current].log]);
+        const stepText = steps[current].t;
+        const stepLog = steps[current].log;
+        setSmsStatusText(stepText);
+        setSmsLogs(prev => [...prev, stepLog]);
         setSmsTransmissionStage(current + 2);
         current++;
       } else {

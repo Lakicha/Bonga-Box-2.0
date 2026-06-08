@@ -40,7 +40,7 @@ const SchoolDashboard: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div className="flex items-center gap-4">
-          <Logo size={44} />
+          <Logo size={64} />
           <div>
             <h1 className="text-2xl font-bold mb-1">School Club <span className="gradient-text">Dashboard</span></h1>
             <p className="text-xs text-text-dim">Manage reports and track cases for {profile?.schoolId || 'your school'}.</p>

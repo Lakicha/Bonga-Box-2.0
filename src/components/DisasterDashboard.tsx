@@ -331,7 +331,7 @@ const DisasterDashboard: React.FC = () => {
       {/* Top Banner Row */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 border-b border-slate-150 pb-5">
         <div className="flex items-center gap-4">
-          <Logo size={46} />
+          <Logo size={64} />
           <div>
             <h1 className="text-2xl font-black mb-1 flex items-center gap-2">
               Disaster <span className="gradient-text">Management Console</span>
