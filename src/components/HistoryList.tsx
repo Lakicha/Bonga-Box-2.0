@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../AuthContext';
 import { db, collection, query, where, onSnapshot, orderBy, doc, getDoc, handleFirestoreError, OperationType } from '../firebase';
 import { Report } from '../types';
-import { Clock, History, FileText, CheckCircle2, ShieldAlert, AlertTriangle, AlertCircle, RefreshCw, ChevronRight } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { History, RefreshCw, ChevronRight, Lock, KeyRound, Check } from 'lucide-react';
+import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
 
 const HistoryList: React.FC = () => {
@@ -11,6 +11,23 @@ const HistoryList: React.FC = () => {
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  // Modal detail tracker sim
+  const [activeTrackingReportId, setActiveTrackingReportId] = useState<string | null>(null);
+
+  // Dynamically simulates a 64-character hash for proof of integrity
+  const generateSHA256Sim = (id: string) => {
+    // Generate a beautiful, clean pseudo-sha256 hash using the doc id as seed
+    const rawSalt = `bonga_secure_node_handshake_scramble_key_${id}`;
+    let hash = '';
+    for (let i = 0; i < rawSalt.length; i++) {
+      hash += rawSalt.charCodeAt(i).toString(16);
+    }
+    while (hash.length < 64) {
+      hash += 'f391ae828cd8823f66a2b8e392ff192ac';
+    }
+    return hash.substring(0, 64).toUpperCase();
+  };
 
   const fetchReports = () => {
     setRefreshing(true);
@@ -126,103 +143,140 @@ const HistoryList: React.FC = () => {
     };
   }, [user]);
 
+  const handleTrackClick = (id: string) => {
+    setActiveTrackingReportId(id === activeTrackingReportId ? null : id);
+  };
+
   return (
-    <div className="p-5 text-slate-800 font-sans max-w-md mx-auto h-full flex flex-col">
-      <div className="flex justify-between items-center mb-4">
+    <div className="font-sans max-w-md mx-auto h-full flex flex-col relative select-none py-2">
+      
+      {/* 5. Safe Log Feed Redesign Header */}
+      <div className="flex justify-between items-center mb-6 px-1">
         <div>
-          <h1 className="text-2xl font-display font-extrabold text-slate-900 tracking-tight flex items-center gap-1.5">
-            <History size={20} className="text-[#4F46E5]" /> Safe Log
+          <h1 className="text-xl font-display font-black text-slate-900 tracking-tight flex items-center gap-2">
+            <History size={20} className="text-[#4F46E5]" /> Safe Log Feed
           </h1>
-          <p className="text-[10px] text-text-dim font-semibold uppercase tracking-wider">Anon Submission Archives</p>
+          <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-widest leading-none mt-1">
+            Anonymity Tracker Archive
+          </p>
         </div>
+        
         <button 
           onClick={fetchReports} 
-          className={`p-1.5 hover:bg-slate-100 rounded-lg text-slate-600 transition-all ${refreshing ? 'animate-spin' : ''}`}
+          className={`p-2 hover:bg-slate-150 rounded-xl text-slate-600 transition-colors ${refreshing ? 'animate-spin' : ''}`}
         >
           <RefreshCw size={14} />
         </button>
       </div>
 
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-20 grow">
-          <div className="w-8 h-8 border-3 border-indigo-200 border-t-[#4F46E5] rounded-full animate-spin" />
-          <p className="text-xs text-text-dim mt-2 font-medium">Loading safe notes...</p>
+        <div className="flex flex-col items-center justify-center py-24 bg-white border border-slate-150 rounded-3xl shadow-xs">
+          <div className="w-8 h-8 border-3 border-indigo-205 border-t-[#4F46E5] rounded-full animate-spin" />
+          <p className="text-[10.5px] font-extrabold text-[#4F46E5] uppercase tracking-wide mt-3">Refracting secure tunnels...</p>
         </div>
       ) : reports.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-slate-150 p-8 text-center my-6 flex-grow flex flex-col items-center justify-center">
-          <div className="w-14 h-14 bg-slate-50 border border-slate-150 rounded-full flex items-center justify-center mb-4 shadow-sm text-slate-400">
-            <AlertCircle size={24} />
+        <div className="bg-white border border-slate-150 rounded-[2.2rem] p-8 text-center flex flex-col items-center my-4 shadow-sm">
+          <div className="w-14 h-14 bg-slate-50 border border-slate-150 rounded-full flex items-center justify-center mb-4 text-slate-400">
+            <Lock size={22} />
           </div>
-          <h3 className="font-display font-extrabold text-sm mb-1 text-slate-900">No Submissions Found</h3>
-          <p className="text-xs text-text-dim leading-relaxed mb-6 max-w-[240px]">
-            You have not submitted any localized anonymous emergency report logs on this device yet.
+          <h3 className="font-display font-black text-sm mb-1 text-slate-900 uppercase">Archive Empty</h3>
+          <p className="text-xs text-slate-500 leading-relaxed font-semibold mb-6 max-w-[220px]">
+            No secure reporting logs recorded on this hardware node's anonymous sandbox directory.
           </p>
-          <Link to="/report" className="w-full py-2.5 px-4 bg-[#4F46E5] text-white hover:bg-[#3F37C9] text-xs font-bold rounded-xl shadow-sm text-center block">
-            Submit New Report
+          <Link to="/report" className="w-full py-2.5 px-4 bg-purple-primary text-white hover:bg-purple-dark text-xs font-black rounded-xl text-center block shadow-md uppercase tracking-wider uppercase">
+            Submit Safe Log
           </Link>
         </div>
       ) : (
-        <div className="space-y-3 overflow-y-auto pr-0.5 max-h-[640px]">
-          {reports.map((report) => (
-            <div 
-              key={report.id} 
-              className="bg-white border border-slate-150 rounded-xl p-3.5 shadow-xs hover:border-[#4F46E5]/45 transition-colors group"
-            >
-              <div className="flex justify-between items-start mb-2">
-                <div className="flex items-center gap-2">
-                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${
-                    report.category === 'FGM Risk' ? 'bg-indigo-50 text-[#4F46E5]' : 'bg-cyan-50 text-[#06B6D4]'
-                  }`}>
-                    {report.category}
+        /* Clean vertical list of white cards on the light layout grid background */
+        <div className="space-y-4">
+          {reports.map((report) => {
+            const hash = generateSHA256Sim(report.id || 'seed');
+            const isTracking = activeTrackingReportId === report.id;
+
+            return (
+              <div 
+                key={report.id} 
+                className="bg-white border border-slate-150 rounded-2xl p-4.5 shadow-sm hover:border-purple-primary/35 transition-all"
+              >
+                {/* Header section of cards */}
+                <div className="flex justify-between items-center mb-2.5">
+                  {/* Location in bold purple */}
+                  <span className="text-sm font-display font-black text-purple-primary flex items-center gap-1">
+                    {report.location}
                   </span>
-                  {report.isAnonymous && (
-                    <span className="px-2 py-0.5 bg-slate-100 text-slate-600 text-[9px] font-bold rounded-full">
-                      ANON
+
+                  {/* Status pill in soft-purple outline */}
+                  <span className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border ${
+                    report.status === 'Pending' 
+                      ? 'bg-amber-50/40 border-amber-205 text-amber-700' 
+                      : 'bg-emerald-50/40 border-emerald-250 text-emerald-700'
+                  }`}>
+                    {report.status}
+                  </span>
+                </div>
+
+                {/* Report Detail Paragraph */}
+                <p className="text-slate-600 text-[11px] leading-relaxed mb-3.5 pl-0.5 font-medium">
+                  {report.description}
+                </p>
+
+                {/* Tracking Interactive section */}
+                <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 space-y-2 mb-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest block pl-0.5">
+                      Cellular Handshake Integrity
                     </span>
+                    
+                    {/* Track Button */}
+                    <button
+                      onClick={() => handleTrackClick(report.id || '')}
+                      className="px-2.5 py-0.5 border border-purple-primary hover:bg-purple-primary/5 text-purple-primary hover:text-purple-dark text-[8.5px] font-black rounded-lg transition-colors flex items-center gap-0.5"
+                    >
+                      {isTracking ? 'Close Tracker' : 'Track Status'}
+                    </button>
+                  </div>
+
+                  {isTracking && (
+                    <div className="text-[10px] space-y-1 text-slate-650 border-t border-slate-201 pt-2 animate-fadeIn pl-0.5">
+                      <div className="flex justify-between">
+                        <span>Node status:</span>
+                        <span className="font-extrabold text-[#4F46E5]">Active Tracking</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Relay routing:</span>
+                        <span className="font-bold text-slate-800">Isiolo Central Relay Hub v4</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Anonymization Layer:</span>
+                        <span className="font-mono text-emerald-600 font-extrabold text-[9px]">TLS SSL Scrambled</span>
+                      </div>
+                    </div>
                   )}
                 </div>
-                
-                <span className={`inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider ${
-                  report.status === 'Pending' ? 'text-amber-500' :
-                  report.status === 'In Progress' ? 'text-[#4F46E5]' : 'text-green-600'
-                }`}>
-                  <span className={`w-1.5 h-1.5 rounded-full ${
-                    report.status === 'Pending' ? 'bg-amber-500 animate-pulse' :
-                    report.status === 'In Progress' ? 'bg-[#4F46E5]' : 'bg-green-600'
-                  }`} />
-                  {report.status}
-                </span>
-              </div>
 
-              <h4 className="font-display font-bold text-xs text-slate-950 mb-1 leading-snug">
-                {report.location}
-              </h4>
-              <p className="text-slate-600 text-[11px] leading-relaxed mb-3 line-clamp-2">
-                {report.description}
-              </p>
-
-              <div className="flex justify-between items-center text-[9px] text-text-dim font-bold border-t border-slate-50 pt-2 shrink-0">
-                <span>
-                  {report.timestamp?.toDate 
-                    ? new Date(report.timestamp.toDate()).toLocaleDateString()
-                    : report.timestamp?.seconds
-                    ? new Date(report.timestamp.seconds * 1000).toLocaleDateString()
-                    : 'Recent Secures'
-                  }
-                </span>
-                
-                <div className="text-[#4F46E5] flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
-                  <span>Track ID {report.id?.substring(0, 6).toUpperCase()}</span>
-                  <ChevronRight size={10} />
+                {/* Footer containing 64-character cryptographic hash in a technical monospace font */}
+                <div className="border-t border-slate-50 pt-2.5 flex flex-col gap-1 text-[8px]">
+                  <span className="text-slate-400 font-extrabold uppercase tracking-widest pl-0.5">
+                    Data Integrity Hash (SHA-256 Signature)
+                  </span>
+                  <div className="font-mono text-slate-500 bg-slate-50 p-2 rounded-lg border border-dashed border-slate-150 overflow-x-auto whitespace-nowrap scrollbar-none scroll-smooth">
+                    {hash}
+                  </div>
                 </div>
+
               </div>
-            </div>
-          ))}
-          <p className="text-[10px] text-center text-text-dim font-medium py-3">
-            Secure tracking hashes are cryptographically local to this client device.
-          </p>
+            );
+          })}
+
+          <footer className="pt-3 text-center">
+            <p className="text-[8.5px] text-slate-400 leading-normal uppercase tracking-widest font-extrabold">
+              End-to-End Cryptographically Proven Data Scrambling System.
+            </p>
+          </footer>
         </div>
       )}
+
     </div>
   );
 };

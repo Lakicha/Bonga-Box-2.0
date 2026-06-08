@@ -1,344 +1,203 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../AuthContext';
-import { db, collection, query, where, onSnapshot, orderBy, auth, signOut, updateProfile, ref, uploadBytes, getDownloadURL, storage, doc, updateDoc, handleFirestoreError, OperationType } from '../firebase';
-import { Report } from '../types';
-import { User, Mail, Shield, MapPin, Calendar, Clock, ChevronRight, AlertCircle, LogOut, Settings, Camera, Loader2, CheckCircle2, FileText, LayoutDashboard } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
-import { Link, useNavigate } from 'react-router-dom';
+import { auth, signOut } from '../firebase';
+import { 
+  Shield, 
+  Check, 
+  Fingerprint, 
+  Globe, 
+  BookOpen, 
+  Lock, 
+  LogOut, 
+  User, 
+  Camera 
+} from 'lucide-react';
+import { motion } from 'motion/react';
+import { useNavigate } from 'react-router-dom';
 
 const Profile: React.FC = () => {
-  const { user, profile, refreshProfile } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'details' | 'settings'>('details');
-  
-  // Settings state
-  const [newDisplayName, setNewDisplayName] = useState(user?.displayName || '');
-  const [newPhotoFile, setNewPhotoFile] = useState<File | null>(null);
-  const [photoPreview, setPhotoPreview] = useState<string | null>(user?.photoURL || null);
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [updateMessage, setUpdateMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
-  
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    if (user) {
-      setNewDisplayName(user.displayName || '');
-      setPhotoPreview(user.photoURL || null);
-      setLoading(false);
-    }
-  }, [user]);
+  // Settings interactive toggles
+  const [biometricLock, setBiometricLock] = useState<boolean>(true);
+  const [language, setLanguage] = useState<'English' | 'Swahili'>('English');
+  const [schoolCodeInput, setSchoolCodeInput] = useState<string>('ISIOLO_SEC_99');
 
   const handleLogout = () => {
     signOut(auth);
-    navigate('/');
+    // Erase simulated codes too
+    localStorage.removeItem('bonga_user_nickname');
+    localStorage.removeItem('bonga_biometric_unlocked');
+    navigate('/auth');
   };
-
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setNewPhotoFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPhotoPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleUpdateProfile = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user) return;
-
-    setIsUpdating(true);
-    setUpdateMessage(null);
-
-    try {
-      let photoURL = user.photoURL || '';
-
-      if (newPhotoFile) {
-        const photoRef = ref(storage, `profiles/${user.uid}/${Date.now()}_${newPhotoFile.name}`);
-        await uploadBytes(photoRef, newPhotoFile);
-        photoURL = await getDownloadURL(photoRef);
-      }
-
-      // Update Firebase Auth
-      await updateProfile(user, {
-        displayName: newDisplayName,
-        photoURL: photoURL
-      });
-
-      // Update Firestore
-      await updateDoc(doc(db, 'users', user.uid), {
-        displayName: newDisplayName,
-        photoURL: photoURL
-      });
-
-      await refreshProfile();
-
-      setUpdateMessage({ type: 'success', text: 'Display updated!' });
-      setTimeout(() => setUpdateMessage(null), 3000);
-    } catch (error) {
-      if (user) {
-        handleFirestoreError(error, OperationType.UPDATE, `users/${user.uid}`);
-      }
-      console.error('Error:', error);
-      setUpdateMessage({ type: 'error', text: 'Failed to update.' });
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
-  if (!user) {
-    return (
-      <div className="p-5 text-center max-w-sm mx-auto flex flex-col items-center justify-center my-10 bg-white border border-slate-150 rounded-2xl shadow-sm">
-        <AlertCircle size={32} className="text-[#4F46E5] mb-2" />
-        <h2 className="text-sm font-extrabold text-slate-900 uppercase">Verification Required</h2>
-        <p className="text-xs text-text-dim mt-1.5 mb-4 leading-relaxed">
-          Accessing your profile dashboard requires authentication. Please sign in.
-        </p>
-        <Link to="/auth" className="w-full py-2 bg-[#4F46E5] text-white hover:bg-[#3F37C9] text-xs font-bold rounded-xl shadow-sm">
-          Login / Sign Up
-        </Link>
-      </div>
-    );
-  }
 
   return (
-    <div className="p-5 text-slate-800 font-sans max-w-md mx-auto">
-      {/* Mini Profile Header Avatar Card */}
-      <div className="bg-white border border-slate-150 rounded-3xl p-5 mb-5 shadow-xs relative overflow-hidden">
-        <div className="absolute top-0 inset-x-0 h-16 bg-linear-to-b from-[#4F46E5]/5 to-transparent pointer-events-none" />
-        
-        <div className="flex flex-col items-center text-center relative z-10 pt-2">
-          <div className="w-20 h-20 rounded-full bg-linear-to-br from-[#4F46E5] to-[#06B6D4] p-0.5 shadow-sm mb-3">
-            <div className="w-full h-full rounded-full bg-slate-50 flex items-center justify-center overflow-hidden border border-slate-150">
-              {user.photoURL ? (
-                <img src={user.photoURL} alt={user.displayName || ''} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+    <div className="font-sans max-w-sm mx-auto select-none py-2 space-y-6">
+      
+      {/* 7. Profile Header Card */}
+      <div className="bg-white border border-slate-150 rounded-[2.5rem] p-6 shadow-xs text-center flex flex-col items-center relative overflow-hidden">
+        {/* Glow backdrop graphic */}
+        <div className="absolute top-[-10%] left-[-10%] w-[130px] h-[130px] bg-purple-100/30 rounded-full blur-2xl pointer-events-none" />
+
+        {/* Circular profile photo with "PROTECTED" badge and green checkmark icon */}
+        <div className="relative mb-4">
+          <div className="w-20 h-20 rounded-full p-1 bg-gradient-to-r from-[#4F46E5] to-[#06B6D4] shadow-sm flex items-center justify-center">
+            <div className="w-full h-full rounded-full bg-slate-50 overflow-hidden border border-white flex items-center justify-center">
+              {user?.photoURL ? (
+                <img 
+                  src={user.photoURL} 
+                  alt={user.displayName || 'User Profile'} 
+                  className="w-full h-full object-cover"
+                  referrerPolicy="no-referrer"
+                />
               ) : (
-                <User size={36} className="text-[#4F46E5]/40" />
+                <User className="text-slate-400" size={32} />
               )}
             </div>
           </div>
-          
-          <h2 className="text-base font-display font-extrabold text-slate-950 leading-none mb-1">
-            {user.displayName || 'Bonga Ally'}
-          </h2>
-          <p className="text-[10px] text-text-dim font-medium mb-3">{user.email}</p>
 
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-indigo-50 text-[#4F46E5] rounded-full border border-indigo-200/50 text-[9px] font-bold uppercase tracking-widest">
-            <Shield size={12} />
-            <span>{profile?.role || 'County Friend'}</span>
+          {/* PROTECTED badge and checkmark element overlay on avatar */}
+          <div className="absolute -bottom-2 -right-2 bg-emerald-500 border-2 border-white px-2 py-0.5 rounded-full flex items-center gap-1 text-white shadow-sm">
+            <Check size={8} strokeWidth={4} />
+            <span className="text-[7.5px] font-black uppercase tracking-wider">PROTECTED</span>
+          </div>
+        </div>
+
+        <h2 className="text-base font-display font-black text-slate-900 leading-none mb-1">
+          {user?.displayName 
+            ? user.displayName.split(' ')[0] 
+            : (user?.email ? user.email.split('@')[0] : 'Theo')}
+        </h2>
+        <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-widest leading-none">
+          Safe Space Operator Nodes
+        </p>
+      </div>
+
+      {/* Identity Cards Segment: Two white cards showing "Proxy ID" and "Joined Date" */}
+      <div className="grid grid-cols-2 gap-3.5">
+        <div className="bg-white border border-slate-150 rounded-2xl p-4 text-left">
+          <span className="text-[8.5px] font-extrabold text-slate-400 uppercase tracking-widest block mb-1">Proxy ID</span>
+          <span className="text-xs font-mono font-black text-[#5F56F4] uppercase truncate block">
+            PRX-90EACC83
+          </span>
+        </div>
+
+        <div className="bg-white border border-slate-150 rounded-2xl p-4 text-left">
+          <span className="text-[8.5px] font-extrabold text-slate-400 uppercase tracking-widest block mb-1">Joined Date</span>
+          <span className="text-xs font-bold text-slate-800 uppercase block">
+            June 2026
           </span>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex p-0.5 bg-slate-100 rounded-xl mb-4 text-xs font-bold border border-slate-150">
-        <button 
-          onClick={() => setActiveTab('details')}
-          className={`flex-1 py-1.5 rounded-lg text-[10px] uppercase tracking-wider transition-all ${
-            activeTab === 'details' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-550 hover:text-slate-950'
-          }`}
+      {/* Settings List: Rows for School Code, Biometric Lock, and Language */}
+      <div className="bg-white border border-slate-150 rounded-[2rem] p-5 shadow-xs space-y-4">
+        <span className="text-[9.5px] font-extrabold text-slate-400 uppercase tracking-widest block border-b border-slate-50 pb-2.5">
+          Local Security Parameters
+        </span>
+
+        {/* Row 1: School Code */}
+        <div className="flex items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 bg-purple-primary/5 text-purple-primary rounded-lg flex items-center justify-center shrink-0">
+              <BookOpen size={13} />
+            </div>
+            <span className="font-bold text-slate-800">School Code</span>
+          </div>
+
+          <input 
+            type="text" 
+            value={schoolCodeInput}
+            onChange={(e) => setSchoolCodeInput(e.target.value)}
+            className="w-28 text-right bg-transparent border-b border-transparent focus:border-purple-primary outline-none font-mono font-extrabold text-[#4F46E5] text-xs h-6 pr-0.5"
+          />
+        </div>
+
+        {/* Row 2: Biometric Lock toggle */}
+        <div className="flex items-center justify-between text-xs pt-1">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 bg-purple-primary/5 text-purple-primary rounded-lg flex items-center justify-center shrink-0">
+              <Fingerprint size={14} />
+            </div>
+            <span className="font-bold text-slate-800">Biometric Lock</span>
+          </div>
+
+          {/* Simple Toggle with purple design */}
+          <button
+            type="button"
+            onClick={() => setBiometricLock(!biometricLock)}
+            className={`w-9 h-5 rounded-full p-0.5 transition-colors relative flex items-center ${
+              biometricLock ? 'bg-purple-primary' : 'bg-slate-201'
+            }`}
+          >
+            <span 
+              className={`w-4 h-4 rounded-full bg-white shadow-xs transition-transform transform ${
+                biometricLock ? 'translate-x-4' : 'translate-x-0'
+              }`}
+            />
+          </button>
+        </div>
+
+        {/* Row 3: Language selection (English/Swahili) */}
+        <div className="flex items-center justify-between text-xs pt-1">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 bg-purple-primary/5 text-purple-primary rounded-lg flex items-center justify-center shrink-0">
+              <Globe size={13} />
+            </div>
+            <span className="font-bold text-slate-800">Language</span>
+          </div>
+
+          <div className="flex gap-1 bg-slate-50 border border-slate-150 p-0.5 rounded-lg text-[9px] font-black uppercase">
+            <button
+              onClick={() => setLanguage('English')}
+              className={`px-2 py-1 rounded transition-colors ${
+                language === 'English' ? 'bg-[#5F56F4] text-white shadow-sm' : 'text-slate-400 hover:text-slate-705'
+              }`}
+            >
+              English
+            </button>
+            <button
+              onClick={() => setLanguage('Swahili')}
+              className={`px-2 py-1 rounded transition-colors ${
+                language === 'Swahili' ? 'bg-[#5F56F4] text-white shadow-sm' : 'text-slate-400 hover:text-slate-705'
+              }`}
+            >
+              Swahili
+            </button>
+          </div>
+        </div>
+
+        {/* Row 4: Safety Tour Guide Launcher */}
+        <div className="flex items-center justify-between text-xs pt-2.5 border-t border-slate-50/70">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 bg-purple-primary/5 text-purple-primary rounded-lg flex items-center justify-center shrink-0 animate-pulse">
+              <Shield size={13} className="text-[#4F46E5]" />
+            </div>
+            <span className="font-bold text-slate-800">Safety Guide Carousel</span>
+          </div>
+
+          <button
+            onClick={() => window.dispatchEvent(new Event('bonga_trigger_onboarding_carousel'))}
+            className="px-2.5 py-1 bg-[#4F46E5] hover:bg-purple-dark text-white rounded-lg text-[9px] font-black uppercase tracking-wider shadow-xs transition-transform active:scale-95 text-center"
+          >
+            Launch Tour
+          </button>
+        </div>
+
+      </div>
+
+      {/* Footer Settings Row: red-outlined Logout button */}
+      <div className="pt-2">
+        <button
+          onClick={handleLogout}
+          className="w-full py-3 border border-red-500 bg-red-500/5 hover:bg-red-550/10 text-red-505 font-extrabold rounded-2xl flex items-center justify-center gap-2 text-xs transition-colors active:scale-[0.98] cursor-pointer"
         >
-          Details
-        </button>
-        <button 
-          onClick={() => setActiveTab('settings')}
-          className={`flex-1 py-1.5 rounded-lg text-[10px] uppercase tracking-wider transition-all ${
-            activeTab === 'settings' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-550 hover:text-slate-950'
-          }`}
-        >
-          Settings
+          <LogOut size={13} />
+          <span>Logout Session</span>
         </button>
       </div>
 
-      <AnimatePresence mode="wait">
-        {activeTab === 'details' ? (
-          <motion.div
-            key="details"
-            initial={{ opacity: 0, y: 5 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -5 }}
-            className="space-y-3"
-          >
-            {/* Account Info list */}
-            <div className="bg-white border border-slate-150 rounded-2xl p-4 shadow-xs space-y-3 text-xs font-semibold text-slate-700">
-              <div className="flex justify-between items-center pb-2.5 border-b border-slate-50">
-                <span className="text-text-dim uppercase tracking-wider text-[9px]">Account Created</span>
-                <span className="text-slate-950 font-bold">
-                  {user.metadata.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString() : 'N/A'}
-                </span>
-              </div>
-              <div className="flex justify-between items-center pb-2.5 border-b border-slate-50">
-                <span className="text-text-dim uppercase tracking-wider text-[9px]">School Code / ID</span>
-                <span className="text-[#4F46E5] font-bold">
-                  {profile?.schoolId || 'Local Access'}
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-text-dim uppercase tracking-wider text-[9px]">Anonymity proxy</span>
-                <span className="text-green-600 font-bold uppercase text-[10px]">Active Routing</span>
-              </div>
-            </div>
-
-            {/* If Operator has admin/officer access options */}
-            {profile && profile.role !== 'User' && (
-              <div className="bg-slate-50 border-2 border-indigo-200/50 rounded-2xl p-4 shadow-xs">
-                <h4 className="font-display font-extrabold text-xs text-indigo-950 uppercase tracking-widest mb-1">
-                  County Administration Office
-                </h4>
-                <p className="text-[10px] text-slate-600 mb-3 font-medium">
-                  Your designated authorization role allows view, edit, action and dispatch metrics on safety reports.
-                </p>
-                
-                <div className="space-y-2">
-                  {(profile.role === 'Admin' || profile.role === 'Mentor/Teacher') && (
-                    <button 
-                      onClick={() => navigate('/school-dashboard')}
-                      className="w-full flex justify-between items-center p-2.5 bg-white border border-slate-200 rounded-xl font-bold text-xs text-slate-800 hover:border-slate-350"
-                    >
-                      <span className="flex items-center gap-1.5"><LayoutDashboard size={14} className="text-[#4F46E5]" /> School Club Board</span>
-                      <ChevronRight size={14} />
-                    </button>
-                  )}
-
-                  {(profile.role === 'Admin' || profile.role === 'Protection Officer') && (
-                    <button 
-                      onClick={() => navigate('/protection-dashboard')}
-                      className="w-full flex justify-between items-center p-2.5 bg-white border border-slate-200 rounded-xl font-bold text-xs text-slate-800 hover:border-slate-350"
-                    >
-                      <span className="flex items-center gap-1.5"><LayoutDashboard size={14} className="text-indigo-650" /> Protection Desk</span>
-                      <ChevronRight size={14} />
-                    </button>
-                  )}
-
-                  {(profile.role === 'Admin' || profile.role === 'Disaster Management Officer') && (
-                    <button 
-                      onClick={() => navigate('/disaster-dashboard')}
-                      className="w-full flex justify-between items-center p-2.5 bg-white border border-slate-200 rounded-xl font-bold text-xs text-slate-800 hover:border-slate-350"
-                    >
-                      <span className="flex items-center gap-1.5"><LayoutDashboard size={14} className="text-cyan-650" /> Disaster Dispatch</span>
-                      <ChevronRight size={14} />
-                    </button>
-                  )}
-
-                  {profile.role === 'Admin' && (
-                    <button 
-                      onClick={() => navigate('/admin-dashboard')}
-                      className="w-full flex justify-between items-center p-2.5 bg-[#4F46E5] text-white border border-transparent rounded-xl font-bold text-xs hover:bg-[#3F37C9]"
-                    >
-                      <span className="flex items-center gap-1.5"><LayoutDashboard size={14} /> County Admin Room</span>
-                      <ChevronRight size={14} />
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Logout button */}
-            <button 
-              onClick={handleLogout}
-              className="w-full flex items-center justify-center gap-2 py-3 bg-red-50 text-red-650 hover:bg-red-100 font-bold transition-all border border-red-200/55 rounded-xl uppercase tracking-widest text-[10px]"
-            >
-              <LogOut size={14} /> Close Account Session
-            </button>
-          </motion.div>
-        ) : (
-          <motion.div
-            key="settings"
-            initial={{ opacity: 0, y: 5 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -5 }}
-            className="bg-white border border-slate-150 rounded-2xl p-4 shadow-xs"
-          >
-            <form onSubmit={handleUpdateProfile} className="space-y-4">
-              {/* Photo upload view */}
-              <div className="flex items-center gap-4 border-b border-slate-100 pb-3">
-                <div className="relative">
-                  <div className="w-14 h-14 rounded-full bg-slate-50 border border-slate-200 overflow-hidden flex items-center justify-center">
-                    {photoPreview ? (
-                      <img src={photoPreview} alt="Preview" className="w-full h-full object-cover" />
-                    ) : (
-                      <User size={24} className="text-slate-400" />
-                    )}
-                  </div>
-                  <button 
-                    type="button" 
-                    onClick={() => fileInputRef.current?.click()}
-                    className="absolute bottom-0 right-0 p-1 bg-[#4F46E5] text-white rounded-full border border-white"
-                  >
-                    <Camera size={10} />
-                  </button>
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-slate-900 leading-none">Avatar Photo</h4>
-                  <p className="text-[9px] text-text-dim mt-1 font-medium">JPEG, PNG. Max 1MB.</p>
-                </div>
-                <input 
-                  type="file" 
-                  ref={fileInputRef} 
-                  onChange={handlePhotoChange} 
-                  className="hidden" 
-                  accept="image/*"
-                />
-              </div>
-
-              {/* Form Input name */}
-              <div className="space-y-1">
-                <label className="text-[9px] font-bold text-text-dim uppercase tracking-wider pl-1">Display Name</label>
-                <input 
-                  type="text" 
-                  value={newDisplayName} 
-                  onChange={(e) => setNewDisplayName(e.target.value)} 
-                  className="w-full px-3 py-2 text-xs font-semibold rounded-xl bg-slate-50 border border-slate-200 focus:border-[#4F46E5] outline-none"
-                  placeholder="Enter name"
-                  required
-                />
-              </div>
-
-              {/* Email disabled */}
-              <div className="space-y-1 opacity-60">
-                <label className="text-[9px] font-bold text-text-dim uppercase tracking-wider pl-1">Email Address (Registered)</label>
-                <input 
-                  type="email" 
-                  value={user.email || ''} 
-                  disabled 
-                  className="w-full px-3 py-2 text-xs font-semibold rounded-xl bg-slate-100 border border-slate-200 cursor-not-allowed"
-                />
-              </div>
-
-              {/* Response banner message */}
-              {updateMessage && (
-                <div className={`p-2 rounded-xl text-[10px] font-bold flex items-center gap-1 border ${
-                  updateMessage.type === 'success' ? 'bg-green-50 border-green-200 text-green-700' : 'bg-red-50 border-red-200 text-red-700'
-                }`}>
-                  <CheckCircle2 size={12} />
-                  <span>{updateMessage.text}</span>
-                </div>
-              )}
-
-              {/* Controls save */}
-              <div className="pt-2">
-                <button 
-                  type="submit" 
-                  disabled={isUpdating}
-                  className="w-full py-2.5 bg-[#4F46E5] text-white hover:bg-[#3F37C9] text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-xs"
-                >
-                  {isUpdating ? (
-                    <Loader2 size={14} className="animate-spin" />
-                  ) : (
-                    <>
-                      <CheckCircle2 size={14} />
-                      <span>Save Changes</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </form>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 };

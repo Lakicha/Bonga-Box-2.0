@@ -1,9 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
-import { Home, History, Compass, BookOpen, User, Clock, Bell, LogOut, ChevronRight, Menu, X } from 'lucide-react';
+import { 
+  Home, 
+  History, 
+  Compass, 
+  BookOpen, 
+  User, 
+  Clock, 
+  Bell, 
+  LogOut, 
+  ChevronRight, 
+  Menu, 
+  X,
+  HeartHandshake,
+  FileText,
+  AlertTriangle,
+  Landmark,
+  Coins,
+  Globe,
+  Settings,
+  ShieldCheck,
+  ShieldAlert,
+  MapPin
+} from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { auth, signOut } from '../firebase';
+import Onboarding from './Onboarding';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -72,13 +95,20 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     );
   }
 
+  // Handle simulation features
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [currentLanguage, setCurrentLanguage] = useState<'EN' | 'SW'>('EN');
+
   // Determine active Tab index
   const getActiveTab = () => {
     const path = location.pathname;
     if (path === '/') return 'home';
-    if (path === '/history') return 'history';
-    if (path === '/alerts') return 'lost';
-    if (path.startsWith('/resources')) return 'resources';
+    if (path === '/report') return 'report';
+    if (path === '/support') return 'support';
+    if (path === '/alerts') return 'safe-houses';
+    if (path.startsWith('/resources')) return 'alerts';
+    if (path === '/history') return 'cases';
+    if (path === '/donate') return 'donate';
     if (path === '/profile' || path === '/auth') return 'profile';
     return '';
   };
@@ -102,12 +132,12 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           {/* Logo Brand Brandmark */}
           <Link to="/" className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 bg-linear-to-br from-[#4F46E5] to-[#3F37C9] rounded-xl flex items-center justify-center text-white shadow-xs group-hover:scale-105 transition-transform">
+            <div className="w-8 h-8 bg-linear-to-br from-[#4F46E5] to-[#3F37C9] rounded-xl flex items-center justify-center text-white shadow-xs group-hover:scale-105 transition-transform shrink-0">
               <span className="font-display font-black text-sm tracking-tighter">B</span>
             </div>
             <div>
-              <span className="font-display font-extrabold text-sm tracking-tight text-slate-900 block leading-none mb-0.5">Bonga Box</span>
-              <span className="text-[8px] text-text-dim font-bold tracking-widest uppercase leading-none block">Safe Space</span>
+              <span className="font-display font-extrabold text-sm tracking-tight text-slate-900 block leading-none mb-1">Bonga Box</span>
+              <span className="text-[8.5px] text-text-dim font-bold tracking-tight text-slate-400 block leading-none">Safe. Anonymous. Connected.</span>
             </div>
           </Link>
 
@@ -124,58 +154,112 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               Home
             </Link>
             <Link 
-              to="/history" 
+              to="/report" 
               className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 ${
-                activeTab === 'history' 
+                activeTab === 'report' 
                   ? 'bg-white text-[#4F46E5] shadow-xs' 
                   : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100/40'
               }`}
             >
-              History
+              Report
             </Link>
             <Link 
-              to="/alerts" 
+              to="/support" 
               className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 ${
-                activeTab === 'lost' 
+                activeTab === 'support' 
                   ? 'bg-white text-[#4F46E5] shadow-xs' 
-                  : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100/40'
+                  : 'text-slate-500 hover:text-slate-950 hover:bg-slate-100/40'
               }`}
             >
-              Lost & Map
+              Support
             </Link>
             <Link 
               to="/resources" 
               className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 ${
-                activeTab === 'resources' 
+                activeTab === 'alerts' 
                   ? 'bg-white text-[#4F46E5] shadow-xs' 
                   : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100/40'
               }`}
             >
-              Routes
-            </Link>
-            <Link 
-              to="/profile" 
-              className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 ${
-                activeTab === 'profile' 
-                  ? 'bg-white text-[#4F46E5] shadow-xs' 
-                  : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100/40'
-              }`}
-            >
-              Profile
+              Alerts
             </Link>
           </nav>
 
           {/* Right Session / Operator Menu Button */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 relative">
             {profile && profile.role !== 'User' && (
-              <span className="hidden sm:inline-block px-2.5 py-0.5 bg-indigo-50 text-[#4F46E5] text-[9.5px] font-bold uppercase tracking-wider rounded-md border border-indigo-200/50">
+              <span className="hidden lg:inline-block px-2.5 py-0.5 bg-indigo-50 text-[#4F46E5] text-[9.5px] font-bold uppercase tracking-wider rounded-md border border-indigo-200/50">
                 {profile.role.replace('/Teacher', '')}
               </span>
             )}
+            
+            {/* 🔔 Notifications Button and Simulator */}
+            <div className="relative">
+              <button 
+                onClick={() => setShowNotifications(!showNotifications)}
+                className="w-9 h-9 hover:bg-slate-100 rounded-xl flex items-center justify-center text-slate-600 transition-colors relative"
+                title="Notifications"
+                id="header-bell-btn"
+              >
+                <Bell size={18} />
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-purple-primary rounded-full animate-pulse" />
+              </button>
+
+              <AnimatePresence>
+                {showNotifications && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="absolute right-0 mt-2 w-64 bg-white border border-slate-150 rounded-2xl shadow-xl p-4 z-50 space-y-2 text-left"
+                    id="notifications-dropdown"
+                  >
+                    <div className="pb-2 border-b border-slate-100 flex items-center justify-between">
+                      <span className="text-[10px] font-black uppercase text-slate-900 tracking-wider">Active Safeguards</span>
+                      <span className="text-[8px] px-1.5 py-0.5 bg-indigo-50 text-[#4F46E5] font-extrabold rounded">Live telemetry</span>
+                    </div>
+                    <div className="space-y-2 max-h-[160px] overflow-y-auto scrollbar-none">
+                      <div className="p-2 hover:bg-slate-50 rounded-lg text-[10px] font-semibold text-slate-700 leading-relaxed border border-slate-50 flex items-start gap-2">
+                        <ShieldAlert size={14} className="text-[#4F46E5] shrink-0 mt-0.5" />
+                        <span>
+                          <span className="text-purple-primary font-bold">Encrypted Tunnel Active</span>. Local anonymizer is screening secure reports.
+                        </span>
+                      </div>
+                      <div className="p-2 hover:bg-slate-50 rounded-lg text-[10px] font-semibold text-slate-700 leading-relaxed border border-slate-50 flex items-start gap-2">
+                        <MapPin size={14} className="text-[#4F46E5] shrink-0 mt-0.5" />
+                        <span>
+                          Merti Sanctuary and County Office telemetry directories mapped.
+                        </span>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => setShowNotifications(false)}
+                      className="w-full text-center text-[9px] uppercase tracking-widest text-[#4F46E5] font-extrabold pt-1.5 border-t border-slate-100 hover:text-purple-dark text-slate-400"
+                    >
+                      Dismiss
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* 👤 Profile with Google User Avatar */}
+            <Link 
+              to="/profile"
+              className="w-8 h-8 rounded-full overflow-hidden border border-slate-201 flex items-center justify-center text-slate-600 hover:border-[#4F46E5] transition-colors shrink-0"
+              title="User Profile"
+            >
+              {user?.photoURL ? (
+                <img src={user.photoURL} alt="Profile" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+              ) : (
+                <User size={16} />
+              )}
+            </Link>
+
             <button 
               onClick={() => setIsMenuOpen(true)}
-              className="w-9 h-9 hover:bg-slate-100 rounded-xl flex items-center justify-center text-slate-800 transition-colors relative"
-              title="Quick Portal Desk"
+              className="w-9 h-9 hover:bg-slate-100 rounded-xl flex items-center justify-center text-slate-850 transition-colors relative"
+              title="More Options"
             >
               <Menu size={20} />
               {profile && profile.role !== 'User' && (
@@ -204,7 +288,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               transition={{ type: 'spring', damping: 28, stiffness: 220 }}
               className="fixed top-0 right-0 bottom-0 w-[270px] bg-white border-l border-slate-150 shadow-2xl z-[110] flex flex-col p-5"
             >
-              <div className="flex justify-between items-center pb-3 border-b border-slate-150 mb-4">
+              <div className="flex justify-between items-center pb-3 border-b border-slate-150 mb-4 shrink-0">
                 <div className="flex items-center gap-2">
                   <div className="w-6 h-6 bg-[#4F46E5] rounded-lg flex items-center justify-center text-white text-xs font-extrabold">B</div>
                   <h3 className="font-display font-extrabold text-xs text-slate-950 uppercase tracking-widest">Bonga Box</h3>
@@ -216,43 +300,73 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
 
               <div className="space-y-4 flex-grow overflow-y-auto pr-1">
                 <div>
-                  <p className="text-[10px] font-extrabold text-text-dim uppercase tracking-widest mb-2 px-1">Primary Safety Channels</p>
-                  <div className="space-y-1">
-                    <Link 
-                      to="/" 
-                      onClick={() => setIsMenuOpen(false)}
-                      className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 text-xs font-bold text-slate-800 transition-colors"
-                    >
-                      <span>Daily Status Monitor</span>
-                      <ChevronRight size={14} className="text-slate-400" />
-                    </Link>
-
-                    <Link 
-                      to="/report" 
-                      onClick={() => setIsMenuOpen(false)}
-                      className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 text-xs font-bold text-slate-800 transition-colors"
-                    >
-                      <span>Secure Bonga Report</span>
-                      <ChevronRight size={14} className="text-slate-400" />
-                    </Link>
-
+                  <p className="text-[10px] font-extrabold text-[#4F46E5] uppercase tracking-widest mb-2 px-1">More Options</p>
+                  <div className="space-y-0.5">
                     <Link 
                       to="/alerts" 
                       onClick={() => setIsMenuOpen(false)}
-                      className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 text-xs font-bold text-slate-800 transition-colors"
+                      className="flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-slate-50 text-xs font-bold text-slate-800 transition-colors"
                     >
-                      <span>Telemetry Alert Map</span>
-                      <ChevronRight size={14} className="text-slate-400" />
+                      <Landmark size={14} className="text-emerald-500" />
+                      <span>Safe Houses</span>
+                      <ChevronRight size={12} className="text-slate-400 ml-auto" />
+                    </Link>
+
+                    <Link 
+                      to="/donate" 
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-slate-50 text-xs font-bold text-slate-800 transition-colors"
+                    >
+                      <Coins size={14} className="text-indigo-500" />
+                      <span>Donate</span>
+                      <ChevronRight size={12} className="text-slate-400 ml-auto" />
                     </Link>
 
                     <Link 
                       to="/resources" 
                       onClick={() => setIsMenuOpen(false)}
-                      className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 text-xs font-bold text-slate-800 transition-colors"
+                      className="flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-slate-50 text-xs font-bold text-slate-800 transition-colors"
                     >
-                      <span>Educational Routes</span>
-                      <ChevronRight size={14} className="text-slate-400" />
+                      <BookOpen size={14} className="text-purple-primary" />
+                      <span>Learning Hub</span>
+                      <ChevronRight size={12} className="text-slate-400 ml-auto" />
                     </Link>
+
+                    <Link 
+                      to="/history" 
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-slate-50 text-xs font-bold text-slate-800 transition-colors"
+                    >
+                      <History size={14} className="text-slate-500" />
+                      <span>My Cases</span>
+                      <ChevronRight size={12} className="text-slate-400 ml-auto" />
+                    </Link>
+
+                    {/* Interactive Simulated Language Action Selector */}
+                    <button 
+                      onClick={() => {
+                        const nextLang = currentLanguage === 'EN' ? 'SW' : 'EN';
+                        setCurrentLanguage(nextLang);
+                        alert(`Language switched to ${nextLang === 'EN' ? 'English' : 'Kiswahili'}.`);
+                      }}
+                      className="w-full flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-slate-50 text-xs font-bold text-slate-800 transition-colors text-left"
+                    >
+                      <Globe size={14} className="text-blue-500" />
+                      <span>Language: {currentLanguage === 'EN' ? 'English (EN)' : 'Kiswahili (SW)'}</span>
+                      <span className="text-[8px] font-extrabold bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded ml-auto">Swap</span>
+                    </button>
+
+                    {/* Interactive Simulated Security Level Indicator Toggle */}
+                    <button 
+                      onClick={() => {
+                        alert("Safeguards configuration: Multi-hop encryption routing is enabled by default to protect children coordinates.");
+                      }}
+                      className="w-full flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-slate-50 text-xs font-bold text-slate-800 transition-colors text-left"
+                    >
+                      <Settings size={14} className="text-slate-500" />
+                      <span>Box Settings</span>
+                      <span className="text-[8px] font-extrabold bg-emerald-50 text-emerald-600 px-1.5 py-0.5 rounded ml-auto">SECURE</span>
+                    </button>
                   </div>
                 </div>
 
@@ -267,7 +381,9 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                           onClick={() => setIsMenuOpen(false)}
                           className="flex items-center justify-between p-2.5 rounded-xl bg-orange-50 text-orange-900 border border-orange-200/50 text-xs font-extrabold hover:bg-orange-100/60"
                         >
-                          <span>County Admin Control</span>
+                          <span className="flex items-center gap-1.5">
+                            <ShieldCheck size={13} /> Admin Panel
+                          </span>
                           <ChevronRight size={14} />
                         </Link>
                       )}
@@ -338,7 +454,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       </main>
 
       {/* Floating Modern Native-style bottom Navigation bar ONLY visible on Mobile standard screen ports */}
-      <div className="md:hidden fixed bottom-4 inset-x-4 bg-white/95 backdrop-blur-md border border-slate-200/60 py-2.5 px-2 flex justify-around items-center rounded-2xl shadow-lg z-40 select-none">
+      <div className="md:hidden fixed bottom-4 inset-x-4 bg-white/95 backdrop-blur-md border border-slate-200/60 py-2.5 px-2 flex justify-around items-center rounded-2xl shadow-lg z-40 select-none animate-fadeIn">
         <Link 
           to="/" 
           className={`flex flex-col items-center justify-center gap-1 w-14 transition-all ${
@@ -350,33 +466,33 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         </Link>
 
         <Link 
-          to="/history" 
+          to="/report" 
           className={`flex flex-col items-center justify-center gap-1 w-14 transition-all ${
-            activeTab === 'history' ? 'text-[#4F46E5] scale-105 font-bold' : 'text-slate-400 hover:text-slate-600'
+            activeTab === 'report' ? 'text-[#4F46E5] scale-105 font-bold' : 'text-slate-400 hover:text-slate-600'
           }`}
         >
-          <History size={18} />
-          <span className="text-[9px] font-bold uppercase tracking-tight">History</span>
+          <FileText size={18} />
+          <span className="text-[9px] font-bold uppercase tracking-tight">Report</span>
         </Link>
 
         <Link 
-          to="/alerts" 
+          to="/support" 
           className={`flex flex-col items-center justify-center gap-1 w-14 transition-all ${
-            activeTab === 'lost' ? 'text-[#4F46E5] scale-105 font-bold' : 'text-slate-400 hover:text-slate-600'
+            activeTab === 'support' ? 'text-[#4F46E5] scale-105 font-bold' : 'text-slate-400 hover:text-slate-600'
           }`}
         >
-          <Compass size={18} />
-          <span className="text-[9px] font-bold uppercase tracking-tight">Lost</span>
+          <HeartHandshake size={18} />
+          <span className="text-[9px] font-bold uppercase tracking-tight">Support</span>
         </Link>
 
         <Link 
           to="/resources" 
           className={`flex flex-col items-center justify-center gap-1 w-14 transition-all ${
-            activeTab === 'resources' ? 'text-[#4F46E5] scale-105 font-bold' : 'text-slate-400 hover:text-slate-600'
+            activeTab === 'alerts' ? 'text-[#4F46E5] scale-105 font-bold' : 'text-slate-400 hover:text-slate-600'
           }`}
         >
-          <BookOpen size={18} />
-          <span className="text-[9px] font-bold uppercase tracking-tight">Routes</span>
+          <AlertTriangle size={18} />
+          <span className="text-[9px] font-bold uppercase tracking-tight">Alerts</span>
         </Link>
 
         <Link 
@@ -389,6 +505,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           <span className="text-[9px] font-bold uppercase tracking-tight">Profile</span>
         </Link>
       </div>
+      <Onboarding />
     </div>
   );
 };

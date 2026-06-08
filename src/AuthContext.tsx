@@ -35,7 +35,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (docSnap.exists()) {
       setProfile(docSnap.data() as UserProfile);
     } else {
-      const isAdminEmail = currentUser.email === "mohamed.lakicha@gmail.com";
+      const isAdminEmail = currentUser.email === "mohamed.lakicha@gmail.com" || currentUser.email === "profkoch.theo@gmail.com";
       const newProfile: UserProfile = {
         uid: currentUser.uid,
         email: currentUser.email || '',

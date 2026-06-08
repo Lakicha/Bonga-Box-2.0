@@ -23,13 +23,13 @@ service cloud.firestore {
       return isSignedIn() && 
         ((exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin') ||
-         (request.auth.token.email == "mohamed.lakicha@gmail.com" && request.auth.token.email_verified == true));
+         (request.auth.token.email in ["mohamed.lakicha@gmail.com", "profkoch.theo@gmail.com"] && request.auth.token.email_verified == true));
     }
     
     function isAuthorizedRole() {
-      return isSignedIn() && 
+      return isAdmin() || (isSignedIn() && 
         exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['Admin', 'Mentor/Teacher', 'Protection Officer', 'Disaster Management Officer'];
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['Admin', 'Mentor/Teacher', 'Protection Officer', 'Disaster Management Officer']);
     }
 
     function isValidId(id) {
@@ -50,18 +50,23 @@ service cloud.firestore {
     }
 
     function isValidReport(data) {
-      return data.keys().hasAll(['category', 'location', 'description', 'status', 'timestamp']) &&
-             data.keys().size() <= 10 &&
+      return data.keys().hasAll(['category', 'location', 'description', 'status']) &&
+             data.keys().size() <= 15 &&
              data.category in ['FGM Risk', 'Flood Alert', 'Emergency', 'Other'] &&
              data.status in ['Pending', 'In Progress', 'Resolved'] &&
              data.description is string &&
              data.description.size() <= 5000 &&
              data.location is string &&
              data.location.size() <= 1000 &&
+             (!('timestamp' in data) || (data.timestamp is timestamp || data.timestamp == null)) &&
              (!('photoURL' in data) || (data.photoURL is string && data.photoURL.size() <= 1024)) &&
              (!('voiceNoteURL' in data) || (data.voiceNoteURL is string && data.voiceNoteURL.size() <= 1024)) &&
              (!('isAnonymous' in data) || data.isAnonymous is bool) &&
-             (!('authorUid' in data) || data.authorUid == null || (data.authorUid is string && data.authorUid.size() <= 128));
+             (!('authorUid' in data) || data.authorUid == null || (data.authorUid is string && data.authorUid.size() <= 128)) &&
+             (!('resolvedAt' in data) || (data.resolvedAt is timestamp || data.resolvedAt == null)) &&
+             (!('assignedOfficer' in data) || (data.assignedOfficer is string && data.assignedOfficer.size() <= 128)) &&
+             (!('schoolId' in data) || (data.schoolId is string && data.schoolId.size() <= 128)) &&
+             (!('numberOfGirls' in data) || (data.numberOfGirls is int || data.numberOfGirls is number));
     }
 
     function isValidAlert(data) {
@@ -92,9 +97,7 @@ service cloud.firestore {
     }
 
     match /reports/{reportId} {
-      allow get: if isAuthorizedRole() || 
-                    (isSignedIn() && resource.data.authorUid == request.auth.uid) ||
-                    (resource.data.isAnonymous == true);
+      allow get: if true;
       allow list: if isAuthorizedRole() || (isSignedIn() && resource.data.authorUid == request.auth.uid);
       allow create: if isValidReport(request.resource.data);
       allow update: if isAuthorizedRole() && isValidReport(request.resource.data);

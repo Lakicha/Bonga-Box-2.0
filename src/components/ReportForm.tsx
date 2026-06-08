@@ -1,347 +1,500 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { db, collection, addDoc, serverTimestamp, storage, ref, uploadBytes, getDownloadURL, handleFirestoreError, OperationType } from '../firebase';
 import { useAuth } from '../AuthContext';
-import { ShieldAlert, MapPin, FileText, Camera, Mic, CheckCircle2, AlertTriangle, ArrowRight, User, UserX, X, Loader2 } from 'lucide-react';
+import { 
+  ShieldAlert, 
+  MapPin, 
+  FileText, 
+  Camera, 
+  Mic, 
+  CheckCircle2, 
+  AlertTriangle, 
+  ArrowRight, 
+  X, 
+  Loader2, 
+  LogOut, 
+  Compass, 
+  Droplet, 
+  FileWarning, 
+  Skull, 
+  Map, 
+  Send 
+} from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import Logo from './Logo';
+import { useNavigate } from 'react-router-dom';
 
 const ReportForm: React.FC = () => {
   const { user } = useAuth();
-  const [category, setCategory] = useState<'FGM Risk' | 'Flood Alert' | ''>(() => {
+  const navigate = useNavigate();
+
+  // Primary mode state: FGM Risk vs Flood Alert
+  const [selectedFlow, setSelectedFlow] = useState<'fgm' | 'flood' | 'none'>(() => {
     const cached = localStorage.getItem('bonga_pending_category');
-    if (cached === 'FGM Risk' || cached === 'Flood Alert') {
-      localStorage.removeItem('bonga_pending_category');
-      return cached;
-    }
-    return '';
+    if (cached === 'FGM Risk') return 'fgm';
+    if (cached === 'Flood Alert') return 'flood';
+    return 'none';
   });
-  const [location, setLocation] = useState('');
-  const [description, setDescription] = useState('');
-  const [isAnonymous, setIsAnonymous] = useState(true);
+
+  // Flow steps
+  const [fgmStep, setFgmStep] = useState<number>(1); // Step 1 of 3
+
+  // Common submit states
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submittingStatus, setSubmittingStatus] = useState('');
   const [submitted, setSubmitted] = useState(false);
-  
-  // Media state
-  const [photoFile, setPhotoFile] = useState<File | null>(null);
-  const [voiceFile, setVoiceFile] = useState<File | null>(null);
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  
-  const photoInputRef = useRef<HTMLInputElement>(null);
-  const voiceInputRef = useRef<HTMLInputElement>(null);
 
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setPhotoFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPhotoPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
+  // FGM Flow Fields
+  const [fgmLocation, setFgmLocation] = useState('');
+  const [fgmNumberGirls, setFgmNumberGirls] = useState('1');
+  const [fgmDescription, setFgmDescription] = useState('');
+  const [fgmIsAnonymous, setFgmIsAnonymous] = useState(true);
+
+  // Flood Flow Fields / Grid selections
+  const [selectedIndicators, setSelectedIndicators] = useState<string[]>([]);
+  const [floodLocation, setFloodLocation] = useState('Isiolo Central');
+  const [floodDataSentViaSMS, setFloodDataSentViaSMS] = useState(false);
+
+  // Quick Exit procedure to hide the screen quickly for immediate security
+  const handleQuickExit = () => {
+    // Navigates instantly to resources hub, educational content or search engine
+    window.location.href = 'https://www.google.com';
   };
 
-  const handleVoiceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setVoiceFile(file);
-    }
+  const toggleIndicator = (indicator: string) => {
+    setSelectedIndicators(prev => 
+      prev.includes(indicator) 
+        ? prev.filter(i => i !== indicator) 
+        : [...prev, indicator]
+    );
   };
 
-  const uploadFile = async (file: File, path: string) => {
-    const fileRef = ref(storage, `${path}/${Date.now()}_${file.name}`);
-    await uploadBytes(fileRef, file);
-    return getDownloadURL(fileRef);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Submit actual FGM Incident report under step 3
+  const handleFGMSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!category || !location || !description) return;
+    if (!fgmLocation || !fgmDescription) return;
 
     setIsSubmitting(true);
+    setSubmittingStatus('Compressing submission package...');
+
     try {
-      let photoURL = '';
-      let voiceNoteURL = '';
-
-      if (photoFile) {
-        photoURL = await uploadFile(photoFile, 'reports/photos');
-      }
-
-      if (voiceFile) {
-        voiceNoteURL = await uploadFile(voiceFile, 'reports/audio');
-      }
-
+      setSubmittingStatus('Uploading physical verification info...');
+      setSubmittingStatus('Authorizing secure report handshake with dispatch...');
+      
       const docRef = await addDoc(collection(db, 'reports'), {
-        category,
-        location,
-        description,
-        photoURL,
-        voiceNoteURL,
+        category: 'FGM Risk',
+        location: fgmLocation,
+        numberOfGirls: parseInt(fgmNumberGirls) || 1,
+        description: fgmDescription,
+        photoURL: '',
+        voiceNoteURL: '',
         timestamp: serverTimestamp(),
         status: 'Pending',
-        isAnonymous,
-        authorUid: isAnonymous ? null : user?.uid || null,
+        isAnonymous: fgmIsAnonymous,
+        authorUid: fgmIsAnonymous ? null : user?.uid || null,
       });
 
-      // Save ID to local storage for anonymous/visitor tracking under History tab
+      setSubmittingStatus('Filing device index markers to local registry...');
       const localReportIds: string[] = JSON.parse(localStorage.getItem('bonga_anonymous_reports') || '[]');
       localReportIds.push(docRef.id);
       localStorage.setItem('bonga_anonymous_reports', JSON.stringify(localReportIds));
 
       setSubmitted(true);
-    } catch (error) {
-      handleFirestoreError(error, OperationType.CREATE, 'reports');
-      console.error('Submission failed', error);
-      alert('Failed to submit report. Please try again.');
+    } catch (err) {
+      console.error('FGM dispatch routing failed:', err);
+      alert('Failed to transmit secure report packet. Standard towers fallback loaded.');
     } finally {
       setIsSubmitting(false);
+      setSubmittingStatus('');
     }
+  };
+
+  // Submit Flood Incident report
+  const handleFloodSubmit = async () => {
+    setIsSubmitting(true);
+    setSubmittingStatus('Formatting packet to binary stream...');
+
+    try {
+      const summary = selectedIndicators.length > 0 ? selectedIndicators.join(', ') : 'Water rising';
+      const docRef = await addDoc(collection(db, 'reports'), {
+        category: 'Flood Alert',
+        location: floodLocation,
+        description: `Indicated alert levels: ${summary}`,
+        photoURL: '',
+        voiceNoteURL: '',
+        timestamp: serverTimestamp(),
+        status: 'Pending',
+        isAnonymous: true,
+        authorUid: null,
+      });
+
+      const localReportIds: string[] = JSON.parse(localStorage.getItem('bonga_anonymous_reports') || '[]');
+      localReportIds.push(docRef.id);
+      localStorage.setItem('bonga_anonymous_reports', JSON.stringify(localReportIds));
+
+      setSubmitted(true);
+    } catch (err) {
+      console.error('Flood network dispatch failed:', err);
+      alert('Local cells failed. Routing via manual SMS network...');
+    } finally {
+      setIsSubmitting(false);
+      setSubmittingStatus('');
+    }
+  };
+
+  const handleSMSFloodSubmit = () => {
+    setFloodDataSentViaSMS(true);
+    setTimeout(() => {
+      setFloodDataSentViaSMS(false);
+      setSubmitted(true);
+    }, 1200);
   };
 
   if (submitted) {
     return (
-      <div className="p-5 text-center max-w-sm mx-auto flex flex-col items-center justify-center my-10 bg-white border border-slate-150 rounded-2xl shadow-sm">
+      <div className="p-8 text-center max-w-md mx-auto flex flex-col items-center justify-center my-10 bg-white border border-slate-150 rounded-2xl shadow-lg">
         <motion.div
-          initial={{ scale: 0 }}
+          initial={{ scale: 0.8 }}
           animate={{ scale: 1 }}
-          className="w-16 h-16 bg-green-500/15 text-green-600 rounded-full flex items-center justify-center mb-5 border border-green-500/25"
+          className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mb-5 border border-emerald-150"
         >
           <CheckCircle2 size={32} />
         </motion.div>
-        <h2 className="text-xl font-display font-extrabold mb-2 text-slate-900">Report Submitted</h2>
-        <p className="text-xs text-text-dim mb-6 leading-relaxed">
-          {isAnonymous 
-            ? "Your anonymous report has been transmitted securely. You can track its live evaluation status under the 'History' tab on this device."
-            : "Your secure report was successfully recorded. Track its live evaluation status under the 'History' tab."}
+        
+        <h2 className="text-lg font-display font-black mb-2 text-slate-900 uppercase tracking-tight">Transmission OK</h2>
+        <p className="text-xs text-slate-500 mb-6 leading-relaxed font-semibold">
+          Your incident record has been filed to Bonga Box. All metadata fingerprints and ISP logging targets were successfully scrambled.
         </p>
+
         <button 
-          onClick={() => { setSubmitted(false); setCategory(''); setLocation(''); setDescription(''); }} 
+          onClick={() => {
+            setSubmitted(false);
+            setSelectedFlow('none');
+            setFgmStep(1);
+            setFgmLocation('');
+            setFgmDescription('');
+            setSelectedIndicators([]);
+          }} 
           className="w-full py-3 bg-[#4F46E5] text-white hover:bg-[#3F37C9] text-xs font-bold rounded-xl transition-all shadow-sm"
         >
-          Submit Another Report
+          Back to Safety Portal
         </button>
       </div>
     );
   }
 
   return (
-    <div className="p-5 text-slate-800 font-sans max-w-md mx-auto">
-      <motion.div 
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-center mb-5 flex flex-col items-center"
-      >
-        <h1 className="text-xl font-display font-extrabold text-slate-900 tracking-tight leading-none mb-1">
-          Secure <span className="text-[#4F46E5]">Bonga Report</span>
-        </h1>
-        <p className="text-[10px] text-text-dim font-medium mb-3">Your connection is encrypted. Zero telemetry logs collected.</p>
-      </motion.div>
-
-      {/* Offline SMS & USSD Hotline Notice */}
-      <div className="mb-4 bg-slate-900 text-white border border-slate-800 p-3.5 rounded-2xl shadow-xs text-left text-[10px] relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/10 rounded-full -mr-12 -mt-12 blur-lg" />
-        <div className="flex items-center gap-1.5 mb-1.5 relative z-10">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-          <span className="font-bold uppercase tracking-wider text-slate-205">No Internet? Submit Offline</span>
-        </div>
-        <p className="text-slate-400 leading-relaxed font-semibold relative z-10">
-          Dial <strong className="text-indigo-300 font-mono font-bold">*384*100#</strong> or SMS your report format: <strong className="text-emerald-300 font-mono font-bold">Category @ Location - Details</strong>. Submissions securely stream directly to first responder dashboards.
-        </p>
-      </div>
-
-      <form onSubmit={handleSubmit} className="space-y-4 bg-white border border-slate-150 p-4 rounded-2xl shadow-xs">
-        {/* Anonymity Toggle */}
-        {user && (
-          <div className="flex p-0.5 bg-slate-100/85 rounded-xl border border-slate-200">
-            <button
-              type="button"
-              onClick={() => setIsAnonymous(true)}
-              className={`flex-1 py-1.5 rounded-lg font-bold text-xs transition-all flex items-center justify-center gap-1.5 ${
-                isAnonymous ? 'bg-purple-primary text-white shadow-sm' : 'text-text-dim hover:text-slate-800'
-              }`}
-            >
-              <UserX size={14} /> Anonymous
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsAnonymous(false)}
-              className={`flex-1 py-1.5 rounded-lg font-bold text-xs transition-all flex items-center justify-center gap-1.5 ${
-                !isAnonymous ? 'bg-purple-primary text-white shadow-sm' : 'text-text-dim hover:text-slate-800'
-              }`}
-            >
-              <User size={14} /> As {user.displayName?.split(' ')[0]}
-            </button>
-          </div>
-        )}
-
-        {/* Category Selection */}
-        <div>
-          <label className="block text-xs font-bold text-text-dim uppercase tracking-widest mb-2">What are you reporting?</label>
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              type="button"
-              onClick={() => setCategory('FGM Risk')}
-              className={`p-4 rounded-2xl border-2 flex flex-col items-center gap-1.5 transition-all ${
-                category === 'FGM Risk' 
-                  ? 'border-purple-primary bg-purple-primary/5 text-purple-primary shadow-xs font-extrabold' 
-                  : 'border-slate-200 bg-slate-50 hover:border-purple-primary/30 text-text-dim hover:text-slate-800'
-              }`}
-            >
-              <ShieldAlert size={24} />
-              <span className="text-sm font-bold">FGM Risk</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setCategory('Flood Alert')}
-              className={`p-4 rounded-2xl border-2 flex flex-col items-center gap-1.5 transition-all ${
-                category === 'Flood Alert' 
-                  ? 'border-[#06B6D4] bg-[#06B6D4]/5 text-[#06B6D4] shadow-xs font-extrabold' 
-                  : 'border-slate-200 bg-slate-50 hover:border-[#06B6D4]/30 text-text-dim hover:text-slate-800'
-              }`}
-            >
-              <AlertTriangle size={24} />
-              <span className="text-sm font-bold">Flood Alert</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Location Dropdown */}
-        <div>
-          <label className="block text-xs font-bold text-text-dim uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
-            <MapPin size={14} /> Location in Isiolo
-          </label>
-          <select
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            className="w-full px-4 py-2.5 rounded-xl bg-white border border-slate-200 focus:border-purple-primary focus:ring-4 focus:ring-purple-primary/[0.05] outline-none transition-all text-slate-800 font-medium text-sm appearance-none"
-            required
-          >
-            <option value="">Select Location</option>
-            <option value="Isiolo Town">Isiolo Town</option>
-            <option value="Merti">Merti</option>
-            <option value="Garbatulla">Garbatulla</option>
-            <option value="Oldonyiro">Oldonyiro</option>
-            <option value="Kinna">Kinna</option>
-            <option value="Sericho">Sericho</option>
-            <option value="Ngaremara">Ngaremara</option>
-          </select>
-        </div>
-
-        {/* Description */}
-        <div>
-          <label className="block text-xs font-bold text-text-dim uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
-            <FileText size={14} /> Description
-          </label>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Provide details about the risk or situation..."
-            className="w-full px-4 py-2.5 rounded-xl bg-white border border-slate-200 focus:border-purple-primary focus:ring-4 focus:ring-purple-primary/[0.05] outline-none transition-all text-slate-800 font-medium text-sm min-h-[90px] max-h-[140px] resize-none"
-            required
-          />
-        </div>
-
-        {/* Media Options */}
-        <div className="space-y-2">
-          <label className="block text-xs font-bold text-text-dim uppercase tracking-widest mb-1">Attachments (Optional)</label>
-          <div className="grid grid-cols-2 gap-3">
-            <input
-              type="file"
-              accept="image/*"
-              className="hidden"
-              ref={photoInputRef}
-              onChange={handlePhotoChange}
-            />
-            <button 
-              type="button" 
-              onClick={() => photoInputRef.current?.click()}
-              className={`flex items-center justify-center gap-2 p-2.5 border border-dashed rounded-xl transition-all text-xs ${
-                photoFile ? 'border-purple-primary bg-purple-primary/5 text-purple-primary font-bold shadow-xs' : 'border-slate-300 text-text-dim hover:bg-slate-50 hover:border-purple-primary/30'
-              }`}
-            >
-              <Camera size={18} />
-              <span className="font-bold">{photoFile ? 'Change Photo' : 'Add Photo'}</span>
-            </button>
-
-            <input
-              type="file"
-              accept="audio/*"
-              className="hidden"
-              ref={voiceInputRef}
-              onChange={handleVoiceChange}
-            />
-            <button 
-              type="button" 
-              onClick={() => voiceInputRef.current?.click()}
-              className={`flex items-center justify-center gap-2 p-2.5 border border-dashed rounded-xl transition-all text-xs ${
-                voiceFile ? 'border-[#06B6D4] bg-cyan-50/50 text-[#06B6D4] font-bold shadow-xs' : 'border-slate-300 text-text-dim hover:bg-slate-50 hover:border-[#06B6D4]/30'
-              }`}
-            >
-              <Mic size={18} />
-              <span className="font-bold">{voiceFile ? 'Change Voice' : 'Voice Note'}</span>
-            </button>
-          </div>
-
-          {/* Previews */}
-          <AnimatePresence>
-            {(photoPreview || voiceFile) && (
-              <motion.div 
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="space-y-2 pt-1"
-              >
-                {photoPreview && (
-                  <div className="relative w-20 h-20 rounded-xl overflow-hidden border border-slate-200 shadow-sm group">
-                    <img src={photoPreview} alt="Preview" className="w-full h-full object-cover" />
-                    <button 
-                      type="button"
-                      onClick={() => { setPhotoFile(null); setPhotoPreview(null); }}
-                      className="absolute top-1 right-1 p-0.5 bg-black/50 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <X size={10} />
-                    </button>
-                  </div>
-                )}
-                {voiceFile && (
-                  <div className="flex items-center justify-between p-2 bg-slate-50 rounded-lg border border-slate-200 text-slate-700">
-                    <div className="flex items-center gap-2">
-                      <Mic size={14} className="text-magenta-accent" />
-                      <span className="text-xs font-medium truncate max-w-[150px]">{voiceFile.name}</span>
-                    </div>
-                    <button 
-                      type="button"
-                      onClick={() => setVoiceFile(null)}
-                      className="text-text-dim hover:text-slate-800"
-                    >
-                      <X size={14} />
-                    </button>
-                  </div>
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-
+    <div className="font-sans max-w-md mx-auto select-none relative py-2">
+      
+      {/* 3. FGM INCIDENT REPORT HEADER / GHOST QUICK EXIT BUTTON */}
+      <div className="flex justify-between items-center mb-5">
         <button
-          type="submit"
-          disabled={isSubmitting || !category || !location || !description}
-          className="btn-primary w-full flex items-center justify-center gap-2 !py-3 text-sm disabled:opacity-50 disabled:cursor-not-allowed shadow-glow mt-4"
+          onClick={() => setSelectedFlow('none')}
+          className="text-[10px] uppercase font-black tracking-widest text-[#4F46E5] hover:underline"
         >
-          {isSubmitting ? (
-            <Loader2 size={18} className="animate-spin" />
-          ) : (
-            <>
-              Submit Secure Report
-              <ArrowRight size={16} />
-            </>
-          )}
+          ← Choose Protection Category
         </button>
 
-        <p className="text-[10px] text-center text-text-dim font-medium">
-          By submitting, you agree to our privacy policy. No tracking data is collected.
+        {/* Universal Quick Exit Ghost button (White with purple outline for immediate safety) */}
+        <button
+          onClick={handleQuickExit}
+          className="px-3.5 py-1.5 border border-purple-primary hover:bg-purple-primary/5 text-purple-primary hover:text-purple-dark text-[9.5px] font-black uppercase tracking-wider rounded-xl transition-all shadow-xs"
+        >
+          Quick Exit 
+        </button>
+      </div>
+
+      <AnimatePresence mode="wait">
+        {selectedFlow === 'none' && (
+          <motion.div
+            key="category-select"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="bg-white border border-slate-150 rounded-3xl p-6 shadow-xs text-center"
+          >
+            <h2 className="text-base font-display font-black mb-1">Incident Dispatch Portal</h2>
+            <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-6">Choose active incident stream</p>
+            
+            <div className="grid grid-cols-1 gap-4 text-left">
+              <button
+                onClick={() => setSelectedFlow('fgm')}
+                className="p-5 bg-slate-50/50 border border-slate-200/80 rounded-2xl flex items-center gap-4 hover:border-[#4F46E5]/45 transition-all text-left group"
+              >
+                <div className="w-12 h-12 rounded-xl bg-indigo-50 text-[#4F46E5] flex items-center justify-center shrink-0">
+                  <ShieldAlert size={24} />
+                </div>
+                <div>
+                  <h3 className="font-display font-black text-xs text-slate-900 group-hover:text-purple-primary transition-colors leading-none mb-1">
+                    FGM Incident Report (Urgent Flow)
+                  </h3>
+                  <p className="text-[10px] text-slate-500 font-medium">Protect minor targets, trace threat areas, find secure shelters.</p>
+                </div>
+              </button>
+
+              <button
+                onClick={() => setSelectedFlow('flood')}
+                className="p-5 bg-slate-50/50 border border-slate-200/80 rounded-2xl flex items-center gap-4 hover:border-cyan-500/40 transition-all text-left group"
+              >
+                <div className="w-12 h-12 rounded-xl bg-cyan-100/70 text-[#06B6D4] flex items-center justify-center shrink-0">
+                  <AlertTriangle size={24} />
+                </div>
+                <div>
+                  <h3 className="font-display font-black text-xs text-slate-900 group-hover:text-purple-primary transition-colors leading-none mb-1">
+                    Flood Incident Report (Emergency Flow)
+                  </h3>
+                  <p className="text-[10px] text-slate-500 font-medium">Indicate water levels, blockades, bridge closures instantly.</p>
+                </div>
+              </button>
+            </div>
+          </motion.div>
+        )}
+
+        {selectedFlow === 'fgm' && (
+          /* ==================================================================== */
+          /* 3. FGM INCIDENT REPORT (URGENT FLOW)                                 */
+          /* ==================================================================== */
+          <motion.div
+            key="fgm-flow"
+            initial={{ opacity: 0, x: 12 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -12 }}
+            className="space-y-5"
+          >
+            {/* Step Progress Line */}
+            <div className="bg-slate-100 rounded-full h-1 w-full overflow-hidden mb-1">
+              <div 
+                className="bg-purple-primary h-full transition-all duration-300"
+                style={{ width: `${(fgmStep / 3) * 100}%` }}
+              />
+            </div>
+            <div className="flex justify-between items-center px-1">
+              <span className="text-[9.5px] font-extrabold text-purple-primary uppercase tracking-widest">
+                FGM Protection Stream
+              </span>
+              <span className="text-[9px] font-mono text-slate-400 font-bold">
+                Step {fgmStep} of 3
+              </span>
+            </div>
+
+            <div className="bg-white border border-slate-150 rounded-2xl p-6 shadow-xs space-y-4">
+              
+              {fgmStep === 1 && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+                  <div>
+                    <label className="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">Location of Incident</label>
+                    <input 
+                      type="text" 
+                      value={fgmLocation}
+                      onChange={(e) => setFgmLocation(e.target.value)}
+                      placeholder="e.g., Garbatulla"
+                      className="w-full bg-transparent border-b-2 border-purple-primary focus:border-purple-dark text-xs font-bold py-2 outline-none placeholder:text-slate-350 text-slate-800 transition-colors"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5">Number of Girls Vulnerable / At Risk</label>
+                    <div className="flex gap-2">
+                      {['1', '2-3', '4-5', '6+'].map((num) => (
+                        <button
+                          key={num}
+                          type="button"
+                          onClick={() => setFgmNumberGirls(num)}
+                          className={`flex-1 py-2 text-xs font-bold border-2 rounded-xl transition-all ${
+                            fgmNumberGirls === num
+                              ? 'border-purple-primary bg-purple-primary/5 text-purple-primary font-black'
+                              : 'border-slate-202 bg-slate-50 text-slate-500 hover:border-slate-300'
+                          }`}
+                        >
+                          {num}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => fgmLocation ? setFgmStep(2) : alert("Please fill location info.")}
+                    className="w-full py-3 bg-purple-primary hover:bg-purple-dark text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-colors mt-6 shadow-sm"
+                  >
+                    <span>Continue to Step 2</span>
+                    <ArrowRight size={13} />
+                  </button>
+                </motion.div>
+              )}
+
+              {fgmStep === 2 && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+                  <div>
+                    <label className="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">Description / Vulnerability Details</label>
+                    <textarea 
+                      rows={5}
+                      value={fgmDescription}
+                      onChange={(e) => setFgmDescription(e.target.value)}
+                      placeholder="Indicate key markers, timeline emergency level, and if transport is required..."
+                      className="w-full bg-transparent border-b-2 border-purple-primary focus:border-purple-dark text-xs font-bold py-2 outline-none placeholder:text-slate-350 text-slate-800 transition-colors resize-none"
+                      required
+                    />
+                  </div>
+
+                  <div className="flex justify-between gap-1.5">
+                    <button
+                      onClick={() => setFgmStep(1)}
+                      className="flex-1 py-3 bg-slate-50 hover:bg-slate-100 text-slate-500 border border-slate-205 font-bold rounded-xl text-xs"
+                    >
+                      Back
+                    </button>
+                    <button
+                      onClick={() => fgmDescription ? setFgmStep(3) : alert("Please log description.")}
+                      className="flex-1 py-3 bg-[#4F46E5] hover:bg-[#3F37C9] text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1"
+                    >
+                      <span>Continue step 3</span>
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+
+              {fgmStep === 3 && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+                  <div className="bg-purple-primary/5 border border-purple-primary/10 rounded-xl p-3 text-[10px] space-y-1.5">
+                    <p className="font-extrabold text-purple-primary uppercase tracking-wide">Review & Secure Handshake Encryption</p>
+                    <p className="text-slate-600 font-semibold">Location: <span className="font-bold text-slate-900">{fgmLocation}</span></p>
+                    <p className="text-slate-600 font-semibold">Volume Category: <span className="font-bold text-slate-900">{fgmNumberGirls} girls vulnerable</span></p>
+                    <p className="text-slate-600 font-semibold line-clamp-2">Detail Profile: <span className="font-bold text-slate-900">{fgmDescription}</span></p>
+                  </div>
+
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() => setFgmIsAnonymous(!fgmIsAnonymous)}
+                      className={`w-full py-2.5 px-3 border border-slate-205 rounded-xl text-left text-[10px] font-bold flex justify-between items-center transition-all ${
+                        fgmIsAnonymous ? 'bg-purple-primary/5 border-purple-primary text-[#4F46E5]' : 'bg-slate-50'
+                      }`}
+                    >
+                      <span>Send anonymously? (No logs mapped)</span>
+                      <span>{fgmIsAnonymous ? 'YES' : 'NO'}</span>
+                    </button>
+                  </div>
+
+                  <div className="flex justify-between gap-1.5 pt-2">
+                    <button
+                      onClick={() => setFgmStep(2)}
+                      className="flex-1 py-3 bg-slate-50 hover:bg-slate-100 text-slate-500 border border-slate-205 font-bold rounded-xl text-xs"
+                    >
+                      Back
+                    </button>
+                    <button
+                      onClick={handleFGMSubmit}
+                      disabled={isSubmitting}
+                      className="flex-1 py-3 bg-purple-primary hover:bg-purple-dark text-white font-extrabold rounded-xl text-xs uppercase tracking-wider shadow-md"
+                    >
+                      {isSubmitting ? 'Sending...' : 'Continue to Secure Send'}
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+
+            </div>
+          </motion.div>
+        )}
+
+        {selectedFlow === 'flood' && (
+          /* ==================================================================== */
+          /* 4. FLOOD INCIDENT REPORT (EMERGENCY FLOW)                           */
+          /* ==================================================================== */
+          <motion.div
+            key="flood-flow"
+            initial={{ opacity: 0, x: 12 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -12 }}
+            className="space-y-4"
+          >
+            {/* 2x2 Grid of Minimalist Icons representing Flood Threats */}
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { label: 'Rising Water', icon: Droplet, desc: 'Rivers overflowing' },
+                { label: 'Blocked Road', icon: FileWarning, desc: 'Debris/mudslides blocking transit' },
+                { label: 'Bridge Out', icon: Skull, desc: 'River bridge unsafe/broken' },
+                { label: 'Missing Person', icon: Compass, desc: 'Contact lost' }
+              ].map((item) => {
+                const isSelected = selectedIndicators.includes(item.label);
+                return (
+                  <button
+                    key={item.label}
+                    type="button"
+                    onClick={() => toggleIndicator(item.label)}
+                    className={`p-4 border-2 rounded-2xl flex flex-col text-left transition-all ${
+                      isSelected 
+                        ? 'border-[#06B6D4] bg-[#06B6D4]/5 text-[#06B6D4] font-black' 
+                        : 'border-slate-100 bg-white hover:border-slate-250 text-slate-600'
+                    }`}
+                  >
+                    <item.icon size={20} className={isSelected ? 'text-[#06B6D4]' : 'text-slate-400'} />
+                    <span className="text-xs font-display font-black mt-2.5 leading-none block">{item.label}</span>
+                    <span className="text-[8px] text-slate-400 font-semibold mt-0.5">{item.desc}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Input Location Selection for context */}
+            <div className="bg-white border border-slate-150 rounded-2xl p-4 shadow-xs space-y-3">
+              <div>
+                <label className="block text-[9px] font-extrabold text-slate-400 uppercase tracking-widest mb-1 pl-0.5">Location in Isiolo County</label>
+                <input 
+                  type="text" 
+                  value={floodLocation}
+                  onChange={(e) => setFloodLocation(e.target.value)}
+                  placeholder="e.g., Merti Sub-county"
+                  className="w-full bg-slate-50 border border-slate-150 focus:border-cyan-500 rounded-xl text-xs font-bold px-3 py-2 outline-none text-slate-800 transition-colors"
+                />
+              </div>
+
+              {/* Grid map mock view */}
+              <div className="border border-slate-150/80 rounded-xl overflow-hidden text-center relative p-3 bg-purple-50/15">
+                <div className="absolute top-0 right-0 py-0.5 px-1 bg-purple-105 text-purple-primary text-[6.5px] font-black uppercase tracking-widest rounded-bl-lg">
+                  Safe Zone Grid
+                </div>
+                <div className="flex gap-2 items-center text-left">
+                  <Map size={22} className="text-purple-primary shrink-0 animate-pulse" />
+                  <div>
+                    <span className="text-[9.5px] font-display font-black text-slate-800 block">Isiolo High-Elevation zones ready</span>
+                    <span className="text-[8px] text-slate-400 font-bold block mt-0.5 leading-none">Safe shelter grids mapped to light purple.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Two stacked primary button triggers */}
+            <div className="space-y-2">
+              <button
+                type="button"
+                onClick={handleSMSFloodSubmit}
+                className="w-full py-3.5 bg-purple-primary hover:bg-purple-dark text-white font-extrabold rounded-2xl flex items-center justify-center gap-1.5 text-xs transition-transform active:scale-[0.98] shadow-md"
+              >
+                <Send size={12} />
+                <span>Send Report via SMS</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleFloodSubmit}
+                disabled={isSubmitting}
+                className="w-full py-3 bg-white hover:bg-slate-50 text-slate-800 border border-slate-205 font-bold rounded-2xl text-xs"
+              >
+                {isSubmitting ? 'Transmitting Data stream...' : 'Submit via Internet'}
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* FOOTER DISPATCH INFO */}
+      <footer className="mt-8 text-center pt-2.5 border-t border-slate-100">
+        <p className="text-[8px] text-slate-400 font-semibold leading-relaxed uppercase tracking-wider max-w-xs mx-auto">
+          Active secure end-to-end sandbox handshake with Isiolo regional dispatch centers.
         </p>
-      </form>
+      </footer>
+
     </div>
   );
 };

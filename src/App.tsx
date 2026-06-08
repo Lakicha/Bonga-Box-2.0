@@ -13,6 +13,8 @@ import DisasterDashboard from './components/DisasterDashboard';
 import Profile from './components/Profile';
 import AuthPage from './components/AuthPage';
 import HistoryList from './components/HistoryList';
+import Support from './components/Support';
+import Donate from './components/Donate';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode; roles?: string[] }> = ({ children, roles }) => {
   const { user, profile, loading } = useAuth();
@@ -35,6 +37,8 @@ export default function App() {
             <Route path="/alerts" element={<FloodDashboard />} />
             <Route path="/resources" element={<ResourceHub />} />
             <Route path="/history" element={<HistoryList />} />
+            <Route path="/support" element={<Support />} />
+            <Route path="/donate" element={<Donate />} />
             <Route path="/auth" element={<AuthPage />} />
             
             <Route 
@@ -75,11 +79,7 @@ export default function App() {
             
             <Route 
               path="/profile" 
-              element={
-                <ProtectedRoute>
-                  <Profile />
-                </ProtectedRoute>
-              } 
+              element={<Profile />} 
             />
             
             <Route path="*" element={<Navigate to="/" />} />

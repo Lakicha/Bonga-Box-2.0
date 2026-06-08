@@ -1,51 +1,72 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
-import { ShieldCheck, ChevronRight, MapPin, RefreshCw, AlertTriangle, ShieldAlert, ArrowRight, CheckCircle2, Check, Sparkles, User, Edit3, X, MessageSquare, PhoneCall } from 'lucide-react';
+import { 
+  ShieldCheck, 
+  ChevronRight, 
+  MapPin, 
+  RefreshCw, 
+  AlertTriangle, 
+  ShieldAlert, 
+  ArrowRight, 
+  PhoneCall, 
+  MessageSquare, 
+  Signal, 
+  WifiOff, 
+  Sparkles, 
+  Copy, 
+  Check, 
+  Compass, 
+  BookOpen, 
+  User, 
+  X, 
+  UserCheck,
+  HeartHandshake,
+  Landmark,
+  Coins,
+  Bell,
+  Heart,
+  CloudRain,
+  AlertCircle,
+  FileText,
+  Zap,
+  Globe
+} from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 const Home: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  // Custom localized nickname state default "Koch"
-  const [nickname, setNickname] = useState(() => {
-    return localStorage.getItem('bonga_user_nickname') || 'Koch';
-  });
-  const [isEditingNick, setIsEditingNick] = useState(false);
-  const [nickInput, setNickInput] = useState(nickname);
+  // Mode state: true = Online Mode, false = Offline Mode
+  const [isOnline, setIsOnline] = useState<boolean>(true);
 
-  // Safety scan state
+  // USSD Overlay state
+  const [isUSSDOpen, setIsUSSDOpen] = useState<boolean>(false);
+  const [ussdDialing, setUssdDialing] = useState<boolean>(false);
+  const [copiedCode, setCopiedCode] = useState<boolean>(false);
+
+  // Nickname or profile name
+  const [nickname] = useState(() => {
+    return localStorage.getItem('bonga_user_nickname') || 'Theo';
+  });
+
+  // Safety scans state
   const [isScanning, setIsScanning] = useState(false);
   const [scanStep, setScanStep] = useState(0);
-  const [lastCheckTime, setLastCheckTime] = useState<string>('Just now');
+  const [lastCheckTime, setLastCheckTime] = useState<string>('02:44 PM');
 
-  // Geolocation state
-  const [locLoading, setLocLoading] = useState(false);
-  const [locData, setLocData] = useState<{ county: string; country: string; coords?: string }>({
-    county: 'Isiolo County, Kenya',
-    country: 'Kenya'
-  });
-
-  const handleSaveNick = () => {
-    const finalNick = nickInput.trim() || 'Koch';
-    setNickname(finalNick);
-    localStorage.setItem('bonga_user_nickname', finalNick);
-    setIsEditingNick(false);
-  };
-
-  // Run Safety Check simulation
+  // Trigger Safety Scan
   const handleRunCheck = () => {
     if (isScanning) return;
     setIsScanning(true);
     setScanStep(0);
 
     const steps = [
-      'Establishing TLS encryption handshake...',
-      'Verifying virtual proxy routing layer...',
-      'Scanning local meteorology flood triggers...',
-      'Assessing active child helpline safety buffers...',
-      'Safety Scan Completed! All Clear'
+      'Establishing biometric secure index...',
+      'Verifying encrypted county cell relay...',
+      'Monitoring flash meteorology indexes...',
+      'Safety check complete. Node all-clear.'
     ];
 
     const timer = setInterval(() => {
@@ -56,357 +77,550 @@ const Home: React.FC = () => {
             setIsScanning(false);
             const now = new Date();
             setLastCheckTime(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
-          }, 1200);
+          }, 800);
           return prev;
         }
         return prev + 1;
       });
-    }, 900);
+    }, 500);
   };
 
-  // Geolocation trigger
-  const handleFetchLocation = () => {
-    if (locLoading) return;
-    setLocLoading(true);
-    
-    if (!navigator.geolocation) {
-      setLocData({
-        county: 'Isiolo County, Kenya (Fallback)',
-        country: 'Kenya',
-        coords: 'Geolocation not supported by client browser.'
-      });
-      setLocLoading(false);
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const lat = position.coords.latitude.toFixed(4);
-        const lon = position.coords.longitude.toFixed(4);
-        setLocData({
-          county: 'Isiolo Central, Kenya',
-          country: 'Kenya',
-          coords: `Lat: ${lat}° , Lon: ${lon}°`
-        });
-        setLocLoading(false);
-      },
-      (error) => {
-        console.warn(error);
-        setLocData({
-          county: 'Isiolo County, Kenya',
-          country: 'Kenya',
-          coords: 'Permission Denied. Using regional grid coordinates.'
-        });
-        setLocLoading(false);
-      },
-      { timeout: 7000 }
-    );
+  const handleCopyCode = () => {
+    navigator.clipboard.writeText("*123#");
+    setCopiedCode(true);
+    setTimeout(() => setCopiedCode(false), 2000);
   };
 
-  // Scan step messages
-  const scanMessages = [
-    'Establishing TLS encryption handshake...',
-    'Verifying virtual proxy routing layer...',
-    'Scanning local meteorology flood triggers...',
-    'Assessing active child helpline safety buffers...',
-    'Safety Scan Completed! All Clear.'
-  ];
+  // User details
+  const displayName = user?.displayName 
+    ? user.displayName.split(' ')[0] 
+    : (user?.email ? user.email.split('@')[0] : nickname);
 
-  // Derive display name
-  const greetingName = user?.displayName ? user.displayName.split(' ')[0] : nickname;
+  // Render USSD dial simulation
+  const triggerUSSDDialSim = () => {
+    setUssdDialing(true);
+    setTimeout(() => {
+      setUssdDialing(false);
+      setIsUSSDOpen(false);
+      alert("USSD safety response initiated. Live dispatch registered your offline ping.");
+    }, 1500);
+  };
 
   return (
-    <div className="text-slate-800 font-sans max-w-4xl mx-auto relative min-h-full py-2">
-      {/* Top Greet Row & "Lost?" pill card */}
-      <div className="flex justify-between items-start mb-6 gap-3 px-1">
-        {/* Left Greet Header */}
-        <div className="flex-grow">
-          <div className="flex items-center gap-1.5">
-            <h1 className="text-xl sm:text-2xl font-display font-extrabold text-slate-900 leading-snug tracking-tight">
-              Good morning, {greetingName}
-            </h1>
-            <button 
-              onClick={() => { setNickInput(nickname); setIsEditingNick(true); }}
-              className="p-1 hover:bg-slate-100 rounded-md text-slate-400 hover:text-slate-850 transition-colors"
-              title="Edit Codename"
-            >
-              <Edit3 size={13} />
-            </button>
-          </div>
-          <p className="text-xs text-text-dim font-medium">Here's your safety status for today</p>
-        </div>
-
-        {/* Right "Lost?" Pill Card matching Mockup perfectly */}
-        <Link 
-          to="/alerts" 
-          className="flex items-center gap-2 bg-slate-100/80 hover:bg-slate-200/50 px-3.5 py-2 rounded-2xl border border-slate-150 transition-all shrink-0 max-w-[145px] text-left group"
+    <div className="font-sans max-w-4xl mx-auto py-2 px-1 relative select-none">
+      
+      {/* Top Interactive Connectivity Switch (Online vs Offline Demonstration) */}
+      <div className="flex justify-between items-center bg-white border border-slate-150 rounded-2xl px-4 py-2.5 mb-6 shadow-xs max-w-xs ml-auto">
+        <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+          {isOnline ? (
+            <>
+              <Signal size={12} className="text-emerald-500 animate-pulse" /> Live Connectivity
+            </>
+          ) : (
+            <>
+              <WifiOff size={12} className="text-purple-primary animate-pulse" /> Emergency SMS/USSD Only
+            </>
+          )}
+        </span>
+        <button
+          onClick={() => {
+            setIsOnline(!isOnline);
+            // Alert user of mockup demonstration view
+          }}
+          className={`px-3 py-1 text-[8.5px] font-bold rounded-lg transition-all flex items-center gap-1 ${
+            isOnline 
+              ? 'bg-purple-105 hover:bg-purple-150 text-[#4F46E5]' 
+              : 'bg-emerald-50 text-emerald-700'
+          }`}
         >
-          <div className="flex-grow">
-            <p className="text-[10px] font-extrabold text-slate-950 uppercase tracking-wide leading-none mb-0.5">Lost?</p>
-            <p className="text-[8px] font-bold text-text-dim leading-none truncate">Find safe zones</p>
-          </div>
-          <ChevronRight size={14} className="text-slate-500 group-hover:translate-x-0.5 transition-transform" />
-        </Link>
+          {isOnline ? (
+            <>
+              <Zap size={10} />
+              <span>Go Offline</span>
+            </>
+          ) : (
+            <>
+              <Globe size={10} />
+              <span>Go Online</span>
+            </>
+          )}
+        </button>
       </div>
 
-      {/* Edit Codename Modal Backdrop */}
-      <AnimatePresence>
-        {isEditingNick && (
-          <>
-            <div className="fixed inset-0 bg-black/20 backdrop-blur-xs z-50 rounded-b-[2rem]" onClick={() => setIsEditingNick(false)} />
-            <motion.div 
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="absolute top-1/3 left-6 right-6 bg-white border border-slate-200 p-4 rounded-2xl shadow-xl z-50 text-slate-800 max-w-sm mx-auto"
-            >
-              <h3 className="font-display font-extrabold text-xs text-slate-900 uppercase tracking-widest mb-2">Edit Codename</h3>
-              <p className="text-[10px] text-text-dim mb-3">Set your secret handle used for anonymous greeting logs instead of your real ID.</p>
-              <div className="flex gap-2">
-                <input 
-                  type="text" 
-                  value={nickInput} 
-                  onChange={(e) => setNickInput(e.target.value)} 
-                  maxLength={15}
-                  className="flex-grow px-3 py-1.5 border border-slate-250 rounded-lg text-xs font-semibold outline-none focus:border-[#4F46E5]"
-                  placeholder="e.g. Koch"
-                />
-                <button 
-                  onClick={handleSaveNick}
-                  className="px-3 py-1.5 bg-[#4F46E5] text-white font-bold text-xs rounded-lg hover:bg-[#3F37C9]"
+      <AnimatePresence mode="wait">
+        {isOnline ? (
+          /* ==================================================================== */
+          /* 2. PREMIUM HOME (ONLINE MAIN DASHBOARD)                             */
+          /* ==================================================================== */
+          <motion.div
+            key="online-home"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            className="space-y-6"
+          >
+            {/* 2. Premium Home Bento Header: Profile Thumbnail & SAFE badge */}
+            <div className="bg-white border border-slate-150 rounded-[2.2rem] p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4 relative overflow-hidden">
+              <div className="flex items-center gap-4">
+                {/* Profile Thumbnail with PROTECT indicators */}
+                <div className="relative w-14 h-14 rounded-full border border-slate-150 shrink-0 flex items-center justify-center bg-indigo-50/70 text-[#4F46E5] overflow-hidden">
+                  {user?.photoURL ? (
+                    <img 
+                      src={user.photoURL} 
+                      alt={displayName} 
+                      className="w-full h-full object-cover rounded-full"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-50 to-purple-50 text-[#4F46E5] font-display font-black text-sm rounded-full">
+                      {displayName ? displayName.substring(0, 2).toUpperCase() : <User size={18} />}
+                    </div>
+                  )}
+                  <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 border-2 border-white flex items-center justify-center text-white">
+                    <Check size={8} strokeWidth={4} />
+                  </div>
+                </div>
+
+                <div>
+                  <h1 className="text-lg sm:text-xl font-display font-extrabold text-slate-900 leading-tight">
+                    Welcome, {displayName}
+                  </h1>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5 mb-2">
+                    Safe Space Club Member
+                  </p>
+                  
+                  {/* Replay Onboarding Carousel button */}
+                  <button 
+                    onClick={() => window.dispatchEvent(new Event('bonga_trigger_onboarding_carousel'))}
+                    className="inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-[#4F46E5] to-[#3F37C9] text-white text-[9px] font-black uppercase tracking-wider rounded-lg shadow-sm hover:opacity-90 active:scale-95 transition-all text-left"
+                    title="Launch interactive guidelines"
+                  >
+                    <Sparkles size={10} className="text-amber-300 animate-pulse" />
+                    <span>Launch Safety Carousel Tour</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Centered SAFE Status Badge with Green Tinted Glow */}
+              <div className="bg-emerald-50/70 border border-emerald-150/40 rounded-2xl px-5 py-4 flex items-center gap-3.5 shadow-sm hover:shadow-emerald-100/30 transition-all max-w-sm md:shrink-0">
+                <div className="w-10 h-10 rounded-full bg-emerald-500/15 text-emerald-600 flex items-center justify-center animate-pulse">
+                  <UserCheck size={20} />
+                </div>
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-emerald-700 font-display font-black text-xs uppercase tracking-wide">SAFE</span>
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                  </div>
+                  <p className="text-[9.5px] text-slate-400 font-bold">System Status: All Protected</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Environmental Shield: Two minimalist cards showing "Operational Status" and "Last Sync" */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="bg-white border border-slate-150 rounded-2xl p-4 shadow-xs flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-purple-primary/5 flex items-center justify-center text-[#4F46E5] shrink-0">
+                  <Signal size={15} />
+                </div>
+                <div>
+                  <p className="text-[9.5px] font-extrabold text-slate-400 uppercase tracking-widest">Operational Status</p>
+                  <p className="text-xs font-bold text-purple-primary font-mono mt-0.5">ACTIVE SECURE ENVELOPE</p>
+                </div>
+              </div>
+
+              <div className="bg-white border border-slate-150 rounded-2xl p-4 shadow-xs flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-purple-primary/5 flex items-center justify-center text-[#4F46E5] shrink-0">
+                    <RefreshCw size={14} className={isScanning ? 'animate-spin' : ''} />
+                  </div>
+                  <div>
+                    <p className="text-[9.5px] font-extrabold text-slate-400 uppercase tracking-widest">Last Sync Time</p>
+                    <p className="text-xs font-bold text-purple-primary font-mono mt-0.5">{lastCheckTime}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleRunCheck}
+                  disabled={isScanning}
+                  className="px-2.5 py-1 hover:bg-slate-50 border border-slate-205 rounded-lg text-[8.5px] font-black text-slate-950 uppercase tracking-wider transition-colors disabled:opacity-40"
                 >
-                  Save
+                  Sync Now
                 </button>
               </div>
+            </div>
+
+            {/* Active safety check details during handshake */}
+            {isScanning && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                className="bg-indigo-50/40 border border-indigo-100 p-3.5 rounded-2xl text-[10px]"
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="w-3.5 h-3.5 border-2 border-indigo-300 border-t-purple-primary rounded-full animate-spin" />
+                  <span className="font-extrabold text-purple-primary uppercase tracking-wide">Syncing local matrices...</span>
+                </div>
+                <p className="text-slate-600 font-semibold italic pl-5.5">
+                  {[
+                    'Mapping safe lines...',
+                    'Connecting cell relays...',
+                    'Refreshed meteorology coordinates...',
+                    'Success: Fully loaded.'
+                  ][scanStep]}
+                </p>
+              </motion.div>
+            )}
+
+            {/* Critical Channels: FGM Risk and Flood Alert Action Bento Cards */}
+            <div>
+              <p className="text-[9.5px] text-slate-400 font-extrabold uppercase tracking-widest pl-1 mb-2.5">
+                Active Protection Nodes
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Row 1: Item 1 - Emergency SOS */}
+                <div 
+                  onClick={() => setIsUSSDOpen(true)}
+                  className="bg-red-50/40 border border-red-105 hover:border-red-300 rounded-2xl p-5 transition-all cursor-pointer shadow-xs group text-left relative overflow-hidden"
+                >
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-red-500/5 rounded-full -mr-8 -mt-8" />
+                  <div className="w-10 h-10 rounded-xl bg-red-100 text-red-650 flex items-center justify-center mb-4 transition-transform group-hover:scale-105">
+                    <AlertCircle size={20} className="animate-pulse" />
+                  </div>
+                  <div className="flex justify-between items-center mb-1">
+                    <h3 className="text-sm font-display font-black text-red-950 group-hover:text-red-750 transition-colors">
+                      Emergency SOS Dispatch
+                    </h3>
+                    <ChevronRight size={14} className="text-red-400 group-hover:translate-x-0.5 transition-transform" />
+                  </div>
+                  <p className="text-[10px] text-red-700/80 leading-normal font-semibold">
+                    Anonymously alert community guardians immediately. Dial interactive fallback USSD codes without internet access.
+                  </p>
+                </div>
+
+                {/* Row 1: Item 2 - Report Incident */}
+                <div 
+                  onClick={() => navigate('/report')}
+                  className="bg-white border border-slate-150 rounded-2xl p-5 hover:border-[#4F46E5]/40 transition-all cursor-pointer shadow-xs group text-left"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-indigo-50 text-[#4F46E5] flex items-center justify-center mb-4 transition-transform group-hover:scale-105">
+                    <FileText size={20} />
+                  </div>
+                  <div className="flex justify-between items-center mb-1">
+                    <h3 className="text-sm font-display font-black text-slate-900 group-hover:text-purple-primary transition-colors">
+                      Report Incident
+                    </h3>
+                    <ChevronRight size={14} className="text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+                  </div>
+                  <p className="text-[10px] text-slate-400 leading-normal font-semibold">
+                    Submit a secure, metadata-stripped report. Multi-party coordination guarantees immediate officer responses.
+                  </p>
+                </div>
+
+                {/* Row 2: Item 1 - Talk to Counselor */}
+                <div 
+                  onClick={() => navigate('/support')}
+                  className="bg-white border border-slate-150 rounded-2xl p-5 hover:border-[#4F46E5]/40 transition-all cursor-pointer shadow-xs group text-left"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-650 flex items-center justify-center mb-4 transition-transform group-hover:scale-105">
+                    <HeartHandshake size={20} />
+                  </div>
+                  <div className="flex justify-between items-center mb-1">
+                    <h3 className="text-sm font-display font-black text-slate-900 group-hover:text-purple-primary transition-colors">
+                      Talk to Counselor
+                    </h3>
+                    <ChevronRight size={14} className="text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+                  </div>
+                  <p className="text-[10px] text-slate-400 leading-normal font-semibold">
+                    Speak securely with protection officers and gender-based violence advisors with fully anonymous chat logs.
+                  </p>
+                </div>
+
+                {/* Row 2: Item 2 - Find Safe House */}
+                <div 
+                  onClick={() => navigate('/alerts')}
+                  className="bg-white border border-slate-150 rounded-2xl p-5 hover:border-[#4F46E5]/40 transition-all cursor-pointer shadow-xs group text-left"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-4 transition-transform group-hover:scale-105">
+                    <Landmark size={20} />
+                  </div>
+                  <div className="flex justify-between items-center mb-1">
+                    <h3 className="text-sm font-display font-black text-slate-900 group-hover:text-purple-primary transition-colors">
+                      Find Safe House
+                    </h3>
+                    <ChevronRight size={14} className="text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+                  </div>
+                  <p className="text-[10px] text-slate-400 leading-normal font-semibold">
+                    Locate nearby school sanctuaries and humanitarian hubs with offline road navigation directions.
+                  </p>
+                </div>
+
+                {/* Row 3: Item 1 - Flood Alerts */}
+                <div 
+                  onClick={() => navigate('/alerts')}
+                  className="bg-white border border-slate-150 rounded-2xl p-5 hover:border-[#4F46E5]/40 transition-all cursor-pointer shadow-xs group text-left"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center mb-4 transition-transform group-hover:scale-105">
+                    <AlertTriangle size={20} />
+                  </div>
+                  <div className="flex justify-between items-center mb-1">
+                    <h3 className="text-sm font-display font-black text-slate-900 group-hover:text-purple-primary transition-colors">
+                      Flood Alerts & Shelters
+                    </h3>
+                    <ChevronRight size={14} className="text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+                  </div>
+                  <p className="text-[10px] text-slate-400 leading-normal font-semibold">
+                    Live county water levels and meteorology telemetry charts with rain advisory alerts.
+                  </p>
+                </div>
+
+                {/* Row 3: Item 2 - Learning Hub */}
+                <div 
+                  onClick={() => navigate('/resources')}
+                  className="bg-white border border-slate-150 rounded-2xl p-5 hover:border-[#4F46E5]/40 transition-all cursor-pointer shadow-xs group text-left"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-4 transition-transform group-hover:scale-105">
+                    <BookOpen size={20} />
+                  </div>
+                  <div className="flex justify-between items-center mb-1">
+                    <h3 className="text-sm font-display font-black text-slate-900 group-hover:text-purple-primary transition-colors">
+                      Learning Hub
+                    </h3>
+                    <ChevronRight size={14} className="text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+                  </div>
+                  <p className="text-[10px] text-slate-400 leading-normal font-semibold">
+                    Read climate defense guidelines, health rights safety booklets, and community club manuals.
+                  </p>
+                </div>
+
+                {/* Row 4: Item 1 - Donate */}
+                <div 
+                  onClick={() => navigate('/donate')}
+                  className="bg-white border border-slate-150 rounded-2xl p-5 hover:border-[#4F46E5]/40 transition-all cursor-pointer shadow-xs group text-left"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-pink-50 text-pink-600 flex items-center justify-center mb-4 transition-transform group-hover:scale-105">
+                    <Coins size={20} />
+                  </div>
+                  <div className="flex justify-between items-center mb-1">
+                    <h3 className="text-sm font-display font-black text-slate-900 group-hover:text-purple-primary transition-colors">
+                      Donate & Support
+                    </h3>
+                    <ChevronRight size={14} className="text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+                  </div>
+                  <p className="text-[10px] text-slate-400 leading-normal font-semibold">
+                    Fund critical rescue operations and secure local sanctuaries to protect vulnerable young girls.
+                  </p>
+                </div>
+
+                {/* Row 4: Item 2 - Community Updates */}
+                <div 
+                  onClick={() => alert("Under active construction: County coordinators are updating local shelter registries real-time.")}
+                  className="bg-white border border-slate-150 rounded-2xl p-5 hover:border-[#4F46E5]/40 transition-all cursor-pointer shadow-xs group text-left"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-indigo-50/60 text-indigo-650 flex items-center justify-center mb-4 transition-transform group-hover:scale-105">
+                    <Sparkles size={20} />
+                  </div>
+                  <div className="flex justify-between items-center mb-1">
+                    <h3 className="text-sm font-display font-black text-slate-900 group-hover:text-purple-primary transition-colors">
+                      Community Updates
+                    </h3>
+                    <ChevronRight size={14} className="text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+                  </div>
+                  <p className="text-[10px] text-slate-400 leading-normal font-semibold">
+                    Read the latest community defense briefs and emergency planning resources from coordinators.
+                  </p>
+                </div>
+
+              </div>
+            </div>
+
+            {/* Offline Access: Contrasting Dark-Navy Footer Section */}
+            <div className="bg-slate-900 text-white rounded-[2.2rem] p-6 shadow-lg border border-slate-800 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full -mr-16 -mt-16 blur-xl" />
+              
+              <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                  <span className="px-2 py-0.5 bg-indigo-500/20 border border-indigo-400/20 text-indigo-400 text-[8px] font-black uppercase rounded tracking-wider">
+                    Offline Access Node
+                  </span>
+                  <h3 className="text-base font-display font-black text-white mt-1.5 mb-1">
+                    No active cell data connection?
+                  </h3>
+                  <p className="text-[10.5px] text-slate-400 leading-normal font-medium max-w-md">
+                    Use our verified analog fallbacks to stream location telemetry reports to dispatchers with absolute anonymity.
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap gap-2.5 shrink-0">
+                  <button
+                    onClick={() => setIsUSSDOpen(true)}
+                    className="flex items-center gap-1.5 px-4.5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition-transform active:scale-95"
+                  >
+                    <PhoneCall size={12} className="text-indigo-200" />
+                    <span>Dial USSD</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsOnline(false);
+                      // Simulates switching to SMS mode
+                    }}
+                    className="flex items-center gap-1.5 px-4.5 py-3 bg-slate-800 hover:bg-slate-750 text-white border border-slate-700 font-bold rounded-xl text-xs transition-transform active:scale-95"
+                  >
+                    <MessageSquare size={13} className="text-[#06B6D4]" />
+                    <span>Send SMS Report</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          </motion.div>
+        ) : (
+          /* ==================================================================== */
+          /* 8. OFFLINE CONNECTIVITY GATEWAY (EMERGENCY STATUS)                    */
+          /* ==================================================================== */
+          <motion.div
+            key="offline-gateway"
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            className="bg-white border border-slate-150 rounded-[2.2rem] p-10 shadow-lg text-center flex flex-col items-center max-w-md mx-auto my-6"
+          >
+            {/* Large purple signal-slash icon in center */}
+            <div className="w-20 h-20 bg-purple-primary/5 text-purple-primary rounded-full flex items-center justify-center mb-6 border border-purple-primary/10">
+              <WifiOff size={44} strokeWidth={1.5} className="animate-pulse" />
+            </div>
+
+            {/* Message title */}
+            <h2 className="text-xl font-display font-black text-purple-primary tracking-tight leading-none mb-2.5">
+              You're Offline
+            </h2>
+            
+            <p className="text-xs text-slate-500 leading-relaxed font-semibold mb-6 max-w-xs mx-auto">
+              Internet connection lost or low cell data detected. Bonga Box has automatically routed to SMS & USSD emergency mode.
+            </p>
+
+            {/* Two stacked primary call-to-actions */}
+            <div className="w-full space-y-3">
+              <button
+                onClick={() => {
+                  alert("SMS safety transmission prepared. This sends masked, compressed report coordinates directly through local cellular towers.");
+                }}
+                className="w-full py-3.5 bg-purple-primary hover:bg-purple-dark text-white font-bold rounded-2xl flex items-center justify-center gap-2 text-xs transition-transform active:scale-[0.98] shadow-md"
+              >
+                <MessageSquare size={14} className="text-purple-105" />
+                <span>Send SMS Report</span>
+              </button>
+
+              <button
+                onClick={() => setIsUSSDOpen(true)}
+                className="w-full py-3.5 bg-white hover:bg-slate-50 text-slate-900 border border-slate-200 font-bold rounded-2xl flex items-center justify-center gap-2 text-xs transition-transform active:scale-[0.98]"
+              >
+                <PhoneCall size={13} className="text-purple-primary" />
+                <span>Dial *123#</span>
+              </button>
+            </div>
+
+            <button
+              onClick={() => setIsOnline(true)}
+              className="text-[9.5px] font-bold text-slate-400 hover:text-purple-primary transition-colors uppercase tracking-widest mt-6 cursor-pointer"
+            >
+              Back to Online Interface
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ==================================================================== */
+      /* 9. USSD DIALING OVERLAY (QUICK ACTION)                              */
+      /* ==================================================================== */}
+      <AnimatePresence>
+        {isUSSDOpen && (
+          <>
+            {/* Blurred glass white backdrop mask */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsUSSDOpen(false)}
+              className="fixed inset-0 bg-white/70 backdrop-blur-md z-150 flex items-center justify-center p-4"
+            >
+              {/* Centered small white card modal */}
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0, y: 10 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.95, opacity: 0, y: 10 }}
+                onClick={(e) => e.stopPropagation()} // Prevent closing when clicking card
+                className="w-full max-w-sm bg-white border border-slate-150 p-6 rounded-[2rem] shadow-2xl relative text-center"
+              >
+                {/* Close handle button */}
+                <button 
+                  onClick={() => setIsUSSDOpen(false)}
+                  className="absolute top-4 right-4 p-1 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-700 transition-colors"
+                >
+                  <X size={15} />
+                </button>
+
+                {/* Subtitle / Context label */}
+                <p className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest mb-3 mt-1">
+                  Bonga Analog Network
+                </p>
+
+                {/* USSD code displayed in large, bold purple */}
+                <div className="bg-purple-primary/5 py-4 px-2 rounded-2xl mb-5 border border-purple-primary/10">
+                  <span className="text-3xl font-display font-black text-purple-primary tracking-tight font-mono">
+                    *123#
+                  </span>
+                </div>
+
+                <p className="text-[11px] text-slate-500 font-medium leading-relaxed mb-6 px-1">
+                  Connect without internet to file local FGM incidents, status logs, and spatial flash flood warnings instantly.
+                </p>
+
+                {/* Interaction Actions */}
+                <div className="grid grid-cols-1 gap-2.5">
+                  <button
+                    onClick={triggerUSSDDialSim}
+                    disabled={ussdDialing}
+                    className="w-full py-3 bg-[#4F46E5] hover:bg-[#3F37C9] text-white font-extrabold text-xs tracking-wide rounded-xl flex items-center justify-center gap-1.5 shadow-md"
+                  >
+                    {ussdDialing ? (
+                      <span className="animate-pulse">Loading interface...</span>
+                    ) : (
+                      <>
+                        <PhoneCall size={12} />
+                        <span>Dial Now</span>
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    onClick={handleCopyCode}
+                    className="w-full py-3 bg-white hover:bg-slate-50 text-slate-800 border border-slate-205 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition-colors"
+                  >
+                    {copiedCode ? (
+                      <>
+                        <Check size={12} className="text-emerald-500" />
+                        <span className="text-emerald-600 font-bold">Copied!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy size={12} className="text-slate-500" />
+                        <span>Copy Code</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </motion.div>
             </motion.div>
           </>
         )}
       </AnimatePresence>
 
-      {/* Core Responsive Grid Workspace: 2 cols on Desktop, 1 on Mobile */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-start">
-        
-        {/* LEFT COLUMN/BENTO SEGMENT: Safety monitoring & checks (md:col-span-6 or 7) */}
-        <div className="md:col-span-7 space-y-4">
-          {/* CARD 1: "You are safe" Dashboard Badge Card */}
-          <div className="bg-white border border-slate-150 rounded-3xl p-5 sm:p-6 shadow-xs relative overflow-hidden">
-            <div className="flex items-start gap-4 mb-4">
-              {/* Green safety badge check status icon mockup */}
-              <div className="w-12 h-12 rounded-full bg-[#22C55E] flex items-center justify-center text-white shrink-0 shadow-sm border border-green-600/10">
-                {/* Shield with checking done inside */}
-                <svg className="w-6 h-6 fill-current text-white" viewBox="0 0 24 24">
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10zM10 14.17l-3.17-3.17-1.41 1.41L10 17l7-7-1.41-1.41z"/>
-                </svg>
-              </div>
-
-              <div className="flex-grow">
-                <div className="flex items-center gap-2">
-                  <h3 className="text-base sm:text-lg font-display font-extrabold text-slate-950">You are safe</h3>
-                  {/* Active tag */}
-                  <span className="px-2 py-0.5 bg-slate-150 text-slate-600 text-[8px] font-bold uppercase rounded-full">
-                    Active
-                  </span>
-                </div>
-                <p className="text-xs text-slate-500 font-medium">All clear. Bonga is monitoring safety matrices.</p>
-              </div>
-            </div>
-
-            {/* Checked mark status item */}
-            <div className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-900 bg-slate-50 border border-slate-100 p-2 rounded-xl mb-4">
-              <div className="w-4.5 h-4.5 rounded-full bg-slate-950 flex items-center justify-center text-white">
-                <Check size={11} strokeWidth={3} />
-              </div>
-              <span>Last monitored check: <span className="font-extrabold text-[#4F46E5]">{lastCheckTime}</span></span>
-            </div>
-
-            {/* Safety Checking Indicator */}
-            <AnimatePresence>
-              {isScanning && (
-                <motion.div 
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="mb-4 bg-indigo-50/50 border border-indigo-100 p-3 rounded-xl"
-                >
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <div className="w-3.5 h-3.5 border-2 border-indigo-300 border-t-[#4F46E5] rounded-full animate-spin shrink-0" />
-                    <span className="text-[10px] font-bold text-[#4F46E5]">Active Security handshake...</span>
-                  </div>
-                  <p className="text-[10px] font-semibold text-slate-700 leading-snug">
-                    {scanMessages[scanStep]}
-                  </p>
-                  {/* Progressive micro bar indicator */}
-                  <div className="w-full bg-slate-100 rounded-full h-1 mt-2 overflow-hidden">
-                    <div 
-                      className="bg-[#4F46E5] h-full transition-all duration-300" 
-                      style={{ width: `${((scanStep + 1) / scanMessages.length) * 100}%` }}
-                    />
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Action Button: Run Check */}
-            <button 
-              onClick={handleRunCheck}
-              disabled={isScanning}
-              className="w-full py-2.5 bg-white border border-slate-250 hover:border-slate-350 hover:bg-slate-50 px-4 rounded-xl text-xs font-bold text-slate-950 flex items-center justify-center gap-1.5 shadow-xs transition-all disabled:opacity-50"
-            >
-              <span>Run Verification Handshake</span>
-            </button>
-          </div>
-
-          {/* Location details card (Centered below safety widget on desktop, matches same grid rhythm) */}
-          <div className="bg-white border border-slate-150 rounded-3xl p-5 shadow-xs">
-            <div className="flex justify-between items-center mb-4">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-cyan-50 text-[#06B6D4] flex items-center justify-center shrink-0">
-                  <MapPin size={16} />
-                </div>
-                <div>
-                  <h3 className="text-xs font-extrabold text-slate-950 uppercase tracking-wider leading-none mb-0.5">Your Location</h3>
-                  <p className="text-[9px] text-text-dim font-bold">Kenya</p>
-                </div>
-              </div>
-              
-              <button 
-                onClick={handleFetchLocation}
-                disabled={locLoading}
-                className={`w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-600 transition-all ${locLoading ? 'animate-spin' : ''}`}
-                title="Refresh Coordinates"
-              >
-                <RefreshCw size={14} />
-              </button>
-            </div>
-
-            {/* Location values row text */}
-            <div className="space-y-1 pl-1">
-              <p className="text-base font-display font-extrabold text-slate-950">
-                {locData.county}
-              </p>
-              {locData.coords && (
-                <p className="text-[10px] font-mono text-text-gray font-semibold bg-slate-50 py-1 px-2 border border-slate-120 border-dashed rounded-md inline-block">
-                  {locData.coords}
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* RIGHT COLUMN/BENTO SEGMENT: Protection node action channels (md:col-span-5) */}
-        <div className="md:col-span-5 space-y-4">
-          <div className="bg-white border border-slate-150 rounded-3xl p-5 sm:p-6 shadow-xs">
-            <h4 className="text-[10px] font-extrabold text-text-dim uppercase tracking-widest pl-1 mb-3">
-              Fast Protection Node Actions
-            </h4>
-
-            <div className="grid grid-cols-2 gap-3 mb-4">
-              <button
-                onClick={() => {
-                  navigate('/report');
-                  localStorage.setItem('bonga_pending_category', 'FGM Risk');
-                }}
-                className="bg-[#FAFAFA] border border-slate-200/80 rounded-2xl p-3.5 shadow-xs text-left hover:border-[#4F46E5]/45 hover:bg-white transition-all group"
-              >
-                <div className="w-8 h-8 rounded-lg bg-red-50 text-red-500 flex items-center justify-center mb-3">
-                  <ShieldAlert size={16} />
-                </div>
-                <p className="text-xs font-display font-extrabold text-slate-950 leading-tight mb-1 group-hover:text-[#4F46E5] transition-colors">FGM Risk</p>
-                <p className="text-[9px] text-text-dim leading-snug">Report vulnerable youth protection.</p>
-              </button>
-
-              <button
-                onClick={() => {
-                  navigate('/report');
-                  localStorage.setItem('bonga_pending_category', 'Flood Alert');
-                }}
-                className="bg-[#FAFAFA] border border-slate-200/80 rounded-2xl p-3.5 shadow-xs text-left hover:border-cyan-500/40 hover:bg-white transition-all group"
-              >
-                <div className="w-8 h-8 rounded-lg bg-cyan-50 text-[#06B6D4] flex items-center justify-center mb-3">
-                  <AlertTriangle size={16} />
-                </div>
-                <p className="text-xs font-display font-extrabold text-slate-950 leading-tight mb-1 group-hover:text-[#06B6D4] transition-colors">Flood Alert</p>
-                <p className="text-[9px] text-text-dim leading-snug font-medium">Send flood emergency levels.</p>
-              </button>
-            </div>
-
-            <Link 
-              to="/report"
-              className="w-full py-3 bg-[#4F46E5] hover:bg-[#3F37C9] text-white text-xs font-bold rounded-2xl flex items-center justify-center gap-1.5 shadow-sm transition-all text-center"
-            >
-              <span>Submit Encrypted Report</span>
-              <ArrowRight size={14} />
-            </Link>
-          </div>
-
-          {/* Offline SMS & USSD Hotlines card */}
-          <div className="bg-slate-900 text-white rounded-3xl p-5 shadow-lg border border-slate-800 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full -mr-16 -mt-16 blur-xl" />
-            <div className="relative z-10">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="px-1.5 py-0.5 bg-indigo-500 text-[8px] font-extrabold uppercase rounded tracking-wider">Offline SMS/USSD</span>
-                <span className="text-[9px] text-slate-400 font-bold">No Internet Required</span>
-              </div>
-              <h3 className="text-sm font-display font-black tracking-tight text-white mb-1.5">Isiolo Offline Hotline</h3>
-              <p className="text-[10px] text-slate-400 leading-normal mb-4 font-medium">
-                Submit completely anonymous, end-to-end masked reports from standard analog or feature phones.
-              </p>
-
-              <div className="space-y-3.5 border-t border-slate-800 pt-3.5 mb-2">
-                {/* USSD option */}
-                <div className="flex items-start gap-2.5">
-                  <div className="w-7 h-7 rounded-lg bg-indigo-500/15 text-indigo-400 flex items-center justify-center shrink-0 border border-indigo-500/20">
-                    <PhoneCall size={13} />
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-bold text-slate-200">USSD Safety Menu</p>
-                    <p className="text-sm font-mono font-black text-[#5F56F4]">*384*100#</p>
-                    <p className="text-[9px] text-slate-400 mt-0.5 leading-snug">Dial free of charge. Pick FGM Risk or Torrential Flood, describe your location and alert details step-by-step.</p>
-                  </div>
-                </div>
-
-                {/* SMS option */}
-                <div className="flex items-start gap-2.5">
-                  <div className="w-7 h-7 rounded-lg bg-emerald-500/15 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/20">
-                    <MessageSquare size={13} />
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-bold text-slate-200">Instant SMS Intake</p>
-                    <p className="text-xs font-mono font-bold text-slate-100 bg-slate-800/80 px-1.5 py-0.5 rounded inline-block">text to Bonga Hotline</p>
-                    <p className="text-[9.5px] text-slate-300 font-extrabold mt-1">SMS Template format:</p>
-                    <p className="text-[9.5px] font-mono text-emerald-300 bg-slate-800 px-2 py-1 rounded border border-slate-700/80 mt-0.5 block leading-tight">
-                      [FGM or FLOOD] @ [LOCATION] - [DETAILS]
-                    </p>
-                    <p className="text-[9px] text-slate-400 mt-1 leading-snug">E.g., <span className="text-slate-300 italic font-medium">"Flood @ Merti - River banks started overflowing"</span>. Incoming phone numbers are immediately masked.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Quick Info Partner Card for aesthetic pairing */}
-          <div className="bg-indigo-50/40 border border-indigo-100/40 rounded-3xl p-5 shadow-xs">
-            <h5 className="font-display font-bold text-xs text-indigo-950 leading-none mb-1">
-              Protected & Verified Network
-            </h5>
-            <p className="text-[10px] text-slate-655 leading-normal mb-3">
-              We collaborate directly with local school club mentors, gender protection officers, and disaster dispatchers in Isiolo.
-            </p>
-            <Link to="/resources" className="text-[10px] text-[#4F46E5] font-extrabold uppercase tracking-wide hover:underline inline-flex items-center gap-1">
-              <span>View local education resources</span>
-              <ArrowRight size={10} />
-            </Link>
-          </div>
-        </div>
-
-      </div>
-
-      {/* Subtle safety reassurance footnotes */}
-      <footer className="mt-8 pt-4 border-t border-slate-100">
-        <p className="text-[9px] text-center text-text-dim leading-relaxed max-w-lg mx-auto">
-          Bonga Handshake operates fully serverless. Submissions are encrypted client-side and processed without logging browser fingerprints or ISP coordinates.
+      {/* Spacing Footnotes */}
+      <footer className="mt-8 pt-4 border-t border-slate-100 text-center">
+        <p className="text-[9px] text-text-dim leading-relaxed max-w-md mx-auto">
+          Standard telecom safety regulations apply. Analog cells log data hashes under secure county dispatch authorities.
         </p>
       </footer>
+
     </div>
   );
 };
