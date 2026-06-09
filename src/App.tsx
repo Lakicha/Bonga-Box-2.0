@@ -7,6 +7,12 @@ import { LoadingFallback } from './components/LoadingFallback';
 import Navbar from './components/Navbar';
 import Home from './components/Home';
 import AuthPage from './components/AuthPage';
+import AppLayout from './components/AppLayout';
+import ProtectionDashboard from './components/ProtectionDashboard';
+import DisasterDashboard from './components/DisasterDashboard';
+import HistoryList from './components/HistoryList';
+import Support from './components/Support';
+import Donate from './components/Donate';
 
 // Lazy load heavy components
 const ReportForm = React.lazy(() => import('./components/ReportForm'));
@@ -42,12 +48,33 @@ export default function App() {
                     <Route path="/alerts" element={<FloodDashboard />} />
                     <Route path="/resources" element={<ResourceHub />} />
                     <Route path="/auth" element={<AuthPage />} />
+                    <Route path="/history" element={<HistoryList />} />
+                    <Route path="/support" element={<Support />} />
+                    <Route path="/donate" element={<Donate />} />
                     
                     <Route 
                       path="/school-dashboard" 
                       element={
-                        <ProtectedRoute roles={['Mentor', 'Teacher', 'Admin']}>
+                        <ProtectedRoute roles={['Mentor', 'Teacher', 'Mentor/Teacher', 'Admin']}>
                           <SchoolDashboard />
+                        </ProtectedRoute>
+                      } 
+                    />
+                    
+                    <Route 
+                      path="/protection-dashboard" 
+                      element={
+                        <ProtectedRoute roles={['Protection Officer', 'Admin']}>
+                          <ProtectionDashboard />
+                        </ProtectedRoute>
+                      } 
+                    />
+
+                    <Route 
+                      path="/disaster-dashboard" 
+                      element={
+                        <ProtectedRoute roles={['Disaster Management Officer', 'Admin']}>
+                          <DisasterDashboard />
                         </ProtectedRoute>
                       } 
                     />

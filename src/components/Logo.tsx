@@ -7,7 +7,12 @@ interface LogoProps {
   variant?: 'light' | 'dark';
 }
 
-const Logo: React.FC<LogoProps> = ({ size = 40, className = "" }) => {
+const Logo: React.FC<LogoProps> = ({ 
+  size = 40, 
+  className = "", 
+  showText = false,
+  variant = 'light' 
+}) => {
   return (
     <div className={`flex items-center gap-3 ${className}`}>
       <div 
@@ -15,9 +20,9 @@ const Logo: React.FC<LogoProps> = ({ size = 40, className = "" }) => {
         style={{ width: size, height: size }}
       >
         <img 
-          src="/bonga-box-logo.png" 
+          src="https://i.postimg.cc/R3JFgcQC/Copy-of-O-20260608-113048-0000.png" 
           alt="Bonga Box Logo" 
-          className="w-full h-full object-contain"
+          className="w-full h-full object-contain rounded-lg"
           referrerPolicy="no-referrer"
         />
       </div>
