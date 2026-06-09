@@ -27,7 +27,7 @@ const ResourceHub: React.FC = () => {
       size: "1.4 MB",
       format: "PDF (English)",
       category: "FGM Prevention",
-      url: "https://thegirlgeneration.org/wp-content/uploads/2026/05/INTERREGIONAL-COALITION-PACT-en-GB.pdf?utm_source=chatgpt.com"
+      url: "https://thegirlgeneration.org/wp-content/uploads/2016/05/INTERREGIONAL-COALITION-PACT-en-GB.pdf"
     },
     {
       id: 'guide-fgm-2',
@@ -36,7 +36,7 @@ const ResourceHub: React.FC = () => {
       size: "820 KB",
       format: "Summary Report",
       category: "FGM Prevention",
-      url: "https://thegirlgeneration.org/wp-content/uploads/2025/08/The_Hidden_Toll_Summary.pdf?utm_source=chatgpt.com"
+      url: "https://thegirlgeneration.org/wp-content/uploads/25_08/The_Hidden_Toll_Summary.pdf"
     },
     {
       id: 'guide-legal-1',
@@ -45,7 +45,7 @@ const ResourceHub: React.FC = () => {
       size: "4.5 MB",
       format: "PDF Report",
       category: "Legal Framework",
-      url: "https://thegirlgeneration.org/wp-content/uploads/2022/10/PEA-Kenya_final_-PDF-002.pdf?utm_source=chatgpt.com"
+      url: "https://thegirlgeneration.org/wp-content/uploads/2022/10/PEA-Kenya_final_-PDF-002.pdf"
     },
     {
       id: 'guide-legal-2',
@@ -54,7 +54,7 @@ const ResourceHub: React.FC = () => {
       size: "950 KB",
       format: "Legislative Act",
       category: "Legal Framework",
-      url: "https://thegirlgeneration.org/publications/?utm_source=chatgpt.com"
+      url: "https://thegirlgeneration.org/publications/"
     }
   ];
 
@@ -65,7 +65,7 @@ const ResourceHub: React.FC = () => {
       updatedTracker[guide.id] = true;
     });
     setDownloadTracker(updatedTracker);
-    window.open("https://thegirlgeneration.org/publications/?utm_source=chatgpt.com", "_blank", "noopener,noreferrer");
+    window.open("https://thegirlgeneration.org/publications/", "_blank", "noopener,noreferrer");
   };
 
   // Filter guides

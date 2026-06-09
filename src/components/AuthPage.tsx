@@ -117,7 +117,7 @@ const AuthPage: React.FC = () => {
             Welcome back, {user?.displayName ? user.displayName.split(' ')[0] : (localStorage.getItem('bonga_user_nickname') || 'Operator')}
           </p>
           <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-none">
-            Secure Biometric Core
+            Developer Sandbox Core
           </p>
         </div>
 
@@ -170,10 +170,10 @@ const AuthPage: React.FC = () => {
 
           <p className="text-[9.5px] font-extrabold text-slate-500 uppercase tracking-widest mt-3.5 mb-1">
             {scanState === 'scanning' 
-              ? 'Verifying Biometric Scan...' 
+              ? 'Simulating Bypass Check...' 
               : scanState === 'success'
-              ? 'Biometric Mask Ok!'
-              : 'Tap for immediate biometric access'}
+              ? 'Bypass Simulation OK!'
+              : 'Tap for simulated developer access (Demo)'}
           </p>
           <div className="h-1.5 w-12 rounded-full overflow-hidden bg-slate-100 mt-1">
             {scanState === 'scanning' && (
@@ -267,7 +267,7 @@ const AuthPage: React.FC = () => {
                 }}
                 className="text-[9px] font-bold text-slate-400 hover:text-slate-700 block mx-auto"
               >
-                Back to Biometric View
+                Back to Simulator View
               </button>
             </div>
           )}

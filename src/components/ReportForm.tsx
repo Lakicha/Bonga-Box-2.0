@@ -56,8 +56,14 @@ const ReportForm: React.FC = () => {
 
   // Quick Exit procedure to hide the screen quickly for immediate security
   const handleQuickExit = () => {
-    // Navigates instantly to resources hub, educational content or search engine
-    window.location.href = 'https://www.google.com';
+    // Clear any active session states and bypass credentials
+    localStorage.removeItem('bonga_biometric_unlocked');
+    setFgmDescription('');
+    setFgmLocation('');
+    setSelectedIndicators([]);
+    
+    // Replace browser history instantly so Back button won't retrieve the form
+    window.location.replace('https://www.google.com');
   };
 
   const toggleIndicator = (indicator: string) => {
@@ -74,11 +80,10 @@ const ReportForm: React.FC = () => {
     if (!fgmLocation || !fgmDescription) return;
 
     setIsSubmitting(true);
-    setSubmittingStatus('Compressing submission package...');
+    setSubmittingStatus('Preparing report submission...');
 
     try {
-      setSubmittingStatus('Uploading physical verification info...');
-      setSubmittingStatus('Authorizing secure report handshake with dispatch...');
+      setSubmittingStatus('Saving report to database...');
       
       const docRef = await addDoc(collection(db, 'reports'), {
         category: 'FGM Risk',
@@ -93,7 +98,7 @@ const ReportForm: React.FC = () => {
         authorUid: fgmIsAnonymous ? null : user?.uid || null,
       });
 
-      setSubmittingStatus('Filing device index markers to local registry...');
+      setSubmittingStatus('Updating local history receipts...');
       const localReportIds: string[] = JSON.parse(localStorage.getItem('bonga_anonymous_reports') || '[]');
       localReportIds.push(docRef.id);
       localStorage.setItem('bonga_anonymous_reports', JSON.stringify(localReportIds));
@@ -101,7 +106,7 @@ const ReportForm: React.FC = () => {
       setSubmitted(true);
     } catch (err) {
       console.error('FGM dispatch routing failed:', err);
-      alert('Failed to transmit secure report packet. Standard towers fallback loaded.');
+      alert('Failed to submit report. Please check your network connection.');
     } finally {
       setIsSubmitting(false);
       setSubmittingStatus('');
@@ -111,7 +116,7 @@ const ReportForm: React.FC = () => {
   // Submit Flood Incident report
   const handleFloodSubmit = async () => {
     setIsSubmitting(true);
-    setSubmittingStatus('Formatting packet to binary stream...');
+    setSubmittingStatus('Preparing flood report...');
 
     try {
       const summary = selectedIndicators.length > 0 ? selectedIndicators.join(', ') : 'Water rising';
@@ -134,7 +139,7 @@ const ReportForm: React.FC = () => {
       setSubmitted(true);
     } catch (err) {
       console.error('Flood network dispatch failed:', err);
-      alert('Local cells failed. Routing via manual SMS network...');
+      alert('Failed to submit flood report. Please check your network connection.');
     } finally {
       setIsSubmitting(false);
       setSubmittingStatus('');

@@ -23,7 +23,8 @@ service cloud.firestore {
       return isSignedIn() && 
         ((exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin') ||
-         (request.auth.token.email in ["mohamed.lakicha@gmail.com", "mlakicha@gmail.com", "profkoch.theo@gmail.com"] && request.auth.token.email_verified == true));
+         (request.auth.token.email_verified == true && 
+          request.auth.token.email.matches('^[a-zA-Z0-9._%+-]+@bonga\\.org$')));
     }
     
     function isAuthorizedRole() {
@@ -92,7 +93,8 @@ service cloud.firestore {
     match /users/{uid} {
       allow get: if isOwner(uid) || isAdmin();
       allow list: if (isSignedIn() && resource.data.email == request.auth.token.email) || isAdmin();
-      allow create: if (isSignedIn() && isOwner(uid) && isValidUser(request.resource.data)) || 
+      allow create: if (isSignedIn() && isOwner(uid) && isValidUser(request.resource.data) && 
+                      (request.resource.data.role == 'User' || isAdmin())) || 
                       (isAdmin() && isValidUser(request.resource.data));
       allow update: if (isAdmin() && isValidUser(request.resource.data)) || 
                       (isOwner(uid) && isValidUser(request.resource.data) && request.resource.data.role == resource.data.role);

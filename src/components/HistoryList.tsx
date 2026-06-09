@@ -17,18 +17,14 @@ const HistoryList: React.FC = () => {
   // Modal detail tracker sim
   const [activeTrackingReportId, setActiveTrackingReportId] = useState<string | null>(null);
 
-  // Dynamically simulates a 64-character hash for proof of integrity
+  // Generates a local receipt tracking reference code from the report document ID
   const generateSHA256Sim = (id: string) => {
-    // Generate a beautiful, clean pseudo-sha256 hash using the doc id as seed
-    const rawSalt = `bonga_secure_node_handshake_scramble_key_${id}`;
     let hash = '';
-    for (let i = 0; i < rawSalt.length; i++) {
-      hash += rawSalt.charCodeAt(i).toString(16);
+    const text = `bonga_receipt_${id}`;
+    for (let i = 0; i < text.length; i++) {
+      hash += text.charCodeAt(i).toString(16);
     }
-    while (hash.length < 64) {
-      hash += 'f391ae828cd8823f66a2b8e392ff192ac';
-    }
-    return hash.substring(0, 64).toUpperCase();
+    return `BG-${hash.substring(0, 16).toUpperCase()}-${id.slice(-4).toUpperCase()}`;
   };
 
   const fetchReports = () => {
@@ -154,10 +150,10 @@ const HistoryList: React.FC = () => {
       <div className="flex justify-between items-center mb-6 px-1">
         <div>
           <h1 className="text-xl font-display font-black text-slate-900 tracking-tight flex items-center gap-2">
-            <History size={20} className="text-[#4F46E5]" /> Safe Log Feed
+            <History size={20} className="text-[#4F46E5]" /> Reports Feed
           </h1>
           <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-widest leading-none mt-1">
-            Anonymity Tracker Archive
+            Local Reports Tracking Archive
           </p>
         </div>
         
@@ -172,7 +168,7 @@ const HistoryList: React.FC = () => {
       {loading ? (
         <div className="flex flex-col items-center justify-center py-24 bg-white border border-slate-150 rounded-3xl shadow-xs">
           <div className="w-8 h-8 border-3 border-indigo-205 border-t-[#4F46E5] rounded-full animate-spin" />
-          <p className="text-[10.5px] font-extrabold text-[#4F46E5] uppercase tracking-wide mt-3">Refracting secure tunnels...</p>
+          <p className="text-[10.5px] font-extrabold text-[#4F46E5] uppercase tracking-wide mt-3">Loading reports...</p>
         </div>
       ) : reports.length === 0 ? (
         <div className="bg-white border border-slate-150 rounded-[2.2rem] p-8 text-center flex flex-col items-center my-4 shadow-sm">
@@ -181,10 +177,10 @@ const HistoryList: React.FC = () => {
           </div>
           <h3 className="font-display font-black text-sm mb-1 text-slate-900 uppercase">Archive Empty</h3>
           <p className="text-xs text-slate-500 leading-relaxed font-semibold mb-6 max-w-[220px]">
-            No secure reporting logs recorded on this hardware node's anonymous sandbox directory.
+            No report logs recorded locally on this browser. Reports are saved on your local device to support status tracking and receipt verification.
           </p>
           <Link to="/report" className="w-full py-2.5 px-4 bg-purple-primary text-white hover:bg-purple-dark text-xs font-black rounded-xl text-center block shadow-md uppercase tracking-wider uppercase">
-            Submit Safe Log
+            Submit Report
           </Link>
         </div>
       ) : (
@@ -225,7 +221,7 @@ const HistoryList: React.FC = () => {
                 <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 space-y-2 mb-3">
                   <div className="flex justify-between items-center">
                     <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest block pl-0.5">
-                      Cellular Handshake Integrity
+                      Report Routing Status
                     </span>
                     
                     {/* Track Button */}
@@ -238,29 +234,29 @@ const HistoryList: React.FC = () => {
                   </div>
 
                   {isTracking && (
-                    <div className="text-[10px] space-y-1 text-slate-650 border-t border-slate-201 pt-2 animate-fadeIn pl-0.5">
+                    <div className="text-[10px] space-y-1 text-slate-655 border-t border-slate-201 pt-2 animate-fadeIn pl-0.5">
                       <div className="flex justify-between">
-                        <span>Node status:</span>
-                        <span className="font-extrabold text-[#4F46E5]">Active Tracking</span>
+                        <span>Tracking Status:</span>
+                        <span className="font-extrabold text-[#4F46E5]">Active</span>
                       </div>
                       <div className="flex justify-between">
-                        <span>Relay routing:</span>
-                        <span className="font-bold text-slate-800">Isiolo Central Relay Hub v4</span>
+                        <span>Database Node:</span>
+                        <span className="font-bold text-slate-800">Connected to Firebase</span>
                       </div>
                       <div className="flex justify-between">
-                        <span>Anonymization Layer:</span>
-                        <span className="font-mono text-emerald-600 font-extrabold text-[9px]">TLS SSL Scrambled</span>
+                        <span>Security:</span>
+                        <span className="font-mono text-emerald-600 font-extrabold text-[9px]">Standard Encrypted SSL</span>
                       </div>
                     </div>
                   )}
                 </div>
 
-                {/* Footer containing 64-character cryptographic hash in a technical monospace font */}
+                {/* Footer containing reference code */}
                 <div className="border-t border-slate-50 pt-2.5 flex flex-col gap-1 text-[8px]">
                   <span className="text-slate-400 font-extrabold uppercase tracking-widest pl-0.5">
-                    Data Integrity Hash (SHA-256 Signature)
+                    Local Receipt Tracking ID
                   </span>
-                  <div className="font-mono text-slate-500 bg-slate-50 p-2 rounded-lg border border-dashed border-slate-150 overflow-x-auto whitespace-nowrap scrollbar-none scroll-smooth">
+                  <div className="font-mono text-slate-500 bg-slate-50 p-2 rounded-lg border border-dashed border-slate-150 overflow-x-auto whitespace-nowrap scrollbar-none scroll-smooth text-left">
                     {hash}
                   </div>
                 </div>
@@ -271,7 +267,7 @@ const HistoryList: React.FC = () => {
 
           <footer className="pt-3 text-center">
             <p className="text-[8.5px] text-slate-400 leading-normal uppercase tracking-widest font-extrabold">
-              End-to-End Cryptographically Proven Data Scrambling System.
+              Bonga Box local reports history log. Clear browser cache to wipe local receipts.
             </p>
           </footer>
         </div>

@@ -43,7 +43,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     let defaultRole = 'User';
-    const isAdminEmail = currentUser.email === "mohamed.lakicha@gmail.com" || currentUser.email === "mlakicha@gmail.com" || currentUser.email === "profkoch.theo@gmail.com";
+    // @ts-ignore
+    const adminEmailsEnv = (import.meta.env.VITE_ADMIN_EMAILS || "");
+    const adminEmails = adminEmailsEnv ? adminEmailsEnv.split(',').map((email: string) => email.trim()) : [];
+    const isAdminEmail = currentUser.email ? (adminEmails.includes(currentUser.email) || currentUser.email.endsWith('@bonga.org')) : false;
     if (isAdminEmail) {
       defaultRole = 'Admin';
     }

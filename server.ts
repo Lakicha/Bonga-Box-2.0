@@ -3,7 +3,7 @@ import path from 'path';
 import fs from 'fs';
 import { createServer as createViteServer } from 'vite';
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, addDoc } from 'firebase/firestore';
+import { getFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 // Helper function to mask phone numbers to keep them anonymous while preventing spam
 function maskPhoneNumber(phone?: string): string {
@@ -126,7 +126,7 @@ async function startServer() {
         description: parsed.description,
         photoURL: '',
         voiceNoteURL: '',
-        timestamp: new Date(), // Stored as native Date for server timestamp
+        timestamp: serverTimestamp(), // Stored as native server timestamp for consistency
         status: 'Pending',
         isAnonymous: true,
         authorUid: null,

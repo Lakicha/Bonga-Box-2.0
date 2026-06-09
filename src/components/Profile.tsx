@@ -121,7 +121,7 @@ const Profile: React.FC = () => {
             <div className="w-7 h-7 bg-purple-primary/5 text-purple-primary rounded-lg flex items-center justify-center shrink-0">
               <Fingerprint size={14} />
             </div>
-            <span className="font-bold text-slate-800">Biometric Lock</span>
+            <span className="font-bold text-slate-800">Developer Sandbox Bypass</span>
           </div>
 
           {/* Simple Toggle with purple design */}
