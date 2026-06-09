@@ -90,7 +90,8 @@ service cloud.firestore {
     // ===============================================================
 
     match /users/{uid} {
-      allow read: if isOwner(uid) || isAdmin();
+      allow get: if isOwner(uid) || isAdmin();
+      allow list: if (isSignedIn() && resource.data.email == request.auth.token.email) || isAdmin();
       allow create: if (isSignedIn() && isOwner(uid) && isValidUser(request.resource.data)) || 
                       (isAdmin() && isValidUser(request.resource.data));
       allow update: if (isAdmin() && isValidUser(request.resource.data)) || 
