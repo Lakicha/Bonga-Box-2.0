@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { db, collection, onSnapshot, query, where, addDoc, updateDoc, doc, serverTimestamp, orderBy, handleFirestoreError, OperationType } from '../firebase';
+import React, { useEffect, useState, useMemo } from 'react';
+import { db, collection, onSnapshot, query, where, addDoc, updateDoc, doc, serverTimestamp, orderBy, handleFirestoreError, OperationType, limit } from '../firebase';
 import { Report, Alert } from '../types';
 import { useAuth } from '../AuthContext';
 import { 
@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import Logo from './Logo';
+import { DEFAULT_SENSORS } from '../config/telemetryConfig';
 
 // Leaflet components
 import L from 'leaflet';
@@ -87,9 +88,13 @@ const getIncidentIcon = (category: string) => {
 
 // MapClick prefiller listener
 const MapClickHandler = ({ onMapClick }: { onMapClick: (lat: number, lng: number) => void }) => {
+  let clickTimeout: any = null;
   useMapEvents({
     click(e) {
-      onMapClick(e.latlng.lat, e.latlng.lng);
+      if (clickTimeout) clearTimeout(clickTimeout);
+      clickTimeout = setTimeout(() => {
+        onMapClick(e.latlng.lat, e.latlng.lng);
+      }, 150);
     },
   });
   return null;
@@ -113,47 +118,7 @@ const DisasterDashboard: React.FC = () => {
   const [broadcastSuccess, setBroadcastSuccess] = useState(false);
 
   // Active Map telemetry sensors state
-  const [sensors, setSensors] = useState<SensorData[]>([
-    {
-      id: 'sensor-merti',
-      name: "Ewaso Ng'iro Station",
-      location: 'Merti Bridge Sector',
-      depth: 2.85,
-      thresholdWarning: 3.10,
-      thresholdCritical: 3.60,
-      status: 'Normal',
-      coords: [1.0494, 38.6659],
-      flowRate: 148,
-      trend: 'rising',
-      lastUpdated: 'Live'
-    },
-    {
-      id: 'sensor-town',
-      name: 'Isiolo River Station',
-      location: 'Town Bridge Sector',
-      depth: 1.35,
-      thresholdWarning: 2.00,
-      thresholdCritical: 2.50,
-      status: 'Normal',
-      coords: [0.3546, 37.5822],
-      flowRate: 38,
-      trend: 'stable',
-      lastUpdated: 'Live'
-    },
-    {
-      id: 'sensor-gotu',
-      name: 'Uaso Nyiro Station',
-      location: 'Gotu Bridge Sector',
-      depth: 2.92,
-      thresholdWarning: 2.80,
-      thresholdCritical: 3.30,
-      status: 'Warning',
-      coords: [0.5512, 38.0123],
-      flowRate: 195,
-      trend: 'rising',
-      lastUpdated: 'Live'
-    }
-  ]);
+  const [sensors, setSensors] = useState<SensorData[]>(DEFAULT_SENSORS as any[]);
 
   // Hook telemetry updates: fluctuate depth slightly every 5 seconds to simulate telemetrics
   useEffect(() => {
@@ -209,59 +174,19 @@ const DisasterDashboard: React.FC = () => {
   };
 
   const handleResetSensors = () => {
-    setSensors([
-      {
-        id: 'sensor-merti',
-        name: "Ewaso Ng'iro Station",
-        location: 'Merti Bridge Sector',
-        depth: 2.25,
-        thresholdWarning: 3.10,
-        thresholdCritical: 3.60,
-        status: 'Normal',
-        coords: [1.0494, 38.6659],
-        flowRate: 110,
-        trend: 'falling',
-        lastUpdated: 'Failsafe'
-      },
-      {
-        id: 'sensor-town',
-        name: 'Isiolo River Station',
-        location: 'Town Bridge Sector',
-        depth: 1.10,
-        thresholdWarning: 2.00,
-        thresholdCritical: 2.50,
-        status: 'Normal',
-        coords: [0.3546, 37.5822],
-        flowRate: 28,
-        trend: 'stable',
-        lastUpdated: 'Failsafe'
-      },
-      {
-        id: 'sensor-gotu',
-        name: 'Uaso Nyiro Station',
-        location: 'Gotu Bridge Sector',
-        depth: 2.40,
-        thresholdWarning: 2.80,
-        thresholdCritical: 3.30,
-        status: 'Normal',
-        coords: [0.5512, 38.0123],
-        flowRate: 140,
-        trend: 'stable',
-        lastUpdated: 'Failsafe'
-      }
-    ]);
+    setSensors(DEFAULT_SENSORS as any[]);
   };
 
   useEffect(() => {
     // Queries Flood alarms & Emergencies
-    const qReports = query(collection(db, 'reports'), where('category', 'in', ['Flood Alert', 'Emergency']));
+    const qReports = query(collection(db, 'reports'), where('category', 'in', ['Flood Alert', 'Emergency']), limit(100));
     const unsubscribeReports = onSnapshot(qReports, (snapshot) => {
       setReports(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Report)));
     }, (error) => {
       handleFirestoreError(error, OperationType.LIST, 'reports');
     });
 
-    const qAlerts = query(collection(db, 'alerts'), orderBy('timestamp', 'desc'));
+    const qAlerts = query(collection(db, 'alerts'), orderBy('timestamp', 'desc'), limit(100));
     const unsubscribeAlerts = onSnapshot(qAlerts, (snapshot) => {
       setAlerts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Alert)));
     }, (error) => {
@@ -324,7 +249,9 @@ const DisasterDashboard: React.FC = () => {
     }
   };
 
-  const filteredReports = filter === 'All' ? reports : reports.filter(r => r.status === filter);
+  const filteredReports = useMemo(() => {
+    return filter === 'All' ? reports : reports.filter(r => r.status === filter);
+  }, [reports, filter]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 pt-20 pb-8 text-slate-800">

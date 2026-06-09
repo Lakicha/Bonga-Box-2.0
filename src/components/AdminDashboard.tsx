@@ -1,13 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import { db, collection, onSnapshot, query, orderBy, updateDoc, doc, setDoc, where, handleFirestoreError, OperationType } from '../firebase';
+import React, { useEffect, useState, useMemo } from 'react';
+import { db, collection, onSnapshot, query, orderBy, updateDoc, doc, setDoc, where, handleFirestoreError, OperationType, limit } from '../firebase';
 import { Report, UserProfile, Alert } from '../types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
 import { Download, Users, ShieldAlert, AlertTriangle, FileText, ArrowRight, UserCog, Filter, Clock, BarChart2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import Logo from './Logo';
 
+const COLORS = ['#F59E0B', '#4F46E5', '#10B981', '#64748B'];
+
 const AdminDashboard: React.FC = () => {
   const [reports, setReports] = useState<Report[]>([]);
+  const [recentReports, setRecentReports] = useState<Report[]>([]);
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [roleFilter, setRoleFilter] = useState<string>('All');
@@ -68,9 +71,16 @@ const AdminDashboard: React.FC = () => {
   };
 
   useEffect(() => {
-    const qReports = query(collection(db, 'reports'), orderBy('timestamp', 'desc'));
+    const qReports = query(collection(db, 'reports'), orderBy('timestamp', 'desc'), limit(100));
     const unsubscribeReports = onSnapshot(qReports, (snapshot) => {
       setReports(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Report)));
+    }, (error) => {
+      handleFirestoreError(error, OperationType.LIST, 'reports');
+    });
+
+    const qRecentReports = query(collection(db, 'reports'), orderBy('timestamp', 'desc'), limit(10));
+    const unsubscribeRecentReports = onSnapshot(qRecentReports, (snapshot) => {
+      setRecentReports(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Report)));
     }, (error) => {
       handleFirestoreError(error, OperationType.LIST, 'reports');
     });
@@ -81,7 +91,7 @@ const AdminDashboard: React.FC = () => {
       handleFirestoreError(error, OperationType.LIST, 'users');
     });
 
-    const qAlerts = query(collection(db, 'alerts'), orderBy('timestamp', 'desc'));
+    const qAlerts = query(collection(db, 'alerts'), orderBy('timestamp', 'desc'), limit(100));
     const unsubscribeAlerts = onSnapshot(qAlerts, (snapshot) => {
       setAlerts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Alert)));
     }, (error) => {
@@ -90,6 +100,7 @@ const AdminDashboard: React.FC = () => {
 
     return () => {
       unsubscribeReports();
+      unsubscribeRecentReports();
       unsubscribeUsers();
       unsubscribeAlerts();
     };
@@ -113,49 +124,54 @@ const AdminDashboard: React.FC = () => {
     : users.filter(u => u.role === roleFilter);
 
   // Data for Category Chart
-  const categoryData = [
+  const categoryData = useMemo(() => [
     { name: 'FGM Risk', value: reports.filter(r => r.category === 'FGM Risk').length },
     { name: 'Flood Alert', value: reports.filter(r => r.category === 'Flood Alert').length },
     { name: 'Emergency', value: reports.filter(r => r.category === 'Emergency').length },
     { name: 'Other', value: reports.filter(r => r.category === 'Other').length }
-  ];
+  ], [reports]);
 
   // Data for Location Chart
-  const locationCounts: Record<string, number> = {};
-  reports.forEach(r => {
-    locationCounts[r.location] = (locationCounts[r.location] || 0) + 1;
-  });
-  const locationData = Object.entries(locationCounts).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value).slice(0, 5);
+  const locationData = useMemo(() => {
+    const locationCounts: Record<string, number> = {};
+    reports.forEach(r => {
+      locationCounts[r.location] = (locationCounts[r.location] || 0) + 1;
+    });
+    return Object.entries(locationCounts)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 5);
+  }, [reports]);
 
   // Data for Status Chart
-  const statusData = [
+  const statusData = useMemo(() => [
     { name: 'Pending', value: reports.filter(r => r.status === 'Pending').length },
     { name: 'In Progress', value: reports.filter(r => r.status === 'In Progress').length },
     { name: 'Resolved', value: reports.filter(r => r.status === 'Resolved').length }
-  ];
+  ], [reports]);
 
   // Data for Resolution Time Chart (Average days to resolve by category)
-  const resolutionTimesByCategory: Record<string, { total: number, count: number }> = {};
-  reports.forEach(r => {
-    if (r.status === 'Resolved' && r.resolvedAt && r.timestamp) {
-      const start = r.timestamp.toDate ? r.timestamp.toDate() : new Date(r.timestamp);
-      const end = r.resolvedAt.toDate ? r.resolvedAt.toDate() : new Date(r.resolvedAt);
-      const diffDays = (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
-      
-      if (!resolutionTimesByCategory[r.category]) {
-        resolutionTimesByCategory[r.category] = { total: 0, count: 0 };
+  const resolutionData = useMemo(() => {
+    const resolutionTimesByCategory: Record<string, { total: number, count: number }> = {};
+    reports.forEach(r => {
+      if (r.status === 'Resolved' && r.resolvedAt && r.timestamp) {
+        const start = r.timestamp.toDate ? r.timestamp.toDate() : new Date(r.timestamp);
+        const end = r.resolvedAt.toDate ? r.resolvedAt.toDate() : new Date(r.resolvedAt);
+        const diffDays = (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
+        
+        if (!resolutionTimesByCategory[r.category]) {
+          resolutionTimesByCategory[r.category] = { total: 0, count: 0 };
+        }
+        resolutionTimesByCategory[r.category].total += diffDays;
+        resolutionTimesByCategory[r.category].count += 1;
       }
-      resolutionTimesByCategory[r.category].total += diffDays;
-      resolutionTimesByCategory[r.category].count += 1;
-    }
-  });
+    });
 
-  const resolutionData = Object.entries(resolutionTimesByCategory).map(([name, data]) => ({
-    name,
-    avgDays: parseFloat((data.total / data.count).toFixed(1))
-  }));
-
-  const COLORS = ['#F59E0B', '#4F46E5', '#10B981', '#64748B'];
+    return Object.entries(resolutionTimesByCategory).map(([name, data]) => ({
+      name,
+      avgDays: parseFloat((data.total / data.count).toFixed(1))
+    }));
+  }, [reports]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 pt-20 pb-8 text-slate-800">
@@ -284,7 +300,7 @@ const AdminDashboard: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {reports.slice(0, 10).map((report) => (
+                {recentReports.map((report) => (
                   <tr key={report.id} className="hover:bg-slate-50 transition-colors">
                     <td className="px-5 py-3 text-xs text-text-dim">
                       {report.timestamp?.toDate ? new Date(report.timestamp.toDate()).toLocaleDateString() : 'Just now'}

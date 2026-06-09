@@ -18,12 +18,20 @@ const AuthContext = createContext<AuthContextType>({
   updateSimulatedRole: () => {}
 });
 
+const userProfileCache: Record<string, UserProfile> = {};
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchProfile = async (currentUser: User) => {
+    if (userProfileCache[currentUser.uid]) {
+      setProfile(userProfileCache[currentUser.uid]);
+      setLoading(false);
+      return;
+    }
+
     const docRef = doc(db, 'users', currentUser.uid);
     let docSnap;
     try {
@@ -50,10 +58,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         ? ((simulatedRole || liveData.role || 'User') as UserProfile['role'])
         : (isAdminEmail ? 'Admin' : (liveData.role || 'User') as UserProfile['role']);
 
-      setProfile({
+      const finalProfileObj = {
         ...liveData,
         role: finalRole
-      });
+      };
+      userProfileCache[currentUser.uid] = finalProfileObj;
+      setProfile(finalProfileObj);
     } else {
       // Look up if an Admin already pre-onboarded this email address
       let preOnboardedSnap = null;
@@ -82,10 +92,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             await deleteDoc(doc(db, 'users', onboardedDoc.id));
           }
           await setDoc(docRef, mergedProfile);
+          userProfileCache[currentUser.uid] = mergedProfile;
           setProfile(mergedProfile);
         } catch (err) {
           handleFirestoreError(err, OperationType.CREATE, `users/${currentUser.uid}`);
           console.error('Error merging pre-onboarded profile', err);
+          userProfileCache[currentUser.uid] = mergedProfile;
           setProfile(mergedProfile);
         }
       } else {
@@ -102,6 +114,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         try {
           await setDoc(docRef, newProfile);
+          userProfileCache[currentUser.uid] = newProfile;
           setProfile(newProfile);
         } catch (error) {
           handleFirestoreError(error, OperationType.CREATE, `users/${currentUser.uid}`);
@@ -116,6 +129,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const isBiometricUnlocked = localStorage.getItem('bonga_biometric_unlocked') === 'true';
     if (auth.currentUser) {
       setUser({ ...auth.currentUser });
+      delete userProfileCache[auth.currentUser.uid];
       await fetchProfile(auth.currentUser);
     } else if (isBiometricUnlocked) {
       // Simulate fake logged-in user handle for offline simulator bypass

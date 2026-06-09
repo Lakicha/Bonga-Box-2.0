@@ -1,16 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../AuthContext';
-import { db, collection, query, where, onSnapshot, orderBy, doc, getDoc, handleFirestoreError, OperationType } from '../firebase';
+import { db, collection, query, where, onSnapshot, orderBy, doc, getDoc, handleFirestoreError, OperationType, limit } from '../firebase';
 import { Report } from '../types';
 import { History, RefreshCw, ChevronRight, Lock, KeyRound, Check } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
+import { useLocalStorage } from '../hooks/useLocalStorage';
 
 const HistoryList: React.FC = () => {
   const { user } = useAuth();
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [localReportIds] = useLocalStorage<string[]>('bonga_anonymous_reports', []);
 
   // Modal detail tracker sim
   const [activeTrackingReportId, setActiveTrackingReportId] = useState<string | null>(null);
@@ -32,9 +34,6 @@ const HistoryList: React.FC = () => {
   const fetchReports = () => {
     setRefreshing(true);
     
-    // Get local anonymous report IDs
-    const localReportIds: string[] = JSON.parse(localStorage.getItem('bonga_anonymous_reports') || '[]');
-
     let unsubscribeFirestore = () => {};
 
     if (user) {
@@ -42,7 +41,8 @@ const HistoryList: React.FC = () => {
       const q = query(
         collection(db, 'reports'),
         where('authorUid', '==', user.uid),
-        orderBy('timestamp', 'desc')
+        orderBy('timestamp', 'desc'),
+        limit(100)
       );
 
       unsubscribeFirestore = onSnapshot(q, async (snapshot) => {
