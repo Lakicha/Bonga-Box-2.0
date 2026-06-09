@@ -4,6 +4,20 @@ import fs from 'fs';
 import { createServer as createViteServer } from 'vite';
 import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import Stripe from 'stripe';
+
+let stripeClient: Stripe | null = null;
+
+function getStripeInstance(): Stripe | null {
+  const key = process.env.STRIPE_SECRET_KEY;
+  if (!key) {
+    return null;
+  }
+  if (!stripeClient) {
+    stripeClient = new Stripe(key);
+  }
+  return stripeClient;
+}
 
 // Helper function to mask phone numbers to keep them anonymous while preventing spam
 function maskPhoneNumber(phone?: string): string {
@@ -94,6 +108,114 @@ async function startServer() {
   // Health endpoint
   app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', service: 'Bonga Box SMS & USSD Service' });
+  });
+
+  // Process Mock Stripe Card Donation (Server-side simulation)
+  app.post('/api/donate/process-mock-card', async (req, res) => {
+    const { amount, cardholderName, cardNumber, expiryDate, cvc, email } = req.body;
+    
+    if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
+      return res.status(400).json({ error: 'Valid contribution amount is required' });
+    }
+
+    if (!cardNumber || cardNumber.replace(/\s/g, '').length < 13) {
+      return res.status(400).json({ error: 'Please enter a valid card number' });
+    }
+
+    if (!expiryDate || !expiryDate.includes('/')) {
+      return res.status(400).json({ error: 'Expiry date must be in MM/YY format' });
+    }
+
+    if (!cvc || cvc.trim().length < 3) {
+      return res.status(400).json({ error: 'CVC code is invalid' });
+    }
+
+    const cleanCard = cardNumber.replace(/\s/g, '');
+    const last4 = cleanCard.slice(-4);
+    
+    let cardBrand = 'Card';
+    if (cleanCard.startsWith('4')) {
+      cardBrand = 'Visa';
+    } else if (cleanCard.startsWith('5')) {
+      cardBrand = 'Mastercard';
+    } else if (cleanCard.startsWith('3')) {
+      cardBrand = 'American Express';
+    }
+
+    try {
+      // Simulate database receipt logging of the transaction (WITHOUT any raw credit card numbers or sensitive storage)
+      const chargeId = 'ch_mock_' + Math.random().toString(36).substring(2, 12).toUpperCase();
+      const donationRef = await addDoc(collection(db, 'donations'), {
+        amount: Number(amount),
+        email: email || 'anonymous@bonga-donor.org',
+        cardholderName: cardholderName || 'Anonymous Donor',
+        cardBrand,
+        cardLast4: last4,
+        status: 'Successful',
+        transactionType: 'Stripe Mock Secure Form',
+        chargeId: chargeId,
+        timestamp: serverTimestamp(),
+      });
+
+      res.json({
+        success: true,
+        chargeId: chargeId,
+        donationId: donationRef.id,
+        last4,
+        cardBrand,
+        amount: Number(amount),
+      });
+    } catch (dbErr: any) {
+      console.error('Failed to log donation receipt to database:', dbErr);
+      res.status(500).json({ error: 'Transaction processing completed but failed to write receipt logs.' });
+    }
+  });
+
+  // Stripe Checkout Session for Donations
+  app.post('/api/donate/create-session', async (req, res) => {
+    const { amount, successUrl, cancelUrl } = req.body;
+    if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
+      return res.status(400).json({ error: 'Valid payment amount is required' });
+    }
+
+    const value = Math.round(Number(amount));
+    const stripe = getStripeInstance();
+
+    if (!stripe) {
+      console.warn('STRIPE_SECRET_KEY environment variable is not defined. Booting demo simulation session.');
+      return res.json({
+        id: 'cs_demo_' + Math.random().toString(36).substring(2, 10),
+        url: `${successUrl || `${req.headers.origin || 'http://localhost:3000'}/donate?success=true`}&demo=true`,
+        demo: true
+      });
+    }
+
+    try {
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        line_items: [
+          {
+            price_data: {
+              currency: 'kes',
+              product_data: {
+                name: 'Donation to Bonga Box Protection Network',
+                description: 'Sponsor nutrition plans & emergency response in Isiolo County',
+              },
+              unit_amount: value * 100, // amount in cents
+            },
+            quantity: 1,
+          },
+        ],
+        mode: 'payment',
+        success_url: successUrl || `${req.headers.origin || 'http://localhost:3000'}/donate?success=true`,
+        cancel_url: cancelUrl || `${req.headers.origin || 'http://localhost:3000'}/donate`,
+      });
+
+      res.json({ id: session.id, url: session.url, demo: false });
+    } catch (error: any) {
+      console.error('Stripe Session Creation failed:', error);
+      res.status(500).json({ error: error.message || 'Failed to initialize Stripe Payment Checkout' });
+    }
   });
 
   // SMS Hotlines Webhook Endpoint

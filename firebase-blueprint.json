@@ -43,6 +43,23 @@
         "timestamp": { "type": "string", "format": "date-time" }
       },
       "required": ["type", "location", "message", "severity", "timestamp"]
+    },
+    "Donation": {
+      "title": "Sponsor Donation",
+      "description": "A financial donation record for safe haven sponsorship, stored securely without raw payment credentials.",
+      "type": "object",
+      "properties": {
+        "amount": { "type": "number", "description": "Donation sum in KES" },
+        "email": { "type": "string", "format": "email" },
+        "cardholderName": { "type": "string" },
+        "cardBrand": { "type": "string" },
+        "cardLast4": { "type": "string" },
+        "status": { "type": "string", "enum": ["Successful", "Failed"] },
+        "transactionType": { "type": "string" },
+        "chargeId": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["amount", "status", "cardLast4", "chargeId"]
     }
   },
   "firestore": {
@@ -57,6 +74,10 @@
     "/alerts/{alertId}": {
       "schema": "Alert",
       "description": "System-wide alerts"
+    },
+    "/donations/{donationId}": {
+      "schema": "Donation",
+      "description": "Sponsor donation transactions securely logged without raw credential storage"
     }
   }
 }

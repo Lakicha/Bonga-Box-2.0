@@ -82,8 +82,25 @@ service cloud.firestore {
              data.message.size() <= 5000 &&
              (!('radius' in data) || data.radius is number || data.radius is int || data.radius is float) &&
              (!('coordinates' in data) || (data.coordinates is list && data.coordinates.size() == 2 && 
-               (data.coordinates[0] is number || data.coordinates[0] is float || data.coordinates[0] is int) && 
-               (data.coordinates[1] is number || data.coordinates[1] is float || data.coordinates[1] is int)));
+                (data.coordinates[0] is number || data.coordinates[0] is float || data.coordinates[0] is int) && 
+                (data.coordinates[1] is number || data.coordinates[1] is float || data.coordinates[1] is int)));
+    }
+
+    function isValidDonation(data) {
+      return data.keys().hasAll(['amount', 'status', 'cardLast4', 'chargeId']) &&
+             data.keys().size() <= 10 &&
+             (data.amount is number || data.amount is int || data.amount is float) &&
+             data.amount > 0 &&
+             data.status == 'Successful' &&
+             data.cardLast4 is string &&
+             data.cardLast4.size() == 4 &&
+             data.chargeId is string &&
+             data.chargeId.size() <= 128 &&
+             (!('email' in data) || (data.email is string && data.email.size() <= 256)) &&
+             (!('cardholderName' in data) || (data.cardholderName is string && data.cardholderName.size() <= 256)) &&
+             (!('cardBrand' in data) || (data.cardBrand is string && data.cardBrand.size() <= 128)) &&
+             (!('transactionType' in data) || (data.transactionType is string && data.transactionType.size() <= 128)) &&
+             (!('timestamp' in data) || (data.timestamp is timestamp || data.timestamp == null));
     }
 
     // ===============================================================
@@ -113,6 +130,12 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin() || 
         (isSignedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Disaster Management Officer');
+    }
+
+    match /donations/{donationId} {
+      allow get: if true;
+      allow list: if isAdmin();
+      allow create: if isValidDonation(request.resource.data);
     }
   }
 }
