@@ -18,6 +18,8 @@ const AuthPage: React.FC = () => {
   
   // For standard real auth option
   const [showRealAuth, setShowRealAuth] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   // Auto navigate if already logged in (optional, but let's let them play with biometric if they want)
   // Let's redirect only if they arrived but are already logged in via firebase
@@ -70,11 +72,26 @@ const AuthPage: React.FC = () => {
   };
 
   const handleGoogleLogin = async () => {
+    setAuthError(null);
+    setIsGoogleLoading(true);
     try {
       await signInWithPopup(auth, googleProvider);
       navigate('/');
-    } catch (error) {
-      console.error('Google Auth bypass failed:', error);
+    } catch (error: any) {
+      console.error('Google Auth failed:', error);
+      let message = error?.message || 'An unknown authentication error occurred.';
+      if (error?.code === 'auth/operation-not-allowed' || message.includes('operation-not-allowed')) {
+        message = 'Google Login is not enabled in Firebase. Please enable the "Google" provider under Authentication -> Sign-in method in your Firebase console.';
+      } else if (error?.code === 'auth/popup-blocked' || message.includes('popup-blocked')) {
+        message = 'The Google login popup was blocked by your browser. Please permit popups for this site, or click the "Open in new tab" icon at the top-right of the preview window and try again.';
+      } else if (error?.code === 'auth/unauthorized-domain' || message.includes('unauthorized-domain')) {
+        message = `This website domain (${window.location.hostname}) is not authorized in Firebase. Please add this domain to the "Authorized Domains" list under Firebase Console -> Authentication -> Settings.`;
+      } else if (error?.code === 'auth/network-request-failed' || message.includes('network-request-failed')) {
+        message = 'Network connection to Firebase auth servers failed. Please check your internet connection or your Firebase config.';
+      }
+      setAuthError(message);
+    } finally {
+      setIsGoogleLoading(false);
     }
   };
 
@@ -211,17 +228,44 @@ const AuthPage: React.FC = () => {
               Operator Google Sign In <CornerDownRight size={10} />
             </button>
           ) : (
-            <div className="w-full space-y-2">
+            <div className="w-full space-y-3.5">
               <button 
                 onClick={handleGoogleLogin}
-                className="w-full flex items-center justify-center gap-2 py-2.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold rounded-xl text-xs transition-colors"
+                disabled={isGoogleLoading}
+                className="w-full flex items-center justify-center gap-2 py-2.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold rounded-xl text-xs transition-colors disabled:opacity-60"
               >
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-4 h-4 shrink-0" />
-                <span>Continue with Google</span>
+                {isGoogleLoading ? (
+                  <div className="w-4 h-4 border-2 border-slate-600 border-t-transparent rounded-full animate-spin shrink-0"></div>
+                ) : (
+                  <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-4 h-4 shrink-0" />
+                )}
+                <span>{isGoogleLoading ? 'Connecting...' : 'Continue with Google'}</span>
               </button>
+
+              {authError && (
+                <div className="p-3.5 bg-red-50 border border-red-100 rounded-xl text-left space-y-2">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-red-600">
+                    <Shield size={14} className="shrink-0" />
+                    <span>Firebase Auth Error</span>
+                  </div>
+                  <p className="text-[10px] text-red-600 leading-normal font-medium">
+                    {authError}
+                  </p>
+                  <p className="text-[9px] text-slate-500 font-medium border-t border-red-100 pt-1.5 leading-normal">
+                    💡 <strong>Setup Checklist:</strong><br />
+                    1. Enable <strong>Google Provider</strong> in Firebase Console (Authentication &rarr; Sign-in method).<br />
+                    2. Add authorized domain <strong>{window.location.hostname}</strong> in Firebase settings.<br />
+                    3. If POPUP is blocked, click the <strong>"Open in new tab"</strong> icon in the premium top-right action bar of the AI Studio preview.
+                  </p>
+                </div>
+              )}
+
               <button 
-                onClick={() => setShowRealAuth(false)}
-                className="text-[9px] font-bold text-slate-400 hover:text-slate-700"
+                onClick={() => {
+                  setShowRealAuth(false);
+                  setAuthError(null);
+                }}
+                className="text-[9px] font-bold text-slate-400 hover:text-slate-700 block mx-auto"
               >
                 Back to Biometric View
               </button>

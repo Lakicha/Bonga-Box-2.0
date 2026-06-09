@@ -22,30 +22,21 @@ const ResourceHub: React.FC = () => {
   const guides = [
     {
       id: 'guide-fgm-1',
-      title: "Female Genital Mutilation Prevention and Response for Community Health Promoters",
-      description: "The strongest practical toolkit for prevention, referrals, survivor support, and community awareness in Kenya.",
-      size: "3.2 MB",
-      format: "Toolkit",
+      title: "Interregional Coalition Pact",
+      description: "A collaborative commitment by stakeholders and partners to strengthen regional cooperation, advocacy, and collective action towards ending FGM across affected regions.",
+      size: "1.4 MB",
+      format: "PDF (English)",
       category: "FGM Prevention",
-      url: "https://thegirlgeneration.org/global-public-goods/?utm_source=chatgpt.com"
+      url: "https://thegirlgeneration.org/wp-content/uploads/2026/05/INTERREGIONAL-COALITION-PACT-en-GB.pdf?utm_source=chatgpt.com"
     },
     {
       id: 'guide-fgm-2',
-      title: "Community Engagement Toolkit: Champions Pocket Guide",
-      description: "Useful for community dialogues, awareness campaigns, and engagement with elders and religious leaders.",
-      size: "1.8 MB",
-      format: "Pocket Guide",
+      title: "The Hidden Toll: A Girl Dies Every 12 Minutes as a Result of FGM",
+      description: "A policy brief highlighting the mortality burden associated with FGM, presenting evidence that FGM-related complications contribute to thousands of preventable deaths and should be treated as a public health emergency.",
+      size: "820 KB",
+      format: "Summary Report",
       category: "FGM Prevention",
-      url: "https://thegirlgeneration.org/global-public-goods/?utm_source=chatgpt.com"
-    },
-    {
-      id: 'guide-fgm-3',
-      title: "Developing a Girl-Centred Approach to End FGM",
-      description: "Focuses on protecting girls, empowerment, and survivor-centered programming.",
-      size: "2.4 MB",
-      format: "Reference Guide",
-      category: "FGM Prevention",
-      url: "https://thegirlgeneration.org/global-public-goods/?utm_source=chatgpt.com"
+      url: "https://thegirlgeneration.org/wp-content/uploads/2025/08/The_Hidden_Toll_Summary.pdf?utm_source=chatgpt.com"
     },
     {
       id: 'guide-legal-1',
@@ -58,15 +49,6 @@ const ResourceHub: React.FC = () => {
     },
     {
       id: 'guide-legal-2',
-      title: "Do No Harm Safeguarding and Emotional Well-being Framework",
-      description: "Essential framework for survivor protection, safeguarding standards, and ethical response mechanisms.",
-      size: "1.2 MB",
-      format: "Framework",
-      category: "Legal Framework",
-      url: "https://thegirlgeneration.org/publications/?utm_source=chatgpt.com"
-    },
-    {
-      id: 'guide-legal-3',
       title: "Kenya Prohibition of Female Genital Mutilation Act, 2011",
       description: "Official legislation criminalizing FGM, enforcing strict penalties, and setting safe-keeping guidelines in Isiolo and beyond.",
       size: "950 KB",
