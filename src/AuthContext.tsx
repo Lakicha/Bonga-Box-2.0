@@ -40,16 +40,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       defaultRole = 'Admin';
     }
 
-    // Check if there is a simulated role we can fall back to
+    const isSimulatedUser = currentUser.uid === 'mock-operator' || currentUser.email === 'operator@bonga.org';
     const simulatedRole = localStorage.getItem('bonga_simulated_role');
-    const activeRole = (simulatedRole || defaultRole) as UserProfile['role'];
 
     if (docSnap.exists()) {
       const liveData = docSnap.data() as UserProfile;
-      // Overwrite role if simulated, else use db role
+      // Overwrite role only if operator is simulated, else use db role (with hardcoded admin precedence)
+      const finalRole = isSimulatedUser
+        ? ((simulatedRole || liveData.role || 'User') as UserProfile['role'])
+        : (isAdminEmail ? 'Admin' : (liveData.role || 'User') as UserProfile['role']);
+
       setProfile({
         ...liveData,
-        role: (simulatedRole || liveData.role || 'User') as UserProfile['role']
+        role: finalRole
       });
     } else {
       // Look up if an Admin already pre-onboarded this email address
@@ -70,6 +73,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           ...onboardedData,
           uid: currentUser.uid,
           displayName: currentUser.displayName || onboardedData.displayName || '',
+          role: onboardedData.role || 'User'
         };
 
         try {
@@ -85,10 +89,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setProfile(mergedProfile);
         }
       } else {
+        const finalRole = isSimulatedUser
+          ? ((simulatedRole || defaultRole) as UserProfile['role'])
+          : (isAdminEmail ? 'Admin' : 'User');
+
         const newProfile: UserProfile = {
           uid: currentUser.uid,
           email: currentUser.email || '',
-          role: activeRole,
+          role: finalRole,
           displayName: currentUser.displayName || '',
         };
         
@@ -134,6 +142,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const updateSimulatedRole = (role: string) => {
+    const isSimulatedUser = user?.uid === 'mock-operator' || user?.email === 'operator@bonga.org';
+    if (!isSimulatedUser) {
+      console.warn('Simulated role update ignored for authenticated user');
+      return;
+    }
     localStorage.setItem('bonga_simulated_role', role);
     if (user && profile) {
       setProfile({

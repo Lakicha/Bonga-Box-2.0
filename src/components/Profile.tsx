@@ -169,30 +169,45 @@ const Profile: React.FC = () => {
           </div>
         </div>
 
-        {/* Row 4: Simulated Active Role Selection (Awesome for testing dashboards) */}
-        <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-50 mt-1">
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 bg-indigo-50 text-[#4F46E5] rounded-lg flex items-center justify-center shrink-0">
-              <Shield size={13} />
+        {/* Row 4: Simulated Active Role Selection or Locked Official Role */}
+        <div className="flex flex-col gap-1.5 pt-2.5 border-t border-slate-50 mt-1">
+          <div className="flex items-center justify-between text-xs">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 bg-indigo-50 text-[#4F46E5] rounded-lg flex items-center justify-center shrink-0">
+                <Shield size={13} />
+              </div>
+              <span className="font-bold text-slate-800">
+                {user?.uid === 'mock-operator' || user?.email === 'operator@bonga.org' ? 'Simulated Role' : 'Authorized Role'}
+              </span>
             </div>
-            <span className="font-bold text-slate-800">Simulated Role</span>
-          </div>
 
-          <select
-            value={profile?.role || 'User'}
-            onChange={(e) => {
-              updateSimulatedRole(e.target.value);
-              // Trigger a global custom event to notify AppLayout to re-sync sidebar views
-              window.dispatchEvent(new Event('bonga_sync_simulated_profile'));
-            }}
-            className="bg-slate-50 border border-slate-150 rounded-lg px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-705 outline-none cursor-pointer hover:bg-slate-100 transition-all"
-          >
-            <option value="User">User / Child</option>
-            <option value="Admin">Admin Portal</option>
-            <option value="Mentor/Teacher">Mentor / Teacher</option>
-            <option value="Protection Officer">Protection Officer</option>
-            <option value="Disaster Management Officer">Disaster Officer</option>
-          </select>
+            {user?.uid === 'mock-operator' || user?.email === 'operator@bonga.org' ? (
+              <select
+                value={profile?.role || 'User'}
+                onChange={(e) => {
+                  updateSimulatedRole(e.target.value);
+                  // Trigger a global custom event to notify AppLayout to re-sync sidebar views
+                  window.dispatchEvent(new Event('bonga_sync_simulated_profile'));
+                }}
+                className="bg-slate-50 border border-slate-150 rounded-lg px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-705 outline-none cursor-pointer hover:bg-slate-100 transition-all font-sans"
+              >
+                <option value="User">User / Child</option>
+                <option value="Admin">Admin Portal</option>
+                <option value="Mentor/Teacher">Mentor / Teacher</option>
+                <option value="Protection Officer">Protection Officer</option>
+                <option value="Disaster Management Officer">Disaster Officer</option>
+              </select>
+            ) : (
+              <span className="px-2 py-1 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-lg text-[9px] font-black uppercase tracking-wider">
+                {profile?.role || 'User'}
+              </span>
+            )}
+          </div>
+          {!(user?.uid === 'mock-operator' || user?.email === 'operator@bonga.org') && (
+            <p className="text-[9px] text-slate-400 font-semibold leading-normal pl-9.5 text-left">
+              🔒 Locked & governed by administrative console.
+            </p>
+          )}
         </div>
 
         {/* Row 5: Safety Tour Guide Launcher */}
