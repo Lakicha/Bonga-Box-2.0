@@ -349,11 +349,11 @@ const Home: React.FC = () => {
             exit={{ opacity: 0, y: -12 }}
             className="space-y-6"
           >
-            {/* 2. Premium Home Bento Header: Profile Thumbnail & SAFE badge */}
-            <div className="bg-white border border-slate-150 rounded-[2.2rem] p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4 relative overflow-hidden">
-              <div className="flex items-center gap-4">
+            {/* 2. Compact & Premium Home Header: Profile Thumbnail & SAFE badge */}
+            <div className="bg-white border border-slate-150 rounded-2xl p-4 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4 relative overflow-hidden">
+              <div className="flex items-center gap-3.5">
                 {/* Profile Thumbnail with PROTECT indicators */}
-                <div className="relative w-14 h-14 rounded-full border border-slate-150 shrink-0 flex items-center justify-center bg-indigo-50/70 text-[#4F46E5] overflow-hidden">
+                <div className="relative w-11 h-11 rounded-full border border-slate-150 shrink-0 flex items-center justify-center bg-indigo-50/70 text-[#4F46E5] overflow-hidden">
                   {user?.photoURL ? (
                     <img 
                       src={user.photoURL} 
@@ -362,46 +362,57 @@ const Home: React.FC = () => {
                       referrerPolicy="no-referrer"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-50 to-purple-50 text-[#4F46E5] font-display font-black text-sm rounded-full">
-                      {displayName ? displayName.substring(0, 2).toUpperCase() : <User size={18} />}
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-50 to-purple-50 text-[#4F46E5] font-display font-bold text-xs rounded-full">
+                      {displayName ? displayName.substring(0, 2).toUpperCase() : <User size={14} />}
                     </div>
                   )}
-                  <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 border-2 border-white flex items-center justify-center text-white">
+                  <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-emerald-500 border border-white flex items-center justify-center text-white">
                     <Check size={8} strokeWidth={4} />
                   </div>
                 </div>
 
                 <div>
-                  <h1 className="text-lg sm:text-xl font-display font-extrabold text-slate-900 leading-tight">
-                    Welcome, {displayName}
-                  </h1>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5 mb-2">
-                    Safe Space Club Member
-                  </p>
-                  
-                  {/* Replay Onboarding Carousel button */}
-                  <button 
-                    onClick={() => window.dispatchEvent(new Event('bonga_trigger_onboarding_carousel'))}
-                    className="inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-[#4F46E5] to-[#3F37C9] text-white text-[9px] font-black uppercase tracking-wider rounded-lg shadow-sm hover:opacity-90 active:scale-95 transition-all text-left"
-                    title="Launch interactive guidelines"
-                  >
-                    <Sparkles size={10} className="text-amber-300 animate-pulse" />
-                    <span>Launch Safety Carousel Tour</span>
-                  </button>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h1 className="text-base sm:text-lg font-bold text-slate-900 leading-tight">
+                      Welcome, {displayName}
+                    </h1>
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[9px] font-bold rounded-md">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      <span>Protected</span>
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3 mt-1.5">
+                    <p className="text-[10.5px] text-slate-500 font-medium">
+                      Safe Space Club Member
+                    </p>
+                    <span className="text-slate-300">•</span>
+                    {/* Replay Onboarding Carousel button */}
+                    <button 
+                      onClick={() => {
+                        if ('vibrate' in navigator) navigator.vibrate(10);
+                        window.dispatchEvent(new Event('bonga_trigger_onboarding_carousel'));
+                      }}
+                      className="inline-flex items-center gap-1 text-[10px] text-[#4F46E5] hover:text-[#3F37C9] font-semibold transition-all cursor-pointer"
+                      title="Launch interactive guidelines"
+                    >
+                      <Sparkles size={11} className="text-amber-400 animate-pulse" />
+                      <span>Take Tour</span>
+                    </button>
+                  </div>
                 </div>
               </div>
 
               {/* Centered SAFE Status Badge with Green Tinted Glow */}
-              <div className="bg-emerald-50/70 border border-emerald-150/40 rounded-2xl px-5 py-4 flex items-center gap-3.5 shadow-sm hover:shadow-emerald-100/30 transition-all max-w-sm md:shrink-0">
-                <div className="w-10 h-10 rounded-full bg-emerald-500/15 text-emerald-600 flex items-center justify-center animate-pulse">
-                  <UserCheck size={20} />
+              <div className="bg-emerald-50/50 border border-emerald-150/20 rounded-xl px-3.5 py-2 flex items-center gap-2.5 max-w-xs md:shrink-0 text-left">
+                <div className="w-6.5 h-6.5 rounded-full bg-emerald-500/10 text-emerald-650 flex items-center justify-center shrink-0">
+                  <UserCheck size={13} />
                 </div>
                 <div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-emerald-700 font-display font-black text-xs uppercase tracking-wide">SAFE</span>
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                  <div className="flex items-center gap-1">
+                    <span className="text-emerald-800 font-bold text-[10.5px]">All Secure</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
                   </div>
-                  <p className="text-[9.5px] text-slate-400 font-bold">System Status: All Protected</p>
+                  <p className="text-[9px] text-slate-400 font-medium leading-none mt-0.5">County node verified</p>
                 </div>
               </div>
             </div>
@@ -413,8 +424,8 @@ const Home: React.FC = () => {
                   <Signal size={15} />
                 </div>
                 <div>
-                  <p className="text-[9.5px] font-extrabold text-slate-400 uppercase tracking-widest">Operational Status</p>
-                  <p className="text-xs font-bold text-purple-primary font-mono mt-0.5">ACTIVE SECURE ENVELOPE</p>
+                  <p className="text-[10px] font-medium text-slate-400 tracking-wide">Operational Status</p>
+                  <p className="text-xs font-bold text-purple-primary font-mono mt-0.5">Active Secure Space</p>
                 </div>
               </div>
 
@@ -424,16 +435,16 @@ const Home: React.FC = () => {
                     <RefreshCw size={14} className={isScanning ? 'animate-spin' : ''} />
                   </div>
                   <div>
-                    <p className="text-[9.5px] font-extrabold text-slate-400 uppercase tracking-widest">Last Sync Time</p>
+                    <p className="text-[10px] font-medium text-slate-400 tracking-wide">Last Sync Time</p>
                     <p className="text-xs font-bold text-purple-primary font-mono mt-0.5">{lastCheckTime}</p>
                   </div>
                 </div>
                 <button
                   onClick={handleRunCheck}
                   disabled={isScanning}
-                  className="px-2.5 py-1 hover:bg-slate-50 border border-slate-205 rounded-lg text-[8.5px] font-black text-slate-950 uppercase tracking-wider transition-colors disabled:opacity-40"
+                  className="px-2.5 py-1 hover:bg-slate-50 border border-slate-205 rounded-lg text-[9px] font-bold text-slate-915 transition-colors disabled:opacity-40 cursor-pointer"
                 >
-                  Sync Now
+                  Sync now
                 </button>
               </div>
             </div>
@@ -862,14 +873,14 @@ const Home: React.FC = () => {
                       ) : (
                         /* MONOSPACED PHONE SCREEN SIMULATION */
                         <div className="space-y-4">
-                          <div className="bg-[#121824] border-2 border-slate-800 rounded-2xl p-4 font-mono text-[11px] text-[#10B981] leading-relaxed shadow-inner overflow-hidden relative">
+                          <div className="bg-[#121824] border border-slate-800 rounded-2xl p-4 font-mono text-[11px] text-[#10B981] leading-relaxed shadow-inner overflow-hidden relative">
                             {/* Shiny glass glare effect */}
                             <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full transform rotate-45" />
                             
-                            <div className="flex justify-between items-center text-[9px] text-[#4F46E5] font-black uppercase tracking-wider border-b border-slate-800 pb-2 mb-2">
+                            <div className="flex justify-between items-center text-[9px] text-slate-400 font-semibold border-b border-slate-800 pb-2 mb-2">
                               <span>Bonga Mobile Link</span>
-                              <span className="text-emerald-505 flex items-center gap-1 animate-pulse">
-                                <span>● SECURE</span>
+                              <span className="text-emerald-500 flex items-center gap-1 animate-pulse">
+                                <span>● Secure Node</span>
                               </span>
                             </div>
 
@@ -1140,13 +1151,13 @@ const Home: React.FC = () => {
                       ) : (
                         /* TRANSMISSION ANIMATION WORKFLOW */
                         <div className="space-y-4">
-                          <p className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest leading-none">
+                          <p className="text-[10px] font-medium text-slate-400 tracking-wide leading-none">
                             Zero-Data Analog Transmission Console
                           </p>
 
-                          <div className="bg-[#121824] border-2 border-slate-800 rounded-2xl p-4 font-mono text-[10.5px] text-[#10B981] space-y-2 relative min-h-[160px] flex flex-col justify-between">
+                          <div className="bg-[#121824] border border-slate-800 rounded-2xl p-4 font-mono text-[10.5px] text-[#10B981] space-y-2 relative min-h-[160px] flex flex-col justify-between">
                             <div className="space-y-1.5 flex-1 select-text">
-                              <p className="border-b border-slate-800 pb-1 text-slate-400 text-[8.5px]">TRANSMITTER CORE V.3.1 - STANDBY</p>
+                              <p className="border-b border-slate-800 pb-1 text-slate-400 text-[8.5px]">Transmitter Core V.3.1 - Standby</p>
                               
                               {/* Progressive Log display */}
                               {smsLogs.map((log, index) => (
@@ -1161,7 +1172,7 @@ const Home: React.FC = () => {
 
                               {smsTransmissionStage === 5 && (
                                 <div className="text-center py-2 text-emerald-400">
-                                  <p className="font-bold text-white uppercase text-[11px]">GSM DISPATCH SUCCESSFULLY HANDSHAKED</p>
+                                  <p className="font-bold text-white text-[11px]">GSM dispatch successfully handshaked</p>
                                 </div>
                               )}
                             </div>

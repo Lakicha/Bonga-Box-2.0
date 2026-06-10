@@ -5,6 +5,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { Download, Users, ShieldAlert, AlertTriangle, FileText, ArrowRight, UserCog, Filter, Clock, BarChart2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import Logo from './Logo';
+import { SkeletonDashboardScreen } from './SkeletonLoader';
 
 const COLORS = ['#F59E0B', '#4F46E5', '#10B981', '#64748B'];
 
@@ -13,6 +14,9 @@ const AdminDashboard: React.FC = () => {
   const [recentReports, setRecentReports] = useState<Report[]>([]);
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [reportsLoading, setReportsLoading] = useState<boolean>(true);
+  const [usersLoading, setUsersLoading] = useState<boolean>(true);
+  const [alertsLoading, setAlertsLoading] = useState<boolean>(true);
   const [roleFilter, setRoleFilter] = useState<string>('All');
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
   const [activeTab, setActiveTab ] = useState<'analytics' | 'activity' | 'users'>('analytics');
@@ -74,8 +78,10 @@ const AdminDashboard: React.FC = () => {
     const qReports = query(collection(db, 'reports'), orderBy('timestamp', 'desc'), limit(100));
     const unsubscribeReports = onSnapshot(qReports, (snapshot) => {
       setReports(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Report)));
+      setReportsLoading(false);
     }, (error) => {
       handleFirestoreError(error, OperationType.LIST, 'reports');
+      setReportsLoading(false);
     });
 
     const qRecentReports = query(collection(db, 'reports'), orderBy('timestamp', 'desc'), limit(10));
@@ -87,15 +93,19 @@ const AdminDashboard: React.FC = () => {
 
     const unsubscribeUsers = onSnapshot(collection(db, 'users'), (snapshot) => {
       setUsers(snapshot.docs.map(doc => ({ ...doc.data() } as UserProfile)));
+      setUsersLoading(false);
     }, (error) => {
       handleFirestoreError(error, OperationType.LIST, 'users');
+      setUsersLoading(false);
     });
 
     const qAlerts = query(collection(db, 'alerts'), orderBy('timestamp', 'desc'), limit(100));
     const unsubscribeAlerts = onSnapshot(qAlerts, (snapshot) => {
       setAlerts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Alert)));
+      setAlertsLoading(false);
     }, (error) => {
       handleFirestoreError(error, OperationType.LIST, 'alerts');
+      setAlertsLoading(false);
     });
 
     return () => {
@@ -190,7 +200,11 @@ const AdminDashboard: React.FC = () => {
         </button>
       </div>
 
-      {/* Overview Stats Row */}
+      {reportsLoading || usersLoading || alertsLoading ? (
+        <SkeletonDashboardScreen listCount={7} showStats={true} />
+      ) : (
+        <>
+          {/* Overview Stats Row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
         {[
           { icon: FileText, label: "Total Reports", value: reports.length, color: "border-purple-primary", bg: "bg-purple-50", text: "text-purple-primary" },
@@ -494,7 +508,9 @@ const AdminDashboard: React.FC = () => {
           </div>
         )}
       </div>
-    </div>
+    </>
+  )}
+</div>
   );
 };
 

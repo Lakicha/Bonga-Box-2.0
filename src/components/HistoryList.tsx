@@ -6,6 +6,7 @@ import { History, RefreshCw, ChevronRight, Lock, KeyRound, Check } from 'lucide-
 import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
 import { useLocalStorage } from '../hooks/useLocalStorage';
+import { SkeletonReportItem } from './SkeletonLoader';
 
 const HistoryList: React.FC = () => {
   const { user } = useAuth();
@@ -166,9 +167,10 @@ const HistoryList: React.FC = () => {
       </div>
 
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-24 bg-white border border-slate-150 rounded-3xl shadow-xs">
-          <div className="w-8 h-8 border-3 border-indigo-205 border-t-[#4F46E5] rounded-full animate-spin" />
-          <p className="text-[10.5px] font-extrabold text-[#4F46E5] uppercase tracking-wide mt-3">Loading reports...</p>
+        <div className="space-y-4">
+          <SkeletonReportItem />
+          <SkeletonReportItem />
+          <SkeletonReportItem />
         </div>
       ) : reports.length === 0 ? (
         <div className="bg-white border border-slate-150 rounded-[2.2rem] p-8 text-center flex flex-col items-center my-4 shadow-sm">

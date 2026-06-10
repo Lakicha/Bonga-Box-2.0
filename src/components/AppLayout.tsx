@@ -22,7 +22,11 @@ import {
   Settings,
   ShieldCheck,
   ShieldAlert,
-  MapPin
+  MapPin,
+  Volume2,
+  VolumeX,
+  Phone,
+  AlertCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { auth, signOut } from '../firebase';
@@ -41,6 +45,105 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [currentLanguage, setCurrentLanguage] = useState<'EN' | 'SW'>('EN');
+  const [isSOSOpen, setIsSOSOpen] = useState(false);
+  const [isSirenActive, setIsSirenActive] = useState(false);
+
+  // Acoustic alarm system powered by Web Audio API
+  const audioCtxRef = React.useRef<AudioContext | null>(null);
+  const oscRef = React.useRef<OscillatorNode | null>(null);
+  const gainRef = React.useRef<GainNode | null>(null);
+
+  const startSiren = () => {
+    try {
+      if ('vibrate' in navigator) {
+        navigator.vibrate([200, 100, 200, 100, 200]);
+      }
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      const ctx = new AudioCtx();
+      audioCtxRef.current = ctx;
+
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'triangle'; // rich protective alarm sound
+      osc.frequency.setValueAtTime(800, ctx.currentTime);
+
+      // Sweep frequency up and down like a physical emergency beacon
+      let isHigh = false;
+      const interval = setInterval(() => {
+        if (ctx.state === 'closed') {
+          clearInterval(interval);
+          return;
+        }
+        const freq = isHigh ? 720 : 1050;
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        isHigh = !isHigh;
+        if ('vibrate' in navigator) {
+          navigator.vibrate(60);
+        }
+      }, 300);
+
+      gain.gain.setValueAtTime(0, ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.8, ctx.currentTime + 0.1);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start();
+      
+      oscRef.current = osc;
+      gainRef.current = gain;
+      setIsSirenActive(true);
+
+      // Store a cleanup on the osc node itself or use a ref for the interval
+      (osc as any).intervalId = interval;
+    } catch (err) {
+      console.warn('Audio context restriction:', err);
+    }
+  };
+
+  const stopSiren = () => {
+    try {
+      if (oscRef.current) {
+        clearInterval((oscRef.current as any).intervalId);
+        try {
+          oscRef.current.stop();
+        } catch (e) {}
+        oscRef.current.disconnect();
+        oscRef.current = null;
+      }
+      if (gainRef.current) {
+        gainRef.current.disconnect();
+        gainRef.current = null;
+      }
+      if (audioCtxRef.current) {
+        audioCtxRef.current.close();
+        audioCtxRef.current = null;
+      }
+    } catch (err) {
+      console.warn('Audio shutdown failed:', err);
+    }
+    setIsSirenActive(false);
+  };
+
+  // Safe cleanup on state changes or route changes
+  useEffect(() => {
+    return () => {
+      // Auto shutdown sound if layout unmounts
+      if (oscRef.current) {
+        clearInterval((oscRef.current as any).intervalId);
+        try {
+          oscRef.current.stop();
+        } catch (e) {}
+      }
+    };
+  }, []);
+
+  const triggerClickHaptic = () => {
+    if ('vibrate' in navigator) {
+      navigator.vibrate(15);
+    }
+  };
 
   // Update time for the mockup status bar dynamically
   useEffect(() => {
@@ -497,6 +600,175 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           <span className="text-[9px] font-bold uppercase tracking-tight">Profile</span>
         </Link>
       </div>
+
+      {/* Real-time Floating SOS Panic Button */}
+      <motion.button
+        id="floating-sos-btn"
+        onClick={() => {
+          triggerClickHaptic();
+          setIsSOSOpen(true);
+        }}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        className="fixed bottom-20 right-4 md:bottom-8 md:right-8 z-45 w-14 h-14 bg-red-600 hover:bg-red-700 text-white rounded-full flex flex-col items-center justify-center shadow-[0_4px_20px_rgba(220,38,38,0.4)] cursor-pointer text-center select-none"
+        title="Emergency Panic SOS"
+      >
+        <span className="absolute inset-0 rounded-full bg-red-600 animate-ping opacity-25 pointer-events-none" />
+        <AlertCircle size={20} className="text-white relative z-10" />
+        <span className="text-[9px] font-bold tracking-wider uppercase leading-none mt-0.5 relative z-10">SOS</span>
+      </motion.button>
+
+      {/* SOS Emergency Dashboard Dialog */}
+      <AnimatePresence>
+        {isSOSOpen && (
+          <>
+            {/* Dark glass backdrop mask */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => {
+                setIsSOSOpen(false);
+                stopSiren();
+              }}
+              className="fixed inset-0 bg-slate-900/65 backdrop-blur-md z-[150] flex items-center justify-center p-4 select-none"
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0, y: 30 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.9, opacity: 0, y: 30 }}
+                onClick={(e) => e.stopPropagation()}
+                className="w-full max-w-sm bg-white border border-slate-100 rounded-[2.2rem] shadow-2xl p-6 relative flex flex-col text-left overflow-hidden"
+              >
+                {/* Red alert label indicator */}
+                <div className="absolute top-0 inset-x-0 h-2 bg-red-600" />
+
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <h2 className="text-lg font-display font-bold text-slate-900 leading-tight">
+                      Emergency response panel
+                    </h2>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">
+                      Immediate Local Safeguards
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setIsSOSOpen(false);
+                      stopSiren();
+                    }}
+                    className="p-1 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  {/* Option 1: Acoustic Sirens deterrent */}
+                  <div className={`p-4 rounded-2xl border transition-all ${
+                    isSirenActive 
+                      ? 'bg-red-50 border-red-200 animate-pulse' 
+                      : 'bg-slate-50 border-slate-150'
+                  }`}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${
+                          isSirenActive ? 'bg-red-600 text-white' : 'bg-slate-200 text-slate-600'
+                        }`}>
+                          {isSirenActive ? <Volume2 size={18} className="animate-bounce" /> : <VolumeX size={18} />}
+                        </div>
+                        <div>
+                          <h3 className={`text-xs font-bold ${isSirenActive ? 'text-red-950' : 'text-slate-800'}`}>
+                            Sound Defensive Siren
+                          </h3>
+                          <p className="text-[10px] text-slate-500 font-medium leading-tight mt-0.5">
+                            Play loud tone & trigger phone haptic warning
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <button
+                        onClick={() => {
+                          triggerClickHaptic();
+                          if (isSirenActive) {
+                            stopSiren();
+                          } else {
+                            startSiren();
+                          }
+                        }}
+                        className={`px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-colors ${
+                          isSirenActive 
+                            ? 'bg-red-600 text-white' 
+                            : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-205'
+                        }`}
+                      >
+                        {isSirenActive ? 'Mute' : 'Activate'}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Option 2: Offline Emergency cellular coordinates */}
+                  <div 
+                    onClick={() => {
+                      setIsSOSOpen(false);
+                      stopSiren();
+                      navigate('/');
+                      setTimeout(() => {
+                        window.dispatchEvent(new Event('bonga_trigger_sms_modal'));
+                      }, 100);
+                    }}
+                    className="p-4 rounded-2xl bg-slate-50 border border-slate-150 hover:border-indigo-400 cursor-pointer transition-all flex items-center justify-between gap-3"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-indigo-50 text-[#4F46E5] flex items-center justify-center shrink-0">
+                        <ShieldAlert size={18} />
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-bold text-slate-800">
+                          Offline SMS Dispatcher
+                        </h4>
+                        <p className="text-[10px] text-slate-400 font-medium leading-tight mt-0.5">
+                          Compile GPS cellular tower package to dispatch
+                        </p>
+                      </div>
+                    </div>
+                    <ChevronRight size={14} className="text-slate-400" />
+                  </div>
+
+                  {/* Option 3: Direct helpline phone dials */}
+                  <div 
+                    onClick={() => {
+                      triggerClickHaptic();
+                      alert("Simulating emergency dial to Country Child Rescue Hub: Dialing 116...");
+                    }}
+                    className="p-4 rounded-2xl bg-slate-50 border border-slate-150 hover:border-[#06B6D4] cursor-pointer transition-all flex items-center justify-between gap-3"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                        <Phone size={16} />
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-bold text-slate-800">
+                          Call Child Protection (116)
+                        </h4>
+                        <p className="text-[10px] text-slate-400 font-medium leading-tight mt-0.5">
+                          Toll-free 24/7 children voice helpline
+                        </p>
+                      </div>
+                    </div>
+                    <ChevronRight size={14} className="text-slate-400" />
+                  </div>
+                </div>
+
+                <div className="mt-5 bg-slate-50 rounded-xl p-3.5 border border-slate-150/40 text-[9.5px] text-slate-500 font-semibold leading-relaxed text-center">
+                  All transmissions are metadata-stripped. If you are in immediate physical threat, run towards the nearest high-altitude Safe House.
+                </div>
+              </motion.div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
       <Onboarding />
     </div>
   );

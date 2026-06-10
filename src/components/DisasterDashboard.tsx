@@ -9,6 +9,8 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import Logo from './Logo';
 import { DEFAULT_SENSORS } from '../config/telemetryConfig';
+import { SecureEvidenceViewer } from './SecureEvidenceViewer';
+import { SkeletonDashboardScreen } from './SkeletonLoader';
 
 // Leaflet components
 import L from 'leaflet';
@@ -106,6 +108,8 @@ const DisasterDashboard: React.FC = () => {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [filter, setFilter] = useState<string>('All');
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
+  const [reportsLoading, setReportsLoading] = useState<boolean>(true);
+  const [alertsLoading, setAlertsLoading] = useState<boolean>(true);
 
   // Alert form parameters
   const [alertType, setAlertType] = useState<string>('Flood Alert');
@@ -182,15 +186,19 @@ const DisasterDashboard: React.FC = () => {
     const qReports = query(collection(db, 'reports'), where('category', 'in', ['Flood Alert', 'Emergency']), limit(100));
     const unsubscribeReports = onSnapshot(qReports, (snapshot) => {
       setReports(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Report)));
+      setReportsLoading(false);
     }, (error) => {
       handleFirestoreError(error, OperationType.LIST, 'reports');
+      setReportsLoading(false);
     });
 
     const qAlerts = query(collection(db, 'alerts'), orderBy('timestamp', 'desc'), limit(100));
     const unsubscribeAlerts = onSnapshot(qAlerts, (snapshot) => {
       setAlerts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Alert)));
+      setAlertsLoading(false);
     }, (error) => {
       handleFirestoreError(error, OperationType.LIST, 'alerts');
+      setAlertsLoading(false);
     });
 
     return () => {
@@ -296,7 +304,10 @@ const DisasterDashboard: React.FC = () => {
       </div>
 
       {/* Primary Bento Workspace Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
+      {reportsLoading || alertsLoading ? (
+        <SkeletonDashboardScreen listCount={4} showStats={false} />
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
         
         {/* LEFT COLUMN: Map & Interactive Sensor Monitoring (Map takes prominence) */}
         <div className="lg:col-span-8 space-y-5">
@@ -708,6 +719,7 @@ const DisasterDashboard: React.FC = () => {
           </div>
         </div>
       </div>
+      )}
 
       {/* DETAILED ACTION MODAL DRAWER OVERLAY */}
       <AnimatePresence>
@@ -758,11 +770,13 @@ const DisasterDashboard: React.FC = () => {
                   </div>
 
                   {selectedReport.photoURL && (
-                    <div>
-                      <span className="text-[8px] font-bold text-text-dim uppercase tracking-widest block mb-1.5">Mapped Photo Attachement</span>
-                      <div className="w-full h-36 rounded-2xl overflow-hidden border border-slate-200 relative shadow-sm">
-                        <img src={selectedReport.photoURL} alt="Disaster Zone Proof" className="w-full h-full object-cover" />
-                      </div>
+                    <div className="space-y-1">
+                      <span className="text-[8px] font-bold text-text-dim uppercase tracking-widest block">Confidential Evidence File</span>
+                      <SecureEvidenceViewer 
+                        photoURL={selectedReport.photoURL} 
+                        category={selectedReport.category}
+                        caseId={selectedReport.id}
+                      />
                     </div>
                   )}
 

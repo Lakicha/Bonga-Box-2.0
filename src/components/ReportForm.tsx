@@ -306,10 +306,10 @@ const ReportForm: React.FC = () => {
                           key={num}
                           type="button"
                           onClick={() => setFgmNumberGirls(num)}
-                          className={`flex-1 py-2 text-xs font-bold border-2 rounded-xl transition-all ${
+                          className={`flex-1 py-2 text-xs font-bold border rounded-xl transition-all ${
                             fgmNumberGirls === num
-                              ? 'border-purple-primary bg-purple-primary/5 text-purple-primary font-black'
-                              : 'border-slate-202 bg-slate-50 text-slate-500 hover:border-slate-300'
+                              ? 'border-purple-primary bg-purple-primary/5 text-purple-primary font-black shadow-xs'
+                              : 'border-slate-205 bg-slate-50 text-slate-500 hover:border-slate-300'
                           }`}
                         >
                           {num}
@@ -437,10 +437,10 @@ const ReportForm: React.FC = () => {
                     key={item.label}
                     type="button"
                     onClick={() => toggleIndicator(item.label)}
-                    className={`p-4 border-2 rounded-2xl flex flex-col text-left transition-all ${
+                    className={`p-4 border rounded-2xl flex flex-col text-left transition-all ${
                       isSelected 
-                        ? 'border-[#06B6D4] bg-[#06B6D4]/5 text-[#06B6D4] font-black' 
-                        : 'border-slate-100 bg-white hover:border-slate-250 text-slate-600'
+                        ? 'border-[#06B6D4] bg-[#06B6D4]/5 text-[#06B6D4] font-black shadow-xs' 
+                        : 'border-slate-205 bg-white hover:border-slate-250 text-slate-600'
                     }`}
                   >
                     <item.icon size={20} className={isSelected ? 'text-[#06B6D4]' : 'text-slate-400'} />
