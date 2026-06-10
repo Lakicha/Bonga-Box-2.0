@@ -15,6 +15,7 @@ import AuthPage from './components/AuthPage';
 import HistoryList from './components/HistoryList';
 import Support from './components/Support';
 import Donate from './components/Donate';
+import PremiumSafetySuite from './components/PremiumSafetySuite';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode; roles?: string[] }> = ({ children, roles }) => {
   const { profile } = useAuth();
@@ -57,6 +58,7 @@ const MainApp: React.FC = () => {
         <Route path="/history" element={<HistoryList />} />
         <Route path="/support" element={<Support />} />
         <Route path="/donate" element={<Donate />} />
+        <Route path="/safety" element={<PremiumSafetySuite />} />
         
         <Route 
           path="/school-dashboard" 

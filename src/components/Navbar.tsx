@@ -55,6 +55,7 @@ const Navbar: React.FC = () => {
     { name: 'Report', path: '/report', icon: ShieldAlert },
     { name: 'Flood Alerts', path: '/alerts', icon: ShieldAlert },
     { name: 'Resources', path: '/resources', icon: BookOpen },
+    { name: 'Safety Companion', path: '/safety', icon: Shield },
   ];
 
   if (profile?.role === 'Mentor/Teacher' || profile?.role === 'Mentor' || profile?.role === 'Teacher') {
