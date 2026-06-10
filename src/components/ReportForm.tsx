@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { db, collection, addDoc, serverTimestamp, storage, ref, uploadBytes, getDownloadURL, handleFirestoreError, OperationType } from '../firebase';
 import { useAuth } from '../AuthContext';
+import VoiceRecorder from './VoiceRecorder';
 import { 
   ShieldAlert, 
   MapPin, 
@@ -338,6 +339,15 @@ const ReportForm: React.FC = () => {
                       placeholder="Indicate key markers, timeline emergency level, and if transport is required..."
                       className="w-full bg-transparent border-b-2 border-purple-primary focus:border-purple-dark text-xs font-bold py-2 outline-none placeholder:text-slate-350 text-slate-800 transition-colors resize-none"
                       required
+                    />
+                  </div>
+
+                  <div className="py-1">
+                    <VoiceRecorder 
+                      language="EN"
+                      onTranscriptComplete={(text) => {
+                        setFgmDescription(prev => prev ? `${prev}\n${text}` : text);
+                      }}
                     />
                   </div>
 
