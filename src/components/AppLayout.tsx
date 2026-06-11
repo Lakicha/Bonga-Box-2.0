@@ -579,7 +579,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       </AnimatePresence>
 
       {/* Main Spacious Content Body Container */}
-      <main className="flex-1 min-h-0 overflow-y-auto w-full max-w-4xl mx-auto px-4 sm:px-6 py-4 md:py-6 pb-20 md:pb-10 relative z-10">
+      <main className="flex-1 min-h-0 overflow-y-auto w-full max-w-4xl mx-auto px-4 sm:px-6 pt-4 md:pt-6 pb-0 relative z-10">
         {children}
       </main>
 
