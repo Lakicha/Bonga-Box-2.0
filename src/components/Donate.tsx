@@ -328,7 +328,7 @@ export default function Donate() {
             
             <div className="space-y-2.5">
               <div className="bg-white border border-slate-150 p-4 rounded-xl flex items-start gap-3.5 shadow-xs">
-                <div className="w-10 h-10 rounded-xl bg-purple-50 text-[#4F46E5] flex items-center justify-center border border-purple-101 shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-indigo-50 text-[#4F46E5] flex items-center justify-center border border-indigo-100 shrink-0">
                   <Sparkles size={18} />
                 </div>
                 <div>
@@ -340,7 +340,7 @@ export default function Donate() {
               </div>
 
               <div className="bg-white border border-slate-150 p-4 rounded-xl flex items-start gap-3.5 shadow-xs">
-                <div className="w-10 h-10 rounded-xl bg-orange-50 text-orange-650 flex items-center justify-center border border-orange-101 shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-indigo-50 text-[#4F46E5] flex items-center justify-center border border-indigo-100 shrink-0">
                   <Megaphone size={18} />
                 </div>
                 <div>

@@ -76,33 +76,33 @@ const ResourceHub: React.FC = () => {
   );
 
   return (
-    <div className="font-sans max-w-md mx-auto select-none py-2 space-y-5">
+    <div className="font-sans max-w-md mx-auto select-none py-1.5 space-y-4">
       
       {/* Search Header Bar with thin purple border and magnifying glass icon */}
       <div className="relative">
         <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-purple-primary">
-          <Search size={16} />
+          <Search size={15} />
         </div>
         <input 
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search safety guides, publications..." 
-          className="w-full pl-11 pr-5 py-3.5 bg-white border border-purple-primary rounded-2xl text-xs font-semibold focus:outline-none placeholder:text-slate-400 text-slate-800 shadow-xs"
+          className="w-full pl-11 pr-5 py-2.5 bg-white border border-purple-primary rounded-2xl text-xs font-semibold focus:outline-none placeholder:text-slate-400 text-slate-800 shadow-xs"
         />
       </div>
 
       {/* Categories: Two clean cards for "FGM Prevention" and "Legal Framework" with educational design */}
       <div>
-        <p className="text-[9.5px] text-slate-400 font-extrabold uppercase tracking-widest pl-1 mb-2.5">
+        <p className="text-[9.5px] text-slate-400 font-extrabold uppercase tracking-widest pl-1 mb-2">
           Knowledge Base Hub
         </p>
 
-        <div className="grid grid-cols-2 gap-3.5">
+        <div className="grid grid-cols-2 gap-3">
           {/* Card Category FGM Prevention */}
-          <div className="bg-white border border-slate-150 rounded-2xl p-4 flex flex-col text-left space-y-2 pb-5">
-            <div className="w-9 h-9 rounded-xl bg-purple-primary/5 text-purple-primary flex items-center justify-center">
-              <ShieldCheck size={20} />
+          <div className="bg-white border border-slate-150 rounded-2xl p-3.5 flex flex-col text-left space-y-1.5 pb-4">
+            <div className="w-8.5 h-8.5 rounded-xl bg-purple-primary/5 text-purple-primary flex items-center justify-center shrink-0">
+              <ShieldCheck size={18} />
             </div>
             <h3 className="text-xs font-display font-black text-slate-900 leading-tight">
               FGM Prevention
@@ -113,9 +113,9 @@ const ResourceHub: React.FC = () => {
           </div>
 
           {/* Card Category Legal Framework */}
-          <div className="bg-white border border-slate-150 rounded-2xl p-4 flex flex-col text-left space-y-2 pb-5">
-            <div className="w-9 h-9 rounded-xl bg-purple-primary/5 text-purple-primary flex items-center justify-center">
-              <BookOpen size={18} />
+          <div className="bg-white border border-slate-150 rounded-2xl p-3.5 flex flex-col text-left space-y-1.5 pb-4">
+            <div className="w-8.5 h-8.5 rounded-xl bg-purple-primary/5 text-purple-primary flex items-center justify-center shrink-0">
+              <BookOpen size={16} />
             </div>
             <h3 className="text-xs font-display font-black text-slate-900 leading-tight">
               Legal Framework
@@ -128,8 +128,8 @@ const ResourceHub: React.FC = () => {
       </div>
 
       {/* Download List: A list of PDF guides with purple download arrows next to them */}
-      <div className="bg-white border border-slate-150 rounded-[2rem] p-5 shadow-xs space-y-3">
-        <div className="flex justify-between items-center pb-2.5 border-b border-slate-100">
+      <div className="bg-white border border-slate-150 rounded-2xl p-4 shadow-xs space-y-3">
+        <div className="flex justify-between items-center pb-2 border-b border-slate-100">
           <span className="text-[10px] font-extrabold text-slate-900 uppercase tracking-widest block">
             Downloadable Toolkits & Publications
           </span>
@@ -137,13 +137,13 @@ const ResourceHub: React.FC = () => {
         </div>
 
         {filteredGuides.length > 0 ? (
-          <div className="space-y-3">
+          <div className="space-y-2.5">
             {filteredGuides.map((guide) => {
               const isDownloaded = downloadTracker[guide.id];
               return (
                 <div 
                   key={guide.id}
-                  className="p-3.5 bg-slate-50 border border-slate-100 rounded-xl flex items-start justify-between gap-3.5 text-left"
+                  className="p-3 bg-slate-50 border border-slate-100 rounded-xl flex items-start justify-between gap-3 text-left"
                 >
                   <div className="min-w-0 flex-1">
                     <span className="text-[8px] font-black tracking-wider uppercase bg-purple-primary/5 text-[#4F46E5] px-1.5 py-0.5 rounded">
@@ -164,13 +164,13 @@ const ResourceHub: React.FC = () => {
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={() => setDownloadTracker(prev => ({ ...prev, [guide.id]: true }))}
-                    className={`w-8 h-8 rounded-full flex items-center justify-center transition-all shrink-0 mt-0.5 ${
+                    className={`w-7.5 h-7.5 rounded-full flex items-center justify-center transition-all shrink-0 mt-0.5 ${
                       isDownloaded 
                         ? 'bg-emerald-50 text-emerald-500 hover:bg-emerald-100' 
                         : 'bg-white hover:bg-slate-100 border border-slate-200 text-[#4F46E5]'
                     }`}
                   >
-                    {isDownloaded ? <FileCheck2 size={14} /> : <Download size={14} />}
+                    {isDownloaded ? <FileCheck2 size={13} /> : <Download size={13} />}
                   </a>
                 </div>
               );
@@ -184,21 +184,21 @@ const ResourceHub: React.FC = () => {
       </div>
 
       {/* Banner: A vibrant purple-to-blue gradient banner at the bottom with "Knowledge is Power" and a "Download All" button */}
-      <div className="bg-gradient-to-r from-[#4F46E5] via-[#3F37C9] to-[#06B6D4] text-white rounded-[2rem] p-5 shadow-lg relative overflow-hidden text-center flex flex-col items-center">
+      <div className="bg-gradient-to-r from-[#4F46E5] via-[#3F37C9] to-[#06B6D4] text-white rounded-2xl p-4.5 shadow-lg relative overflow-hidden text-center flex flex-col items-center">
         <div className="absolute inset-0 bg-white/5 backdrop-blur-xs pointer-events-none" />
         <div className="relative z-10 w-full flex flex-col items-center">
-          <Lightbulb size={24} className="text-amber-300 animate-bounce mb-2" />
-          <h3 className="font-display font-black text-base text-white tracking-tight uppercase leading-none mb-1">
+          <Lightbulb size={20} className="text-amber-300 animate-bounce mb-1.5" />
+          <h3 className="font-display font-black text-sm text-white tracking-tight uppercase leading-none mb-1">
             Knowledge is Power
           </h3>
-          <p className="text-[10px] text-indigo-150 font-bold mb-4">
+          <p className="text-[10px] text-indigo-150 font-bold mb-3.5">
             Cache all regional protection files for instant offline viewing.
           </p>
           
           <button
             onClick={handleDownloadAll}
             disabled={downloadedAll}
-            className={`w-full py-2.5 rounded-xl font-extrabold text-[10px] uppercase tracking-wider transition-all select-none ${
+            className={`w-full py-2 rounded-xl font-extrabold text-[10px] uppercase tracking-wider transition-all select-none ${
               downloadedAll 
                 ? 'bg-emerald-500 text-white shadow-inner pointer-events-none' 
                 : 'bg-white hover:bg-indigo-50 text-[#4F46E5] shadow-md active:scale-[0.98]'

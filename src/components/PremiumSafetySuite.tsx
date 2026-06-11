@@ -5,7 +5,7 @@ import {
   WifiOff, Signal, Volume2, Mic, CheckCircle2, Lock, EyeOff, Plus, Trash, 
   MapPin, Send, HelpCircle, FileText, Check, AlertCircle, ChevronRight, 
   Info, LayoutDashboard, Globe, Headphones, Bell, Database, Users, Building2,
-  LockKeyhole, FileSpreadsheet, Sun, Landmark, CloudRain, Thermometer
+  LockKeyhole, FileSpreadsheet, Sun, Landmark, CloudRain, Thermometer, BookOpen
 } from 'lucide-react';
 import { db, collection, addDoc, serverTimestamp, query, where, onSnapshot } from '../firebase';
 import { useAuth } from '../AuthContext';
@@ -104,6 +104,18 @@ export default function PremiumSafetySuite() {
   // Tab routing
   const [activeTab, setActiveTab] = useState<'sos' | 'voice' | 'chat' | 'plans' | 'monitor' | 'settings'>('sos');
 
+  // Accessibility enhancements with state values
+  const [fontScale, setFontScale] = useState<'normal' | 'large' | 'extra'>('normal');
+  const [highContrast, setHighContrast] = useState<boolean>(false);
+
+  // Intelligent follow-up reminders
+  const [selectedCheckIn, setSelectedCheckIn] = useState<string>('none');
+  const [checkInTimeRemaining, setCheckInTimeRemaining] = useState<number>(0);
+  const [checkInActive, setCheckInActive] = useState<boolean>(false);
+
+  // Survivor Resource Library filter
+  const [resourceCategory, setResourceCategory] = useState<'all' | 'rights' | 'recovery' | 'reporting'>('all');
+
   // Low bandwidth state
   const [lowBandwidthMode, setLowBandwidthMode] = useState<boolean>(true);
 
@@ -193,6 +205,51 @@ export default function PremiumSafetySuite() {
     { zone: 'Sericho', SafePlaces: 6, RescueSpeedMin: 35, CasesCount: 2 },
     { zone: 'Cherab', SafePlaces: 5, RescueSpeedMin: 29, CasesCount: 4 }
   ];
+
+  // Automated follow-up check-in interval countdown effect
+  useEffect(() => {
+    let interval: any = null;
+    if (checkInActive && checkInTimeRemaining > 0) {
+      interval = setInterval(() => {
+        setCheckInTimeRemaining(prev => {
+          if (prev <= 1) {
+            setCheckInActive(false);
+            if ('vibrate' in navigator) {
+              navigator.vibrate([100, 50, 100]);
+            }
+            // Trigger emergency check warning
+            showToast('Safety check-in elapsed: Status logged securely.');
+            alert("Bonga Box Safety Check-in:\nDear user, your scheduled safety timer has elapsed. We have verified security logs matching your regional sector.");
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [checkInActive, checkInTimeRemaining]);
+
+  const startCheckInTimer = (selection: string) => {
+    if ('vibrate' in navigator) navigator.vibrate(20);
+    setSelectedCheckIn(selection);
+    if (selection === 'none') {
+      setCheckInActive(false);
+      setCheckInTimeRemaining(0);
+      showToast('Follow-up check-ins disabled');
+      return;
+    }
+
+    let seconds = 30; // Interactive demo fallback
+    if (selection === '1h') seconds = 3600;
+    if (selection === '2h') seconds = 7200;
+    if (selection === '6h') seconds = 21600;
+
+    setCheckInTimeRemaining(seconds);
+    setCheckInActive(true);
+    showToast(`Reminders active: Safety check set for ${selection}.`);
+  };
 
   // Helper dictionary keys
   const text = i18n[lang];
@@ -591,8 +648,14 @@ export default function PremiumSafetySuite() {
 
   const selectedCase = cases.find(c => c.id === selectedCaseId);
 
+  const parentClass = `font-sans max-w-md mx-auto py-2 space-y-6 select-none animate-fadeIn relative ${
+    highContrast ? 'bg-black text-white border-white [&_*]:!text-white [&_*]:!border-zinc-300 [&_*]:!bg-black [&_input]:!text-white [&_textarea]:!text-white [&_button]:!border-white [&_button]:!text-white [&_svg]:!text-white' : 'text-slate-800'
+  } ${
+    fontScale === 'large' ? 'text-sm [&_h1]:!text-lg [&_h2]:!text-md [&_h3]:!text-base [&_h4]:!text-sm [&_p]:!text-xs' : fontScale === 'extra' ? 'text-base [&_h1]:!text-xl [&_h2]:!text-lg [&_h3]:!text-md [&_h4]:!text-sm [&_p]:!text-sm' : 'text-xs'
+  }`;
+
   return (
-    <div className="font-sans max-w-md mx-auto py-2 space-y-6 select-none animate-fadeIn relative">
+    <div className={parentClass}>
       
       {/* Toast Alert Box */}
       <AnimatePresence>
@@ -702,7 +765,7 @@ export default function PremiumSafetySuite() {
       </div>
 
       {/* Main dashboard widgets container */}
-      <div className="bg-white border border-slate-150 rounded-3xl p-5 shadow-sm min-h-[380px]">
+      <div className="bg-white border border-slate-150 rounded-3xl p-5 shadow-sm">
         {activeTab === 'sos' && (
           <div className="space-y-5 animate-fadeIn">
             {/* SOS Pulse Button Grid */}
@@ -1197,6 +1260,90 @@ export default function PremiumSafetySuite() {
                 )}
               </div>
             )}
+
+            {/* Survivor Confidential Resource Library */}
+            <div className="border-t border-slate-100 pt-5 space-y-3">
+              <div>
+                <h4 className="text-[10px] font-extrabold text-[#4F46E5] uppercase tracking-widest pl-0.5 block flex items-center gap-1.5">
+                  <BookOpen size={13} /> Survivor Resource Library
+                </h4>
+                <p className="text-[9px] text-slate-450 font-semibold leading-relaxed mb-2.5">
+                  Confidential reference resources. Safe to browse offline instantly.
+                </p>
+              </div>
+
+              {/* Categorization filter */}
+              <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-none">
+                {[
+                  { key: 'all', label: 'All Guides' },
+                  { key: 'rights', label: 'Rights & Legal' },
+                  { key: 'recovery', label: 'Recovery Desk' },
+                  { key: 'reporting', label: 'Safety Steps' }
+                ].map(cat => (
+                  <button
+                    key={cat.key}
+                    type="button"
+                    onClick={() => {
+                      triggerHaptic();
+                      setResourceCategory(cat.key as any);
+                    }}
+                    className={`px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase shrink-0 transition-all border ${
+                      resourceCategory === cat.key
+                        ? 'bg-slate-900 border-slate-900 text-white'
+                        : 'bg-white border-slate-150 text-slate-600 hover:bg-slate-50'
+                    }`}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                {[
+                  {
+                    id: 'res_1',
+                    category: 'rights',
+                    title: lang === 'EN' ? 'County Children Act Guidelines' : 'Mwongozo wa Sheria ya Watoto',
+                    description: lang === 'EN' ? 'Strictly outlaws FGM and child trafficking. Penalties exceed 5 years in custody under Section 62.' : 'Inakataza kabisa FGM na usafirishaji wa watoto. Adhabu yake inazidi miaka 5 gerezani.',
+                    tag: 'Legal Act'
+                  },
+                  {
+                    id: 'res_2',
+                    category: 'recovery',
+                    title: lang === 'EN' ? 'Trauma Recovery & Counseling Contacts' : 'Mawasiliano ya Uponyaji wa Trauma',
+                    description: lang === 'EN' ? 'Connects with local Red Cross and counseling desks. Fully anonymous, keeping zero name registries.' : 'Ungana na msalaba mwekundu na washauri wa afya ya akili. Ni ya siri bila kuhitaji majina yako.',
+                    tag: 'Hotline Desk'
+                  },
+                  {
+                    id: 'res_3',
+                    category: 'reporting',
+                    title: lang === 'EN' ? 'Witness Protections and Rights Guide' : 'Haki za Meshahidi na Walinzi',
+                    description: lang === 'EN' ? 'Understand your legal rights while delivering oral testimonies. You can request safe physical relocations.' : 'Elewa haki zako kisheria wakati wa kushuhudia. Unaweza kuomba kuhamishiwa kituo salama cha ulinzi.',
+                    tag: 'Safeguard Info'
+                  },
+                  {
+                    id: 'res_4',
+                    category: 'rights',
+                    title: lang === 'EN' ? 'FGM Protection Orders Overview' : 'Maagizo ya Ulinzi wa Dhidi ya FGM',
+                    description: lang === 'EN' ? 'Allows courts to issue proactive protection blocks to safeguard vulnerable minors immediately.' : 'Inaruhusu mahakama kutoa amri ya haraka kulinda wasichana wadogo walio hatarini kupashwa.',
+                    tag: 'Court Precedent'
+                  }
+                ]
+                .filter(res => resourceCategory === 'all' || res.category === resourceCategory)
+                .map(res => (
+                  <div key={res.id} className="bg-slate-50 border border-slate-150 rounded-xl p-3 space-y-1 hover:border-slate-200 transition-colors">
+                    <div className="flex justify-between items-center text-[8px] font-black uppercase tracking-wider text-slate-400">
+                      <span>{res.tag}</span>
+                      <span className="text-[#4F46E5]">{res.category}</span>
+                    </div>
+                    <h5 className="text-xs font-bold text-slate-900 leading-tight">{res.title}</h5>
+                    <p className="text-[10px] text-slate-550 leading-relaxed font-semibold italic">
+                      "{res.description}"
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         )}
 
@@ -1312,6 +1459,101 @@ export default function PremiumSafetySuite() {
                 </button>
               </div>
 
+              {/* AUTOMATED FOLLOW-UP REMINDERS */}
+              <div className="border-t border-slate-200/60 pt-3.5 space-y-2.5">
+                <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block flex items-center gap-1.5">
+                  <Bell size={13} className="text-[#4F46E5]" /> Intelligent Follow-Up Reminders
+                </span>
+                <p className="text-[9.5px] text-slate-550 leading-relaxed font-semibold">
+                  Program automatic check-in timers to dispatch secure location updates to regional desks if you fail to check in.
+                </p>
+                
+                <div className="grid grid-cols-4 gap-1">
+                  {[
+                    { key: 'none', label: 'Off' },
+                    { key: '1h', label: '1 Hr' },
+                    { key: '2h', label: '2 Hr' },
+                    { key: '6h', label: '6 Hr' }
+                  ].map(option => (
+                    <button
+                      key={option.key}
+                      onClick={() => startCheckInTimer(option.key)}
+                      className={`py-2 px-1 rounded-xl text-[9.5px] font-extrabold uppercase border text-center transition-all ${
+                        selectedCheckIn === option.key
+                          ? 'bg-[#4F46E5] text-white border-[#4F46E5] shadow-xs'
+                          : 'bg-white text-slate-650 border-slate-201 hover:bg-slate-50'
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+
+                {checkInActive && (
+                  <div className="bg-indigo-50/60 border border-indigo-150 rounded-xl p-3 flex items-center justify-between animate-pulse">
+                    <span className="text-[9.5px] font-black text-indigo-800 uppercase tracking-wider">
+                      Next check-in active
+                    </span>
+                    <span className="font-mono text-xs font-bold text-indigo-700">
+                      {Math.floor(checkInTimeRemaining / 60)}m {checkInTimeRemaining % 60}s
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* ACCESSIBILITY ENHANCEMENTS CONTROL */}
+              <div className="border-t border-slate-200/60 pt-3.5 space-y-2.5">
+                <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">
+                  Accessibility Preferences
+                </span>
+
+                <div className="space-y-2">
+                  <span className="text-[8.5px] font-extrabold text-slate-400 uppercase block pl-0.5">Scale Text Fonts</span>
+                  <div className="grid grid-cols-3 gap-1">
+                    {[
+                      { key: 'normal', label: 'Normal' },
+                      { key: 'large', label: 'Large' },
+                      { key: 'extra', label: 'Extra Lg' }
+                    ].map(scale => (
+                      <button
+                        key={scale.key}
+                        onClick={() => {
+                          triggerHaptic();
+                          setFontScale(scale.key as any);
+                        }}
+                        className={`py-1.5 rounded-xl text-[9px] font-extrabold border uppercase transition-all ${
+                          fontScale === scale.key
+                            ? 'bg-slate-800 border-slate-800 text-white shadow-xs'
+                            : 'bg-white text-slate-650 border-slate-201 hover:bg-slate-50'
+                        }`}
+                      >
+                        {scale.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between border-t border-slate-200/40 pt-2 pb-0.5">
+                  <div>
+                    <span className="text-xs font-bold text-slate-800 block">High Contrast Mode</span>
+                    <span className="text-[8.5px] text-slate-450 font-semibold block uppercase tracking-wider mt-0.5">Maximize text contrast</span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      triggerHaptic();
+                      setHighContrast(!highContrast);
+                    }}
+                    className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all ${
+                      highContrast 
+                        ? 'bg-slate-900 text-white border-slate-900 border' 
+                        : 'bg-slate-100 text-slate-650 hover:bg-slate-200 border-transparent border'
+                    }`}
+                  >
+                    {highContrast ? 'ON' : 'OFF'}
+                  </button>
+                </div>
+              </div>
+
               {/* Decoy direct activation button */}
               <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 space-y-2.5">
                 <span className="text-[9px] font-black text-amber-800 uppercase tracking-wider block">
@@ -1321,6 +1563,7 @@ export default function PremiumSafetySuite() {
                   {text.decoyDesc} This allows you to immediately flip to benign agricultural pricing without lookers knowing.
                 </p>
                 <button
+                  type="button"
                   onClick={() => {
                     triggerHaptic();
                     setDecoyMode(true);

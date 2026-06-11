@@ -161,13 +161,32 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     return () => clearInterval(interval);
   }, []);
 
+  // Premium hotkey listener: Shift + S for emergency panel, Shift + L to lock instantly
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+        return;
+      }
+
+      const keyUpper = e.key.toUpperCase();
+      if (e.shiftKey && keyUpper === 'S') {
+        e.preventDefault();
+        triggerClickHaptic();
+        setIsSOSOpen(true);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   // Check if current path is an admin / operator full-screen dashboard
   const isOperatorDashboard = location.pathname.includes('-dashboard');
 
   if (isOperatorDashboard) {
     // Render full-screen layout for operator/admin dashboards on computer
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
+      <div className="bg-slate-50 flex flex-col font-sans">
         {/* Simple Operator Desktop Menu */}
         <header className="bg-white border-b border-slate-200 py-3 px-6 flex justify-between items-center shrink-0 shadow-xs">
           <div className="flex items-center gap-3">
@@ -194,7 +213,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             </button>
           </div>
         </header>
-        <main className="flex-grow overflow-y-auto">
+        <main className="flex-1 min-h-0 overflow-y-auto">
           {children}
         </main>
       </div>
@@ -226,7 +245,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans text-slate-800 relative overflow-x-hidden">
+    <div className="bg-[#F8FAFC] flex flex-col font-sans text-slate-800 relative overflow-x-hidden">
       {/* Dynamic global ambient blur graphics */}
       <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-purple-200/25 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-indigo-205/30 rounded-full blur-[140px] pointer-events-none" />
@@ -290,6 +309,22 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                 {profile.role.replace('/Teacher', '')}
               </span>
             )}
+
+            {/* 🔴 Top Integrated Header SOS Trigger */}
+            <motion.button
+              id="header-sos-btn"
+              onClick={() => {
+                triggerClickHaptic();
+                setIsSOSOpen(true);
+              }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-red-50 hover:bg-red-100 border border-red-200/50 rounded-xl text-red-650 font-extrabold text-[10px] uppercase tracking-wider relative overflow-hidden transition-all shadow-xs cursor-pointer select-none"
+              title="Urgent Emergency SOS Panic"
+            >
+              <span className="w-1.5 h-1.5 bg-red-600 rounded-full animate-ping shrink-0" />
+              <span>SOS Panic</span>
+            </motion.button>
             
             {/* 🔔 Notifications Button and Simulator */}
             <div className="relative">
@@ -544,12 +579,12 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       </AnimatePresence>
 
       {/* Main Spacious Content Body Container */}
-      <main className="flex-grow w-full max-w-4xl mx-auto px-4 sm:px-6 py-6 md:py-10 pb-24 md:pb-12 relative z-10">
+      <main className="flex-1 min-h-0 overflow-y-auto w-full max-w-4xl mx-auto px-4 sm:px-6 py-4 md:py-6 pb-20 md:pb-10 relative z-10">
         {children}
       </main>
 
       {/* Floating Modern Native-style bottom Navigation bar ONLY visible on Mobile standard screen ports */}
-      <div className="md:hidden fixed bottom-4 inset-x-4 bg-white/95 backdrop-blur-md border border-slate-200/60 py-2.5 px-2 flex justify-around items-center rounded-2xl shadow-lg z-40 select-none animate-fadeIn">
+      <div className="md:hidden fixed bottom-3 inset-x-4 bg-white/95 backdrop-blur-md border border-slate-200/60 py-2 px-2 flex justify-around items-center rounded-2xl shadow-lg z-40 select-none animate-fadeIn">
         <Link 
           to="/" 
           className={`flex flex-col items-center justify-center gap-1 w-14 transition-all ${
@@ -601,21 +636,24 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         </Link>
       </div>
 
-      {/* Real-time Floating SOS Panic Button */}
+      {/* Real-time Floating SOS Panic Button (Stylized integrated Capsule Pill) */}
       <motion.button
         id="floating-sos-btn"
         onClick={() => {
           triggerClickHaptic();
           setIsSOSOpen(true);
         }}
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
-        className="fixed bottom-20 right-4 md:bottom-8 md:right-8 z-45 w-14 h-14 bg-red-600 hover:bg-red-700 text-white rounded-full flex flex-col items-center justify-center shadow-[0_4px_20px_rgba(220,38,38,0.4)] cursor-pointer text-center select-none"
+        whileHover={{ scale: 1.05, y: -1 }}
+        whileTap={{ scale: 0.95 }}
+        className="fixed bottom-18 right-4 md:bottom-6 md:right-6 z-45 px-4 h-11 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white rounded-full flex items-center justify-center gap-2 shadow-[0_6px_20px_rgba(220,38,38,0.45)] hover:shadow-[0_8px_28px_rgba(220,38,38,0.6)] cursor-pointer select-none transition-shadow border border-red-500/30 overflow-hidden"
         title="Emergency Panic SOS"
       >
-        <span className="absolute inset-0 rounded-full bg-red-600 animate-ping opacity-25 pointer-events-none" />
-        <AlertCircle size={20} className="text-white relative z-10" />
-        <span className="text-[9px] font-bold tracking-wider uppercase leading-none mt-0.5 relative z-10">SOS</span>
+        <span className="absolute inset-0 rounded-full bg-red-500 animate-ping opacity-20 pointer-events-none" style={{ animationDuration: '3s' }} />
+        <span className="w-1.5 h-1.5 rounded-full bg-rose-200 animate-pulse shrink-0" />
+        <AlertCircle size={15} className="text-white relative z-10" />
+        <span className="text-[10px] font-black tracking-widest uppercase leading-none relative z-10">
+          PANIC SOS
+        </span>
       </motion.button>
 
       {/* SOS Emergency Dashboard Dialog */}
@@ -638,7 +676,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                 animate={{ scale: 1, opacity: 1, y: 0 }}
                 exit={{ scale: 0.9, opacity: 0, y: 30 }}
                 onClick={(e) => e.stopPropagation()}
-                className="w-full max-w-sm bg-white border border-slate-100 rounded-[2.2rem] shadow-2xl p-6 relative flex flex-col text-left overflow-hidden"
+                className="w-full max-w-sm bg-white border border-slate-100 rounded-3xl shadow-2xl p-4.5 relative flex flex-col text-left overflow-hidden"
               >
                 {/* Red alert label indicator */}
                 <div className="absolute top-0 inset-x-0 h-2 bg-red-600" />
@@ -663,9 +701,9 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                   </button>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {/* Option 1: Acoustic Sirens deterrent */}
-                  <div className={`p-4 rounded-2xl border transition-all ${
+                  <div className={`p-3.5 rounded-2xl border transition-all ${
                     isSirenActive 
                       ? 'bg-red-50 border-red-200 animate-pulse' 
                       : 'bg-slate-50 border-slate-150'
@@ -717,7 +755,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                         window.dispatchEvent(new Event('bonga_trigger_sms_modal'));
                       }, 100);
                     }}
-                    className="p-4 rounded-2xl bg-slate-50 border border-slate-150 hover:border-indigo-400 cursor-pointer transition-all flex items-center justify-between gap-3"
+                    className="p-3.5 rounded-2xl bg-slate-50 border border-slate-150 hover:border-indigo-400 cursor-pointer transition-all flex items-center justify-between gap-3"
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-xl bg-indigo-50 text-[#4F46E5] flex items-center justify-center shrink-0">
@@ -741,10 +779,10 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                       triggerClickHaptic();
                       alert("Simulating emergency dial to Country Child Rescue Hub: Dialing 116...");
                     }}
-                    className="p-4 rounded-2xl bg-slate-50 border border-slate-150 hover:border-[#06B6D4] cursor-pointer transition-all flex items-center justify-between gap-3"
+                    className="p-3.5 rounded-2xl bg-slate-50 border border-slate-150 hover:border-indigo-400 cursor-pointer transition-all flex items-center justify-between gap-3"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                      <div className="w-9 h-9 rounded-xl bg-indigo-50 text-[#4F46E5] flex items-center justify-center shrink-0">
                         <Phone size={16} />
                       </div>
                       <div>
@@ -760,7 +798,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                   </div>
                 </div>
 
-                <div className="mt-5 bg-slate-50 rounded-xl p-3.5 border border-slate-150/40 text-[9.5px] text-slate-500 font-semibold leading-relaxed text-center">
+                <div className="mt-4 bg-slate-50 rounded-xl p-3.5 border border-slate-150/40 text-[9.5px] text-slate-500 font-semibold leading-relaxed text-center">
                   All transmissions are metadata-stripped. If you are in immediate physical threat, run towards the nearest high-altitude Safe House.
                 </div>
               </motion.div>

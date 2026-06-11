@@ -261,7 +261,7 @@ const Home: React.FC = () => {
   };
 
   return (
-    <div className="font-sans max-w-4xl mx-auto py-2 px-1 relative select-none">
+    <div className="font-sans max-w-4xl mx-auto py-1 px-3 relative select-none">
       
       {/* Interactive Simulated SMS Toast Notification */}
       <div className="fixed top-4 right-4 z-200 pointer-events-none flex flex-col gap-2 max-w-sm w-full">
@@ -300,7 +300,7 @@ const Home: React.FC = () => {
       </div>
       
       {/* Top Interactive Connectivity Switch (Online vs Offline Demonstration) */}
-      <div className="flex justify-between items-center bg-white border border-slate-150 rounded-2xl px-4 py-2.5 mb-6 shadow-xs max-w-xs ml-auto">
+      <div className="flex justify-between items-center bg-white border border-slate-150 rounded-2xl px-4 py-2 mb-4.5 shadow-xs max-w-xs ml-auto">
         <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
           {isOnline ? (
             <>
@@ -347,11 +347,11 @@ const Home: React.FC = () => {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -12 }}
-            className="space-y-6"
+            className="space-y-4"
           >
             {/* 2. Compact & Premium Home Header: Profile Thumbnail & SAFE badge */}
-            <div className="bg-white border border-slate-150 rounded-2xl p-4 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4 relative overflow-hidden">
-              <div className="flex items-center gap-3.5">
+            <div className="bg-white border border-slate-150 rounded-2xl p-3.5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3 relative overflow-hidden">
+              <div className="flex items-center gap-3">
                 {/* Profile Thumbnail with PROTECT indicators */}
                 <div className="relative w-11 h-11 rounded-full border border-slate-150 shrink-0 flex items-center justify-center bg-indigo-50/70 text-[#4F46E5] overflow-hidden">
                   {user?.photoURL ? (
@@ -381,7 +381,7 @@ const Home: React.FC = () => {
                       <span>Protected</span>
                     </span>
                   </div>
-                  <div className="flex items-center gap-3 mt-1.5">
+                  <div className="flex items-center gap-3 mt-1">
                     <p className="text-[10.5px] text-slate-500 font-medium">
                       Safe Space Club Member
                     </p>
@@ -401,11 +401,11 @@ const Home: React.FC = () => {
                   </div>
                 </div>
               </div>
-
+ 
               {/* Centered SAFE Status Badge with Green Tinted Glow */}
-              <div className="bg-emerald-50/50 border border-emerald-150/20 rounded-xl px-3.5 py-2 flex items-center gap-2.5 max-w-xs md:shrink-0 text-left">
-                <div className="w-6.5 h-6.5 rounded-full bg-emerald-500/10 text-emerald-650 flex items-center justify-center shrink-0">
-                  <UserCheck size={13} />
+              <div className="bg-emerald-50/50 border border-emerald-150/20 rounded-xl px-3 py-1.5 flex items-center gap-2 max-w-xs md:shrink-0 text-left">
+                <div className="w-6 h-6 rounded-full bg-emerald-500/10 text-emerald-650 flex items-center justify-center shrink-0">
+                  <UserCheck size={12} />
                 </div>
                 <div>
                   <div className="flex items-center gap-1">
@@ -416,10 +416,10 @@ const Home: React.FC = () => {
                 </div>
               </div>
             </div>
-
+ 
             {/* Environmental Shield: Two minimalist cards showing "Operational Status" and "Last Sync" */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="bg-white border border-slate-150 rounded-2xl p-4 shadow-xs flex items-center gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div className="bg-white border border-slate-150 rounded-2xl p-3 shadow-xs flex items-center gap-3">
                 <div className="w-8 h-8 rounded-xl bg-purple-primary/5 flex items-center justify-center text-[#4F46E5] shrink-0">
                   <Signal size={15} />
                 </div>
@@ -428,8 +428,8 @@ const Home: React.FC = () => {
                   <p className="text-xs font-bold text-purple-primary font-mono mt-0.5">Active Secure Space</p>
                 </div>
               </div>
-
-              <div className="bg-white border border-slate-150 rounded-2xl p-4 shadow-xs flex items-center justify-between gap-3">
+ 
+              <div className="bg-white border border-slate-150 rounded-2xl p-3 shadow-xs flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-xl bg-purple-primary/5 flex items-center justify-center text-[#4F46E5] shrink-0">
                     <RefreshCw size={14} className={isScanning ? 'animate-spin' : ''} />
@@ -473,26 +473,26 @@ const Home: React.FC = () => {
 
             {/* Critical Channels: FGM Risk and Flood Alert Action Bento Cards */}
             <div>
-              <p className="text-[9.5px] text-slate-400 font-extrabold uppercase tracking-widest pl-1 mb-2.5">
+              <p className="text-[9.5px] text-slate-400 font-extrabold uppercase tracking-widest pl-1 mb-2">
                 Active Protection Nodes
               </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 {/* Row 1: Item 1 - Emergency SOS */}
                 <div 
                   onClick={() => setIsUSSDOpen(true)}
-                  className="bg-red-50/40 border border-red-105 hover:border-red-300 rounded-2xl p-5 transition-all cursor-pointer shadow-xs group text-left relative overflow-hidden"
+                  className="bg-indigo-50/25 border border-indigo-100/70 hover:border-indigo-300 hover:shadow-xs active:scale-[0.985] rounded-2xl p-4 sm:p-4.5 transition-all cursor-pointer shadow-xs group text-left relative overflow-hidden select-none"
                 >
-                  <div className="absolute top-0 right-0 w-24 h-24 bg-red-500/5 rounded-full -mr-8 -mt-8" />
-                  <div className="w-10 h-10 rounded-xl bg-red-100 text-red-650 flex items-center justify-center mb-4 transition-transform group-hover:scale-105">
-                    <AlertCircle size={20} className="animate-pulse" />
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-full -mr-8 -mt-8" />
+                  <div className="w-9 h-9 rounded-xl bg-indigo-50 text-[#4F46E5] flex items-center justify-center mb-3 transition-transform group-hover:scale-105">
+                    <AlertCircle size={18} className="animate-pulse" />
                   </div>
                   <div className="flex justify-between items-center mb-1">
-                    <h3 className="text-sm font-display font-black text-red-950 group-hover:text-red-750 transition-colors">
+                    <h3 className="text-sm font-display font-black text-[#4F46E5] group-hover:text-indigo-750 transition-colors">
                       Emergency SOS Dispatch
                     </h3>
-                    <ChevronRight size={14} className="text-red-400 group-hover:translate-x-0.5 transition-transform" />
+                    <ChevronRight size={14} className="text-indigo-455 group-hover:translate-x-0.5 transition-transform" />
                   </div>
-                  <p className="text-[10px] text-red-700/80 leading-normal font-semibold">
+                  <p className="text-[10px] text-indigo-700/85 leading-normal font-semibold">
                     Anonymously alert community guardians immediately. Dial interactive fallback USSD codes without internet access.
                   </p>
                 </div>
@@ -500,10 +500,10 @@ const Home: React.FC = () => {
                 {/* Row 1: Item 2 - Report Incident */}
                 <div 
                   onClick={() => navigate('/report')}
-                  className="bg-white border border-slate-150 rounded-2xl p-5 hover:border-[#4F46E5]/40 transition-all cursor-pointer shadow-xs group text-left"
+                  className="bg-white border border-slate-150 rounded-2xl p-4 sm:p-4.5 hover:border-[#4F46E5]/40 hover:shadow-xs active:scale-[0.985] transition-all cursor-pointer shadow-xs group text-left select-none"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-indigo-50 text-[#4F46E5] flex items-center justify-center mb-4 transition-transform group-hover:scale-105">
-                    <FileText size={20} />
+                  <div className="w-9 h-9 rounded-xl bg-indigo-50 text-[#4F46E5] flex items-center justify-center mb-3 transition-transform group-hover:scale-105">
+                    <FileText size={18} />
                   </div>
                   <div className="flex justify-between items-center mb-1">
                     <h3 className="text-sm font-display font-black text-slate-900 group-hover:text-purple-primary transition-colors">
@@ -519,10 +519,10 @@ const Home: React.FC = () => {
                 {/* Row 2: Item 1 - Talk to Counselor */}
                 <div 
                   onClick={() => navigate('/support')}
-                  className="bg-white border border-slate-150 rounded-2xl p-5 hover:border-[#4F46E5]/40 transition-all cursor-pointer shadow-xs group text-left"
+                  className="bg-white border border-slate-150 rounded-2xl p-4 sm:p-4.5 hover:border-[#4F46E5]/40 hover:shadow-xs active:scale-[0.985] transition-all cursor-pointer shadow-xs group text-left select-none"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-650 flex items-center justify-center mb-4 transition-transform group-hover:scale-105">
-                    <HeartHandshake size={20} />
+                  <div className="w-9 h-9 rounded-xl bg-indigo-50 text-[#4F46E5] flex items-center justify-center mb-3 transition-transform group-hover:scale-105">
+                    <HeartHandshake size={18} />
                   </div>
                   <div className="flex justify-between items-center mb-1">
                     <h3 className="text-sm font-display font-black text-slate-900 group-hover:text-purple-primary transition-colors">
@@ -538,10 +538,10 @@ const Home: React.FC = () => {
                 {/* Row 2: Item 2 - Find Safe House */}
                 <div 
                   onClick={() => navigate('/alerts')}
-                  className="bg-white border border-slate-150 rounded-2xl p-5 hover:border-[#4F46E5]/40 transition-all cursor-pointer shadow-xs group text-left"
+                  className="bg-white border border-slate-150 rounded-2xl p-4 sm:p-4.5 hover:border-[#4F46E5]/40 hover:shadow-xs active:scale-[0.985] transition-all cursor-pointer shadow-xs group text-left select-none"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-4 transition-transform group-hover:scale-105">
-                    <Landmark size={20} />
+                  <div className="w-9 h-9 rounded-xl bg-indigo-50 text-[#4F46E5] flex items-center justify-center mb-3 transition-transform group-hover:scale-105">
+                    <Landmark size={18} />
                   </div>
                   <div className="flex justify-between items-center mb-1">
                     <h3 className="text-sm font-display font-black text-slate-900 group-hover:text-purple-primary transition-colors">
@@ -557,10 +557,10 @@ const Home: React.FC = () => {
                 {/* Row 3: Item 1 - Flood Alerts */}
                 <div 
                   onClick={() => navigate('/alerts')}
-                  className="bg-white border border-slate-150 rounded-2xl p-5 hover:border-[#4F46E5]/40 transition-all cursor-pointer shadow-xs group text-left"
+                  className="bg-white border border-slate-150 rounded-2xl p-4 sm:p-4.5 hover:border-[#4F46E5]/40 hover:shadow-xs active:scale-[0.985] transition-all cursor-pointer shadow-xs group text-left select-none"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center mb-4 transition-transform group-hover:scale-105">
-                    <AlertTriangle size={20} />
+                  <div className="w-9 h-9 rounded-xl bg-indigo-50 text-[#4F46E5] flex items-center justify-center mb-3 transition-transform group-hover:scale-105">
+                    <AlertTriangle size={18} />
                   </div>
                   <div className="flex justify-between items-center mb-1">
                     <h3 className="text-sm font-display font-black text-slate-900 group-hover:text-purple-primary transition-colors">
@@ -576,10 +576,10 @@ const Home: React.FC = () => {
                 {/* Row 3: Item 2 - Learning Hub */}
                 <div 
                   onClick={() => navigate('/resources')}
-                  className="bg-white border border-slate-150 rounded-2xl p-5 hover:border-[#4F46E5]/40 transition-all cursor-pointer shadow-xs group text-left"
+                  className="bg-white border border-slate-150 rounded-2xl p-4 sm:p-4.5 hover:border-[#4F46E5]/40 hover:shadow-xs active:scale-[0.985] transition-all cursor-pointer shadow-xs group text-left select-none"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-4 transition-transform group-hover:scale-105">
-                    <BookOpen size={20} />
+                  <div className="w-9 h-9 rounded-xl bg-indigo-50 text-[#4F46E5] flex items-center justify-center mb-3 transition-transform group-hover:scale-105">
+                    <BookOpen size={18} />
                   </div>
                   <div className="flex justify-between items-center mb-1">
                     <h3 className="text-sm font-display font-black text-slate-900 group-hover:text-purple-primary transition-colors">
@@ -595,10 +595,10 @@ const Home: React.FC = () => {
                 {/* Row 4: Item 1 - Donate */}
                 <div 
                   onClick={() => navigate('/donate')}
-                  className="bg-white border border-slate-150 rounded-2xl p-5 hover:border-[#4F46E5]/40 transition-all cursor-pointer shadow-xs group text-left"
+                  className="bg-white border border-slate-150 rounded-2xl p-4 sm:p-4.5 hover:border-[#4F46E5]/40 hover:shadow-xs active:scale-[0.985] transition-all cursor-pointer shadow-xs group text-left select-none"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-pink-50 text-pink-600 flex items-center justify-center mb-4 transition-transform group-hover:scale-105">
-                    <Coins size={20} />
+                  <div className="w-9 h-9 rounded-xl bg-indigo-50 text-[#4F46E5] flex items-center justify-center mb-3 transition-transform group-hover:scale-105">
+                    <Coins size={18} />
                   </div>
                   <div className="flex justify-between items-center mb-1">
                     <h3 className="text-sm font-display font-black text-slate-900 group-hover:text-purple-primary transition-colors">
@@ -614,10 +614,10 @@ const Home: React.FC = () => {
                 {/* Row 4: Item 2 - Community Updates */}
                 <div 
                   onClick={() => alert("Under active construction: County coordinators are updating local shelter registries real-time.")}
-                  className="bg-white border border-slate-150 rounded-2xl p-5 hover:border-[#4F46E5]/40 transition-all cursor-pointer shadow-xs group text-left"
+                  className="bg-white border border-slate-150 rounded-2xl p-4 sm:p-4.5 hover:border-[#4F46E5]/40 hover:shadow-xs active:scale-[0.985] transition-all cursor-pointer shadow-xs group text-left select-none"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-indigo-50/60 text-indigo-650 flex items-center justify-center mb-4 transition-transform group-hover:scale-105">
-                    <Sparkles size={20} />
+                  <div className="w-9 h-9 rounded-xl bg-indigo-50 text-[#4F46E5] flex items-center justify-center mb-3 transition-transform group-hover:scale-105">
+                    <Sparkles size={18} />
                   </div>
                   <div className="flex justify-between items-center mb-1">
                     <h3 className="text-sm font-display font-black text-slate-900 group-hover:text-purple-primary transition-colors">
@@ -634,28 +634,28 @@ const Home: React.FC = () => {
             </div>
 
             {/* Offline Access: Contrasting Dark-Navy Footer Section */}
-            <div className="bg-slate-900 text-white rounded-[2.2rem] p-6 shadow-lg border border-slate-800 relative overflow-hidden">
+            <div className="bg-slate-900 text-white rounded-2xl p-4.5 shadow-lg border border-slate-800 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full -mr-16 -mt-16 blur-xl" />
               
-              <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-3.5">
                 <div>
                   <span className="px-2 py-0.5 bg-indigo-500/20 border border-indigo-400/20 text-indigo-400 text-[8px] font-black uppercase rounded tracking-wider">
                     Offline Access Node
                   </span>
-                  <h3 className="text-base font-display font-black text-white mt-1.5 mb-1">
+                  <h3 className="text-base font-display font-black text-white mt-1 mb-0.5">
                     No active cell data connection?
                   </h3>
                   <p className="text-[10.5px] text-slate-400 leading-normal font-medium max-w-md">
                     Use our verified analog fallbacks to stream location telemetry reports to dispatchers with absolute anonymity.
                   </p>
                 </div>
-                 <div className="flex flex-wrap gap-2.5 shrink-0">
+                 <div className="flex flex-wrap gap-2 shrink-0">
                   <button
                     onClick={() => {
                       setUssdActiveTab('ussd');
                       setIsUSSDOpen(true);
                     }}
-                    className="flex items-center gap-1.5 px-4.5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition-transform active:scale-95 cursor-pointer"
+                    className="flex items-center gap-1.5 px-3.5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition-transform active:scale-95 cursor-pointer"
                   >
                     <Smartphone size={12} className="text-indigo-200" />
                     <span>Dial USSD (*123#)</span>
@@ -666,7 +666,7 @@ const Home: React.FC = () => {
                       setIsUSSDOpen(true);
                       resetSmsForm();
                     }}
-                    className="flex items-center gap-1.5 px-4.5 py-3 bg-slate-800 hover:bg-slate-750 text-white border border-slate-705 font-bold rounded-xl text-xs transition-transform active:scale-95 cursor-pointer"
+                    className="flex items-center gap-1.5 px-3.5 py-2.5 bg-slate-800 hover:bg-slate-750 text-white border border-slate-705 font-bold rounded-xl text-xs transition-transform active:scale-95 cursor-pointer"
                   >
                     <MessageSquare size={13} className="text-[#06B6D4]" />
                     <span>Send SMS Report</span>
@@ -685,31 +685,31 @@ const Home: React.FC = () => {
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.98 }}
-            className="bg-white border border-slate-150 rounded-[2.2rem] p-10 shadow-lg text-center flex flex-col items-center max-w-md mx-auto my-6"
+            className="bg-white border border-slate-150 rounded-3xl p-6 sm:p-8 shadow-md text-center flex flex-col items-center max-w-sm mx-auto my-4"
           >
             {/* Large purple signal-slash icon in center */}
-            <div className="w-20 h-20 bg-purple-primary/5 text-purple-primary rounded-full flex items-center justify-center mb-6 border border-purple-primary/10">
-              <WifiOff size={44} strokeWidth={1.5} className="animate-pulse" />
+            <div className="w-16 h-16 bg-purple-primary/5 text-purple-primary rounded-full flex items-center justify-center mb-4 border border-purple-primary/10">
+              <WifiOff size={36} strokeWidth={1.5} className="animate-pulse" />
             </div>
 
             {/* Message title */}
-            <h2 className="text-xl font-display font-black text-purple-primary tracking-tight leading-none mb-2.5">
+            <h2 className="text-lg font-display font-black text-purple-primary tracking-tight leading-none mb-1.5">
               You're Offline
             </h2>
             
-            <p className="text-xs text-slate-500 leading-relaxed font-semibold mb-6 max-w-xs mx-auto">
+            <p className="text-[11px] text-slate-500 leading-relaxed font-semibold mb-4 max-w-xs mx-auto">
               Internet connection lost or low cell data detected. Bonga Box has automatically routed to SMS & USSD emergency mode.
             </p>
 
             {/* Two stacked primary call-to-actions */}
-            <div className="w-full space-y-3">
+            <div className="w-full space-y-2.5">
               <button
                 onClick={() => {
                   setUssdActiveTab('sms');
                   setIsUSSDOpen(true);
                   resetSmsForm();
                 }}
-                className="w-full py-3.5 bg-purple-primary hover:bg-purple-dark text-white font-bold rounded-2xl flex items-center justify-center gap-2 text-xs transition-transform active:scale-[0.98] shadow-md cursor-pointer"
+                className="w-full py-3 bg-purple-primary hover:bg-purple-dark text-white font-bold rounded-2xl flex items-center justify-center gap-2 text-xs transition-transform active:scale-[0.98] shadow-md cursor-pointer"
               >
                 <MessageSquare size={14} className="text-purple-105" />
                 <span>Send SMS Report</span>
@@ -721,7 +721,7 @@ const Home: React.FC = () => {
                   setIsUSSDOpen(true);
                   resetUssdSession();
                 }}
-                className="w-full py-3.5 bg-white hover:bg-slate-50 text-slate-900 border border-slate-200 font-bold rounded-2xl flex items-center justify-center gap-2 text-xs transition-transform active:scale-[0.98] cursor-pointer"
+                className="w-full py-3 bg-white hover:bg-slate-50 text-slate-900 border border-slate-200 font-bold rounded-2xl flex items-center justify-center gap-2 text-xs transition-transform active:scale-[0.98] cursor-pointer"
               >
                 <Smartphone size={13} className="text-purple-primary" />
                 <span>Dial *123#</span>
@@ -729,8 +729,8 @@ const Home: React.FC = () => {
             </div>
 
             <button
-              onClick={() => setIsOnline(true)}
-              className="text-[9.5px] font-bold text-slate-400 hover:text-purple-primary transition-colors uppercase tracking-widest mt-6 cursor-pointer"
+               onClick={() => setIsOnline(true)}
+               className="text-[9.5px] font-bold text-slate-400 hover:text-purple-primary transition-colors uppercase tracking-widest mt-6 cursor-pointer"
             >
               Back to Online Interface
             </button>
@@ -758,10 +758,10 @@ const Home: React.FC = () => {
                 animate={{ scale: 1, opacity: 1, y: 0 }}
                 exit={{ scale: 0.95, opacity: 0, y: 15 }}
                 onClick={(e) => e.stopPropagation()} // Prevent closing when clicking card
-                className="w-full max-w-md bg-white border border-slate-150 rounded-[2.5rem] shadow-2xl relative flex flex-col overflow-hidden"
+                className="w-full max-w-md bg-white border border-slate-150 rounded-3xl shadow-2xl relative flex flex-col overflow-hidden"
               >
                 {/* Modal Header */}
-                <div className="bg-slate-50 border-b border-slate-150 px-6 py-4 flex items-center justify-between">
+                <div className="bg-slate-50 border-b border-slate-150 px-4.5 py-3 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="w-2.5 h-2.5 rounded-full bg-[#10B981] animate-pulse" />
                     <span className="text-[10px] font-extrabold text-[#4F46E5] uppercase tracking-widest font-mono">
@@ -810,7 +810,7 @@ const Home: React.FC = () => {
                 </div>
 
                 {/* Main Tab Content */}
-                <div className="p-6">
+                <div className="p-4.5">
                   {/* --- TAB 1: USSD INTERACTIVE CELLULAR --- */}
                   {ussdActiveTab === 'ussd' && (
                     <div className="space-y-4">
@@ -820,7 +820,7 @@ const Home: React.FC = () => {
                           <p className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest mb-3 leading-none">
                             CELLULAR SPECTRUM CARRIER
                           </p>
-                          <div className="bg-slate-50 border border-slate-150 py-4 px-2 rounded-2xl mb-5 text-center">
+                          <div className="bg-slate-50 border border-slate-150 py-3 px-2 rounded-2xl mb-3.5 text-center">
                             <span className="text-3xl font-display font-black text-[#4F46E5] tracking-tight font-mono">
                               *123#
                             </span>
@@ -829,7 +829,7 @@ const Home: React.FC = () => {
                             </p>
                           </div>
 
-                          <p className="text-xs text-slate-500 leading-relaxed font-semibold mb-6 max-w-xs mx-auto">
+                          <p className="text-xs text-slate-500 leading-relaxed font-semibold mb-4 max-w-xs mx-auto">
                             Dial standard offline codes to read high-ground safe shelters, trigger emergency coordinates, or log confidential FGM threats.
                           </p>
 
