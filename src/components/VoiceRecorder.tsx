@@ -343,7 +343,7 @@ export default function VoiceRecorder({ onTranscriptComplete, language = 'EN' }:
   };
 
   return (
-    <div id="voice-recording-suite" className="bg-slate-50 border border-slate-150 rounded-2.5xl p-4 space-y-4">
+    <div id="voice-recording-suite" className="bg-slate-50 border border-slate-100 rounded-[20px] p-4 space-y-4 shadow-xs">
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-1.5">
           <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
@@ -372,7 +372,7 @@ export default function VoiceRecorder({ onTranscriptComplete, language = 'EN' }:
       )}
 
       {/* Main recording area with live Canvas wave rendering */}
-      <div className="bg-white border border-slate-150 rounded-2xl overflow-hidden relative p-1.5 shadow-xs">
+      <div className="bg-white border border-slate-100 rounded-[20px] overflow-hidden relative p-1.5 shadow-xs">
         {isRecording ? (
           <div className="relative">
             <canvas 
@@ -454,7 +454,7 @@ export default function VoiceRecorder({ onTranscriptComplete, language = 'EN' }:
 
       {/* Structured Instant speech-to-text progress indicator */}
       {isTranscribing && (
-        <div className="bg-white border border-slate-150 rounded-2xl p-4.5 space-y-3.5 shadow-xs animate-fadeIn">
+        <div className="bg-white border border-slate-100 rounded-[20px] p-4.5 space-y-3.5 shadow-xs animate-fadeIn border-t">
           <div className="flex justify-between items-center text-[9.5px] font-black uppercase tracking-wider text-[#4F46E5]">
             <span className="flex items-center gap-1.5 animate-pulse">
               <RefreshCw size={12} className="animate-spin text-[#4F46E5]" /> 

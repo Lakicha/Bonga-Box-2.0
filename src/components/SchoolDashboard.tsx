@@ -81,8 +81,8 @@ const SchoolDashboard: React.FC = () => {
       </div>
 
       {/* Filter and Content Card container */}
-      <div className="bg-white rounded-2xl border border-slate-200/75 shadow-sm p-4 overflow-hidden">
-        <div className="flex items-center justify-between pb-3 border-b border-slate-150 mb-4 flex-wrap gap-2">
+      <div className="bg-white border border-slate-100 rounded-[20px] shadow-xs p-4 overflow-hidden">
+        <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4 flex-wrap gap-2">
           <div className="flex items-center gap-2 text-text-dim">
             <Filter size={16} />
             <span className="text-[10px] font-bold uppercase tracking-widest">Filter Status:</span>

@@ -157,7 +157,7 @@ const ReportForm: React.FC = () => {
 
   if (submitted) {
     return (
-      <div className="p-8 text-center max-w-md mx-auto flex flex-col items-center justify-center my-10 bg-white border border-slate-150 rounded-2xl shadow-lg">
+      <div className="p-8 text-center max-w-md mx-auto flex flex-col items-center justify-center my-10 bg-white border border-slate-100 rounded-[20px] shadow-xs">
         <motion.div
           initial={{ scale: 0.8 }}
           animate={{ scale: 1 }}
@@ -216,7 +216,7 @@ const ReportForm: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="bg-white border border-slate-150 rounded-3xl p-6 shadow-xs text-center"
+            className="bg-white border border-slate-100 rounded-[20px] p-6 shadow-xs text-center"
           >
             <h2 className="text-base font-display font-black mb-1">Incident Dispatch Portal</h2>
             <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-6">Choose active incident stream</p>
@@ -282,7 +282,7 @@ const ReportForm: React.FC = () => {
               </span>
             </div>
 
-            <div className="bg-white border border-slate-150 rounded-2xl p-6 shadow-xs space-y-4">
+            <div className="bg-white border border-slate-100 rounded-[20px] p-6 shadow-xs space-y-4">
               
               {fgmStep === 1 && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
@@ -452,7 +452,7 @@ const ReportForm: React.FC = () => {
             </div>
 
             {/* Input Location Selection for context */}
-            <div className="bg-white border border-slate-150 rounded-2xl p-4 shadow-xs space-y-3">
+            <div className="bg-white border border-slate-100 rounded-[20px] p-4 shadow-xs space-y-3">
               <div>
                 <label className="block text-[9px] font-extrabold text-slate-400 uppercase tracking-widest mb-1 pl-0.5">Location in Isiolo County</label>
                 <input 
@@ -460,12 +460,12 @@ const ReportForm: React.FC = () => {
                   value={floodLocation}
                   onChange={(e) => setFloodLocation(e.target.value)}
                   placeholder="e.g., Merti Sub-county"
-                  className="w-full bg-slate-50 border border-slate-150 focus:border-cyan-500 rounded-xl text-xs font-bold px-3 py-2 outline-none text-slate-800 transition-colors"
+                  className="w-full bg-slate-50 border border-slate-100 focus:border-cyan-500 rounded-xl text-xs font-bold px-3 py-2 outline-none text-slate-800 transition-colors"
                 />
               </div>
 
               {/* Grid map mock view */}
-              <div className="border border-slate-150/80 rounded-xl overflow-hidden text-center relative p-3 bg-purple-50/15">
+              <div className="border border-slate-100 rounded-xl overflow-hidden text-center relative p-3 bg-purple-50/15">
                 <div className="absolute top-0 right-0 py-0.5 px-1 bg-purple-105 text-purple-primary text-[6.5px] font-black uppercase tracking-widest rounded-bl-lg">
                   Safe Zone Grid
                 </div>

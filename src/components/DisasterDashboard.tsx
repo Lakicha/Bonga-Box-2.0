@@ -264,7 +264,7 @@ const DisasterDashboard: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 pt-20 pb-8 text-slate-800">
       {/* Top Banner Row */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 border-b border-slate-150 pb-5">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 border-b border-slate-100 pb-5">
         <div className="flex items-center gap-4">
           <Logo size={64} />
           <div>
@@ -564,7 +564,7 @@ const DisasterDashboard: React.FC = () => {
                     key={s.id} 
                     className={`p-3 rounded-2xl border transition-all ${
                       s.status === 'Critical' ? 'bg-red-50/20 border-red-200' :
-                      s.status === 'Warning' ? 'bg-amber-50/20 border-amber-200' : 'bg-slate-50/50 border-slate-150'
+                      s.status === 'Warning' ? 'bg-amber-50/20 border-amber-200' : 'bg-slate-50/50 border-slate-100'
                     }`}
                   >
                     <div className="flex justify-between items-start mb-1.5">
@@ -764,7 +764,7 @@ const DisasterDashboard: React.FC = () => {
 
                   <div>
                     <span className="text-[8px] font-bold text-text-dim uppercase tracking-widest block mb-0.5">Narrative & Citizen Testimonial</span>
-                    <p className="text-xs text-text-dim leading-relaxed bg-slate-50 p-3.5 rounded-2xl border border-slate-150 italic font-medium">
+                    <p className="text-xs text-text-dim leading-relaxed bg-slate-50 p-3.5 rounded-[20px] border border-slate-100 shadow-xs italic font-semibold">
                       "{selectedReport.description}"
                     </p>
                   </div>
@@ -789,7 +789,7 @@ const DisasterDashboard: React.FC = () => {
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-slate-150 space-y-2">
+              <div className="pt-4 border-t border-slate-100 space-y-2">
                 <span className="text-[8px] font-extrabold text-text-dim uppercase tracking-widest block">Update Dispatch Level</span>
                 <select
                   value={selectedReport.status}

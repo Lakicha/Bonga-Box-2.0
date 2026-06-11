@@ -113,7 +113,7 @@ const Onboarding: React.FC = () => {
       icon: ShieldCheck,
       desc: "An educational safe space defending girls in Isiolo from Gender-Based Violence (FGM) while providing critical meteorological early flood rescue lines on a single unified platform.",
       illustration: (
-        <div className="w-full h-36 bg-slate-50 border border-slate-150 rounded-2xl flex flex-col items-center justify-center p-4 relative overflow-hidden">
+        <div className="w-full h-36 bg-slate-50 border border-slate-100 rounded-[20px] flex flex-col items-center justify-center p-4 relative overflow-hidden">
           <div className="absolute inset-0 bg-radial-gradient from-purple-primary/[0.04] to-transparent pointer-events-none" />
           <div className="flex gap-4 items-center z-10">
             <div className="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-150 flex flex-col items-center justify-center text-[#4F46E5]">
@@ -129,7 +129,7 @@ const Onboarding: React.FC = () => {
             </div>
           </div>
           
-          <div className="mt-3.5 flex items-center gap-1.5 px-3 py-1 bg-white border border-slate-150 rounded-lg shadow-2xs">
+          <div className="mt-3.5 flex items-center gap-1.5 px-3 py-1 bg-white border border-slate-100 rounded-lg shadow-2xs">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
             <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Isiolo County Central Handshake Active</span>
           </div>
@@ -143,9 +143,9 @@ const Onboarding: React.FC = () => {
       icon: ShieldAlert,
       desc: "Safely file anonymous logs and reach certified school counselors. Explore endangered shelters with high judicial protection to defend children against FGM forced practices.",
       illustration: (
-        <div className="w-full h-40 bg-slate-50 border border-slate-150 rounded-2xl p-3 flex flex-col justify-between text-left relative overflow-hidden">
+        <div className="w-full h-40 bg-slate-50 border border-slate-100 rounded-[20px] p-3 flex flex-col justify-between text-left relative overflow-hidden">
           {/* FGM Shelter Selector Tool */}
-          <div className="flex justify-between items-center border-b border-slate-150 pb-2 mb-2">
+          <div className="flex justify-between items-center border-b border-slate-100 pb-2 mb-2">
             <span className="text-[8.5px] font-black text-purple-primary uppercase tracking-wider">Simulate Protection Categories</span>
             <span className="px-1.5 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-150 rounded text-[7.5px] font-black">JUDICIAL ESCORT</span>
           </div>
@@ -189,8 +189,8 @@ const Onboarding: React.FC = () => {
       icon: Landmark,
       desc: "Overlay meteorological flood warnings on our dynamic maps. Secure coordinates of high-ground camps, sandbag storage depots, and route status logs.",
       illustration: (
-        <div className="w-full h-40 bg-slate-50 border border-slate-150 rounded-2xl p-3 flex flex-col justify-between text-left">
-          <div className="flex justify-between items-center border-b border-slate-150 pb-1.5 mb-1.5">
+        <div className="w-full h-40 bg-slate-50 border border-slate-100 rounded-[20px] p-3 flex flex-col justify-between text-left">
+          <div className="flex justify-between items-center border-b border-slate-100 pb-1.5 mb-1.5">
             <span className="text-[8.5px] font-black text-[#06B6D4] uppercase tracking-wider">Simulated Rivers Basin Flood Rise</span>
             <span className="text-[8px] font-mono font-extrabold text-[#06B6D4]">{floodSimulationLevel}% Capacity</span>
           </div>
@@ -371,7 +371,7 @@ const Onboarding: React.FC = () => {
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.94, opacity: 0, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-sm bg-white border border-slate-150 p-5 rounded-[2.2rem] shadow-2xl relative text-center flex flex-col justify-between min-h-[510px] space-y-4"
+              className="w-full max-w-sm bg-white border border-slate-100 p-5 rounded-[20px] shadow-2xl relative text-center flex flex-col justify-between min-h-[510px] space-y-4"
             >
               {/* Skip Handle button */}
               <button

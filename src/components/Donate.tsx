@@ -125,7 +125,7 @@ export default function Donate() {
           
           {/* Printable visual receipt layout */}
           {receiptDetails && (
-            <div className="w-full bg-white border border-slate-150 rounded-2xl p-4 text-left space-y-2.5 shadow-xs text-xs">
+            <div className="w-full bg-white border border-slate-100 rounded-[20px] p-4 text-left space-y-2.5 shadow-xs text-xs">
               <div className="flex items-center gap-1.5 pb-1.5 border-b border-dashed border-slate-200">
                 <Receipt size={14} className="text-[#4F46E5]" />
                 <span className="font-extrabold text-[10px] uppercase text-slate-500 tracking-wider">Official Ledger Receipt</span>
@@ -194,7 +194,7 @@ export default function Donate() {
         <div className="space-y-4">
           
           {/* Main contribution settings card */}
-          <div className="bg-white border border-slate-150 rounded-2.5xl p-5 shadow-sm space-y-4">
+          <div className="bg-white border border-slate-100 rounded-[20px] p-5 shadow-sm space-y-4">
             
             {errorMessage && (
               <div className="bg-rose-50 border border-rose-150 rounded-xl p-3 flex items-center gap-2 text-xs text-rose-800 font-semibold animate-fadeIn">
@@ -265,7 +265,7 @@ export default function Donate() {
               <label className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest pl-0.5 block">
                 Stripe Gateway Handshake
               </label>
-              <div className="grid grid-cols-2 gap-1 bg-slate-50 border border-slate-150 p-1 rounded-xl">
+              <div className="grid grid-cols-2 gap-1 bg-slate-50 border border-slate-100 p-1 rounded-xl">
                 <button
                   type="button"
                   onClick={() => setPaymentType('embedded')}
@@ -327,19 +327,19 @@ export default function Donate() {
             <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-widest pl-1 block">Active County Campaigns</span>
             
             <div className="space-y-2.5">
-              <div className="bg-white border border-slate-150 p-4 rounded-xl flex items-start gap-3.5 shadow-xs">
+              <div className="bg-white border border-slate-100 p-4 rounded-xl flex items-start gap-3.5 shadow-xs">
                 <div className="w-10 h-10 rounded-xl bg-indigo-50 text-[#4F46E5] flex items-center justify-center border border-indigo-100 shrink-0">
                   <Sparkles size={18} />
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-slate-900 leading-none mb-1">Merti Sanctuary expansion</h4>
+                  <h4 className="text-xs font-semibold text-slate-900 leading-none mb-1">Merti Sanctuary expansion</h4>
                   <p className="text-[10px] text-slate-400 font-semibold leading-normal">
                     Adding double-deck bunks and fresh rain-harvesting storage tanks to shelter up to 50 vulnerable girls.
                   </p>
                 </div>
               </div>
 
-              <div className="bg-white border border-slate-150 p-4 rounded-xl flex items-start gap-3.5 shadow-xs">
+              <div className="bg-white border border-slate-100 p-4 rounded-xl flex items-start gap-3.5 shadow-xs">
                 <div className="w-10 h-10 rounded-xl bg-indigo-50 text-[#4F46E5] flex items-center justify-center border border-indigo-100 shrink-0">
                   <Megaphone size={18} />
                 </div>
@@ -357,7 +357,7 @@ export default function Donate() {
       )}
 
       {/* Trust guarantees badge */}
-      <footer className="border border-slate-150 bg-slate-50 rounded-2xl p-4 flex items-center gap-3">
+      <footer className="border border-slate-100 bg-slate-50 rounded-[20px] p-4 flex items-center gap-3 shadow-xs">
         <ShieldCheck size={20} className="text-slate-500 shrink-0" />
         <p className="text-[8.5px] text-slate-450 leading-relaxed font-bold">
           All financial transfers are processed securely. County charity reports are periodically compiled by local community audit councils.

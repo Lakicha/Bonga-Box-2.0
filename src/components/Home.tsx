@@ -300,7 +300,7 @@ const Home: React.FC = () => {
       </div>
       
       {/* Top Interactive Connectivity Switch (Online vs Offline Demonstration) */}
-      <div className="flex justify-between items-center bg-white border border-slate-150 rounded-2xl px-4 py-2 mb-4.5 shadow-xs max-w-xs ml-auto">
+      <div className="flex justify-between items-center bg-white border border-slate-100 rounded-[20px] px-4 py-2 mb-4.5 shadow-xs max-w-xs ml-auto">
         <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
           {isOnline ? (
             <>
@@ -350,10 +350,10 @@ const Home: React.FC = () => {
             className="space-y-4"
           >
             {/* 2. Compact & Premium Home Header: Profile Thumbnail & SAFE badge */}
-            <div className="bg-white border border-slate-150 rounded-2xl p-3.5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3 relative overflow-hidden">
+            <div className="bg-white border border-slate-100 rounded-[20px] p-4 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3 relative overflow-hidden">
               <div className="flex items-center gap-3">
                 {/* Profile Thumbnail with PROTECT indicators */}
-                <div className="relative w-11 h-11 rounded-full border border-slate-150 shrink-0 flex items-center justify-center bg-indigo-50/70 text-[#4F46E5] overflow-hidden">
+                <div className="relative w-11 h-11 rounded-full border border-slate-100 shrink-0 flex items-center justify-center bg-indigo-50/70 text-[#4F46E5] overflow-hidden">
                   {user?.photoURL ? (
                     <img 
                       src={user.photoURL} 
@@ -419,7 +419,7 @@ const Home: React.FC = () => {
  
             {/* Environmental Shield: Two minimalist cards showing "Operational Status" and "Last Sync" */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-              <div className="bg-white border border-slate-150 rounded-2xl p-3 shadow-xs flex items-center gap-3">
+              <div className="bg-white border border-slate-100 rounded-[20px] p-3.5 shadow-xs flex items-center gap-3">
                 <div className="w-8 h-8 rounded-xl bg-purple-primary/5 flex items-center justify-center text-[#4F46E5] shrink-0">
                   <Signal size={15} />
                 </div>
@@ -429,7 +429,7 @@ const Home: React.FC = () => {
                 </div>
               </div>
  
-              <div className="bg-white border border-slate-150 rounded-2xl p-3 shadow-xs flex items-center justify-between gap-3">
+              <div className="bg-white border border-slate-100 rounded-[20px] p-3.5 shadow-xs flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-xl bg-purple-primary/5 flex items-center justify-center text-[#4F46E5] shrink-0">
                     <RefreshCw size={14} className={isScanning ? 'animate-spin' : ''} />
@@ -442,7 +442,7 @@ const Home: React.FC = () => {
                 <button
                   onClick={handleRunCheck}
                   disabled={isScanning}
-                  className="px-2.5 py-1 hover:bg-slate-50 border border-slate-205 rounded-lg text-[9px] font-bold text-slate-915 transition-colors disabled:opacity-40 cursor-pointer"
+                  className="px-2.5 py-1 hover:bg-slate-50 border border-slate-100 rounded-lg text-[9px] font-semibold text-slate-700 transition-colors disabled:opacity-40 cursor-pointer"
                 >
                   Sync now
                 </button>
@@ -480,7 +480,7 @@ const Home: React.FC = () => {
                 {/* Row 1: Item 1 - Emergency SOS */}
                 <div 
                   onClick={() => setIsUSSDOpen(true)}
-                  className="bg-indigo-50/25 border border-indigo-100/70 hover:border-indigo-300 hover:shadow-xs active:scale-[0.985] rounded-2xl p-4 sm:p-4.5 transition-all cursor-pointer shadow-xs group text-left relative overflow-hidden select-none"
+                  className="bg-indigo-50/25 border border-indigo-100/40 hover:border-indigo-200 hover:shadow-xs active:scale-[0.985] rounded-[20px] p-4 sm:p-5 transition-all cursor-pointer shadow-xs group text-left relative overflow-hidden select-none"
                 >
                   <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-full -mr-8 -mt-8" />
                   <div className="w-9 h-9 rounded-xl bg-indigo-50 text-[#4F46E5] flex items-center justify-center mb-3 transition-transform group-hover:scale-105">
@@ -500,7 +500,7 @@ const Home: React.FC = () => {
                 {/* Row 1: Item 2 - Report Incident */}
                 <div 
                   onClick={() => navigate('/report')}
-                  className="bg-white border border-slate-150 rounded-2xl p-4 sm:p-4.5 hover:border-[#4F46E5]/40 hover:shadow-xs active:scale-[0.985] transition-all cursor-pointer shadow-xs group text-left select-none"
+                  className="bg-white border border-slate-100 rounded-[20px] p-4 sm:p-5 hover:border-[#4F46E5]/30 hover:shadow-xs active:scale-[0.985] transition-all cursor-pointer shadow-xs group text-left select-none"
                 >
                   <div className="w-9 h-9 rounded-xl bg-indigo-50 text-[#4F46E5] flex items-center justify-center mb-3 transition-transform group-hover:scale-105">
                     <FileText size={18} />
@@ -519,7 +519,7 @@ const Home: React.FC = () => {
                 {/* Row 2: Item 1 - Talk to Counselor */}
                 <div 
                   onClick={() => navigate('/support')}
-                  className="bg-white border border-slate-150 rounded-2xl p-4 sm:p-4.5 hover:border-[#4F46E5]/40 hover:shadow-xs active:scale-[0.985] transition-all cursor-pointer shadow-xs group text-left select-none"
+                  className="bg-white border border-slate-100 rounded-[20px] p-4 sm:p-5 hover:border-[#4F46E5]/30 hover:shadow-xs active:scale-[0.985] transition-all cursor-pointer shadow-xs group text-left select-none"
                 >
                   <div className="w-9 h-9 rounded-xl bg-indigo-50 text-[#4F46E5] flex items-center justify-center mb-3 transition-transform group-hover:scale-105">
                     <HeartHandshake size={18} />
@@ -538,7 +538,7 @@ const Home: React.FC = () => {
                 {/* Row 2: Item 2 - Find Safe House */}
                 <div 
                   onClick={() => navigate('/alerts')}
-                  className="bg-white border border-slate-150 rounded-2xl p-4 sm:p-4.5 hover:border-[#4F46E5]/40 hover:shadow-xs active:scale-[0.985] transition-all cursor-pointer shadow-xs group text-left select-none"
+                  className="bg-white border border-slate-100 rounded-[20px] p-4 sm:p-5 hover:border-[#4F46E5]/30 hover:shadow-xs active:scale-[0.985] transition-all cursor-pointer shadow-xs group text-left select-none"
                 >
                   <div className="w-9 h-9 rounded-xl bg-indigo-50 text-[#4F46E5] flex items-center justify-center mb-3 transition-transform group-hover:scale-105">
                     <Landmark size={18} />
@@ -557,7 +557,7 @@ const Home: React.FC = () => {
                 {/* Row 3: Item 1 - Flood Alerts */}
                 <div 
                   onClick={() => navigate('/alerts')}
-                  className="bg-white border border-slate-150 rounded-2xl p-4 sm:p-4.5 hover:border-[#4F46E5]/40 hover:shadow-xs active:scale-[0.985] transition-all cursor-pointer shadow-xs group text-left select-none"
+                  className="bg-white border border-slate-100 rounded-[20px] p-4 sm:p-5 hover:border-[#4F46E5]/30 hover:shadow-xs active:scale-[0.985] transition-all cursor-pointer shadow-xs group text-left select-none"
                 >
                   <div className="w-9 h-9 rounded-xl bg-indigo-50 text-[#4F46E5] flex items-center justify-center mb-3 transition-transform group-hover:scale-105">
                     <AlertTriangle size={18} />
@@ -576,7 +576,7 @@ const Home: React.FC = () => {
                 {/* Row 3: Item 2 - Learning Hub */}
                 <div 
                   onClick={() => navigate('/resources')}
-                  className="bg-white border border-slate-150 rounded-2xl p-4 sm:p-4.5 hover:border-[#4F46E5]/40 hover:shadow-xs active:scale-[0.985] transition-all cursor-pointer shadow-xs group text-left select-none"
+                  className="bg-white border border-slate-100 rounded-[20px] p-4 sm:p-5 hover:border-[#4F46E5]/30 hover:shadow-xs active:scale-[0.985] transition-all cursor-pointer shadow-xs group text-left select-none"
                 >
                   <div className="w-9 h-9 rounded-xl bg-indigo-50 text-[#4F46E5] flex items-center justify-center mb-3 transition-transform group-hover:scale-105">
                     <BookOpen size={18} />
@@ -595,7 +595,7 @@ const Home: React.FC = () => {
                 {/* Row 4: Item 1 - Donate */}
                 <div 
                   onClick={() => navigate('/donate')}
-                  className="bg-white border border-slate-150 rounded-2xl p-4 sm:p-4.5 hover:border-[#4F46E5]/40 hover:shadow-xs active:scale-[0.985] transition-all cursor-pointer shadow-xs group text-left select-none"
+                  className="bg-white border border-slate-100 rounded-[20px] p-4 sm:p-5 hover:border-[#4F46E5]/30 hover:shadow-xs active:scale-[0.985] transition-all cursor-pointer shadow-xs group text-left select-none"
                 >
                   <div className="w-9 h-9 rounded-xl bg-indigo-50 text-[#4F46E5] flex items-center justify-center mb-3 transition-transform group-hover:scale-105">
                     <Coins size={18} />
@@ -614,7 +614,7 @@ const Home: React.FC = () => {
                 {/* Row 4: Item 2 - Community Updates */}
                 <div 
                   onClick={() => alert("Under active construction: County coordinators are updating local shelter registries real-time.")}
-                  className="bg-white border border-slate-150 rounded-2xl p-4 sm:p-4.5 hover:border-[#4F46E5]/40 hover:shadow-xs active:scale-[0.985] transition-all cursor-pointer shadow-xs group text-left select-none"
+                  className="bg-white border border-slate-100 rounded-[20px] p-4 sm:p-5 hover:border-[#4F46E5]/30 hover:shadow-xs active:scale-[0.985] transition-all cursor-pointer shadow-xs group text-left select-none"
                 >
                   <div className="w-9 h-9 rounded-xl bg-indigo-50 text-[#4F46E5] flex items-center justify-center mb-3 transition-transform group-hover:scale-105">
                     <Sparkles size={18} />
@@ -685,7 +685,7 @@ const Home: React.FC = () => {
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.98 }}
-            className="bg-white border border-slate-150 rounded-3xl p-6 sm:p-8 shadow-md text-center flex flex-col items-center max-w-sm mx-auto my-4"
+            className="bg-white border border-slate-100 rounded-[24px] p-6 sm:p-8 shadow-xs text-center flex flex-col items-center max-w-sm mx-auto my-4"
           >
             {/* Large purple signal-slash icon in center */}
             <div className="w-16 h-16 bg-purple-primary/5 text-purple-primary rounded-full flex items-center justify-center mb-4 border border-purple-primary/10">
@@ -721,7 +721,7 @@ const Home: React.FC = () => {
                   setIsUSSDOpen(true);
                   resetUssdSession();
                 }}
-                className="w-full py-3 bg-white hover:bg-slate-50 text-slate-900 border border-slate-200 font-bold rounded-2xl flex items-center justify-center gap-2 text-xs transition-transform active:scale-[0.98] cursor-pointer"
+                className="w-full py-3 bg-white hover:bg-slate-50 text-slate-900 border border-slate-100 font-bold rounded-2xl flex items-center justify-center gap-2 text-xs transition-transform active:scale-[0.98] cursor-pointer"
               >
                 <Smartphone size={13} className="text-purple-primary" />
                 <span>Dial *123#</span>
@@ -758,10 +758,10 @@ const Home: React.FC = () => {
                 animate={{ scale: 1, opacity: 1, y: 0 }}
                 exit={{ scale: 0.95, opacity: 0, y: 15 }}
                 onClick={(e) => e.stopPropagation()} // Prevent closing when clicking card
-                className="w-full max-w-md bg-white border border-slate-150 rounded-3xl shadow-2xl relative flex flex-col overflow-hidden"
+                className="w-full max-w-md bg-white border border-slate-100 rounded-[24px] shadow-2xl relative flex flex-col overflow-hidden"
               >
                 {/* Modal Header */}
-                <div className="bg-slate-50 border-b border-slate-150 px-4.5 py-3 flex items-center justify-between">
+                <div className="bg-slate-50 border-b border-slate-100 px-4.5 py-3 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="w-2.5 h-2.5 rounded-full bg-[#10B981] animate-pulse" />
                     <span className="text-[10px] font-extrabold text-[#4F46E5] uppercase tracking-widest font-mono">
@@ -820,7 +820,7 @@ const Home: React.FC = () => {
                           <p className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest mb-3 leading-none">
                             CELLULAR SPECTRUM CARRIER
                           </p>
-                          <div className="bg-slate-50 border border-slate-150 py-3 px-2 rounded-2xl mb-3.5 text-center">
+                          <div className="bg-slate-50 border border-slate-100 py-3 px-2 rounded-[20px] mb-3.5 text-center">
                             <span className="text-3xl font-display font-black text-[#4F46E5] tracking-tight font-mono">
                               *123#
                             </span>
@@ -854,7 +854,7 @@ const Home: React.FC = () => {
 
                             <button
                               onClick={handleCopyCode}
-                              className="w-full py-2.5 bg-white hover:bg-slate-50 text-slate-800 border border-slate-205 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                              className="w-full py-2.5 bg-white hover:bg-slate-50 text-slate-800 border border-slate-100 shadow-xs font-semibold text-xs rounded-xl flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                             >
                               {copiedCode ? (
                                 <>
@@ -995,7 +995,7 @@ const Home: React.FC = () => {
                           <div className="space-y-2">
                             {/* Interactive direct dialer actions */}
                             {['menu', 'fgm_location', 'fgm_minors', 'shelter_list', 'responder_list'].includes(ussdSessionState) && (
-                              <div className="flex flex-wrap items-center justify-center gap-1.5 py-1 bg-slate-50 border border-slate-150 p-2.5 rounded-xl">
+                              <div className="flex flex-wrap items-center justify-center gap-1.5 py-1 bg-slate-50 border border-slate-100 p-2.5 rounded-xl shadow-xs">
                                 <span className="text-[9px] font-extrabold text-slate-400 mr-2 uppercase tracking-wider">Tap to Select:</span>
                                 {ussdSessionState === 'menu' && ['1', '2', '3', '4'].map(val => (
                                   <button
@@ -1091,7 +1091,7 @@ const Home: React.FC = () => {
                                   className={`py-2 px-2.5 rounded-xl border text-[10.5px] font-bold text-center transition-colors cursor-pointer ${
                                     smsIncidentType === item.id
                                       ? 'border-[#4F46E5] bg-indigo-50/70 text-[#4F46E5]'
-                                      : 'border-slate-150 hover:bg-slate-50 text-slate-600'
+                                      : 'border-slate-100 hover:bg-slate-50 text-slate-600'
                                   }`}
                                 >
                                   {item.label}
@@ -1119,7 +1119,7 @@ const Home: React.FC = () => {
                               placeholder="e.g. Near Merti Primary School / coordinate"
                               value={smsLocation}
                               onChange={(e) => setSmsLocation(e.target.value)}
-                              className="w-full px-3 py-2 bg-slate-50 border border-slate-205 focus:border-[#4F46E5] rounded-xl text-xs font-semibold placeholder:text-slate-400 focus:outline-hidden"
+                              className="w-full px-3 py-2 bg-slate-50 border border-slate-100 focus:border-[#4F46E5] rounded-xl text-xs font-semibold placeholder:text-slate-400 focus:outline-hidden"
                             />
                           </div>
 
@@ -1133,7 +1133,7 @@ const Home: React.FC = () => {
                               placeholder="Describe the case details offline. The system will automatically split and compress into text slices..."
                               value={smsDetails}
                               onChange={(e) => setSmsDetails(e.target.value)}
-                              className="w-full px-3 py-2 bg-slate-50 border border-slate-205 focus:border-[#4F46E5] rounded-xl text-xs font-semibold placeholder:text-slate-400 focus:outline-hidden"
+                              className="w-full px-3 py-2 bg-slate-50 border border-slate-100 focus:border-[#4F46E5] rounded-xl text-xs font-semibold placeholder:text-slate-400 focus:outline-hidden"
                             />
                           </div>
 
@@ -1149,42 +1149,50 @@ const Home: React.FC = () => {
                           </div>
                         </>
                       ) : (
-                        /* TRANSMISSION ANIMATION WORKFLOW */
+                        /* TRANSMISSION PROGRESS WORKFLOW (UNICEF / Apple Health aesthetic) */
                         <div className="space-y-4">
-                          <p className="text-[10px] font-medium text-slate-400 tracking-wide leading-none">
-                            Zero-Data Analog Transmission Console
+                          <p className="text-xs font-semibold text-slate-800">
+                            Sending report offline via SMS
                           </p>
 
-                          <div className="bg-[#121824] border border-slate-800 rounded-2xl p-4 font-mono text-[10.5px] text-[#10B981] space-y-2 relative min-h-[160px] flex flex-col justify-between">
-                            <div className="space-y-1.5 flex-1 select-text">
-                              <p className="border-b border-slate-800 pb-1 text-slate-400 text-[8.5px]">Transmitter Core V.3.1 - Standby</p>
-                              
-                              {/* Progressive Log display */}
-                              {smsLogs.map((log, index) => (
-                                <p key={index} className="text-[#34D399]">{log}</p>
-                              ))}
-                              
-                              {smsTransmissionStage > 0 && smsTransmissionStage < 5 && (
-                                <p className="animate-pulse text-[#60A5FA]">
-                                  &gt;&gt; {smsStatusText}
-                                </p>
-                              )}
+                          <div className="bg-slate-50 border border-slate-100 rounded-[20px] p-5 space-y-4">
+                            <div className="space-y-3">
+                              {/* Progressive step indicator instead of raw matrix terminals */}
+                              <div className="flex items-center gap-3">
+                                <div className={`w-2 h-2 rounded-full ${smsTransmissionStage >= 2 ? 'bg-[#4F46E5]' : 'bg-slate-200'}`} />
+                                <span className={`text-[11px] ${smsTransmissionStage >= 2 ? 'text-slate-800 font-medium' : 'text-slate-400'}`}>
+                                  Checking available carrier routes...
+                                </span>
+                              </div>
 
-                              {smsTransmissionStage === 5 && (
-                                <div className="text-center py-2 text-emerald-400">
-                                  <p className="font-bold text-white text-[11px]">GSM dispatch successfully handshaked</p>
-                                </div>
-                              )}
+                              <div className="flex items-center gap-3">
+                                <div className={`w-2 h-2 rounded-full ${smsTransmissionStage >= 3 ? 'bg-[#4F46E5]' : 'bg-slate-200'}`} />
+                                <span className={`text-[11px] ${smsTransmissionStage >= 3 ? 'text-slate-800 font-medium' : 'text-slate-400'}`}>
+                                  Packaging coordinates securely...
+                                </span>
+                              </div>
+
+                              <div className="flex items-center gap-3">
+                                <div className={`w-2 h-2 rounded-full ${smsTransmissionStage >= 4 ? 'bg-[#4F46E5]' : 'bg-slate-200'}`} />
+                                <span className={`text-[11px] ${smsTransmissionStage >= 4 ? 'text-slate-800 font-medium' : 'text-slate-400'}`}>
+                                  Routing message to local dispatch...
+                                </span>
+                              </div>
+
+                              <div className="flex items-center gap-3">
+                                <div className={`w-2 h-2 rounded-full ${smsTransmissionStage >= 5 ? 'bg-emerald-500' : 'bg-slate-200 animate-pulse'}`} />
+                                <span className={`text-[11px] ${smsTransmissionStage >= 5 ? 'text-emerald-700 font-bold' : 'text-slate-400'}`}>
+                                  {smsTransmissionStage >= 5 ? 'Dispatch confirmation received' : 'Transmitting offline envelope...'}
+                                </span>
+                              </div>
                             </div>
 
                             {/* Indicator bar */}
-                            <div className="border-t border-slate-800 pt-2.5 mt-2">
-                              <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden border border-slate-700 flex items-center">
-                                <motion.div 
-                                  animate={{ width: `${(Math.min(smsTransmissionStage, 5) / 5) * 100}%` }}
-                                  className="h-full bg-[#10B981] transition-all duration-300"
-                                />
-                              </div>
+                            <div className="w-full bg-slate-200/60 rounded-full h-1.5 overflow-hidden">
+                              <motion.div 
+                                animate={{ width: `${(Math.min(smsTransmissionStage, 5) / 5) * 100}%` }}
+                                className="h-full bg-linear-to-r from-[#4F46E5] to-emerald-500 transition-all duration-300"
+                              />
                             </div>
                           </div>
 
@@ -1192,16 +1200,16 @@ const Home: React.FC = () => {
                             {smsTransmissionStage === 5 ? (
                               <button
                                 onClick={resetSmsForm}
-                                className="px-5 py-2.5 bg-[#4F46E5] hover:bg-indigo-700 text-white font-extrabold rounded-xl text-xs cursor-pointer transition-colors"
+                                className="px-5 py-2.5 bg-[#4F46E5] hover:bg-indigo-700 text-white font-semibold rounded-[20px] text-xs cursor-pointer transition-colors"
                               >
-                                Draft Another SMS
+                                Send another report
                               </button>
                             ) : (
                               <button
                                 disabled
-                                className="px-5 py-2.5 bg-slate-150 text-slate-400 font-extrabold rounded-xl text-xs cursor-not-allowed"
+                                className="px-5 py-2.5 bg-slate-100 text-slate-400 font-semibold rounded-[20px] text-xs cursor-not-allowed"
                               >
-                                Transmitting...
+                                Transmitters working...
                               </button>
                             )}
                           </div>

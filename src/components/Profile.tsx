@@ -37,13 +37,13 @@ const Profile: React.FC = () => {
     <div className="font-sans max-w-sm mx-auto select-none py-2 space-y-6">
       
       {/* 7. Profile Header Card */}
-      <div className="bg-white border border-slate-150 rounded-[2.5rem] p-6 shadow-xs text-center flex flex-col items-center relative overflow-hidden">
+      <div className="bg-white border border-slate-100 rounded-[20px] p-6 shadow-xs text-center flex flex-col items-center relative overflow-hidden">
         {/* Glow backdrop graphic */}
         <div className="absolute top-[-10%] left-[-10%] w-[130px] h-[130px] bg-purple-100/30 rounded-full blur-2xl pointer-events-none" />
 
         {/* Circular profile photo with "PROTECTED" badge and green checkmark icon */}
         <div className="relative mb-4">
-          <div className="w-20 h-20 rounded-full p-1 bg-gradient-to-r from-[#4F46E5] to-[#06B6D4] shadow-sm flex items-center justify-center">
+          <div className="w-20 h-20 rounded-full p-1 bg-gradient-to-r from-[#4F46E5] to-[#06B6D4] shadow-xs flex items-center justify-center">
             <div className="w-full h-full rounded-full bg-slate-50 overflow-hidden border border-white flex items-center justify-center">
               {user?.photoURL ? (
                 <img 
@@ -59,42 +59,42 @@ const Profile: React.FC = () => {
           </div>
 
           {/* PROTECTED badge and checkmark element overlay on avatar */}
-          <div className="absolute -bottom-2 -right-2 bg-emerald-500 border-2 border-white px-2 py-0.5 rounded-full flex items-center gap-1 text-white shadow-sm">
+          <div className="absolute -bottom-2 -right-2 bg-emerald-500 border border-white px-2 py-0.5 rounded-full flex items-center gap-1 text-white shadow-xs">
             <Check size={8} strokeWidth={4} />
             <span className="text-[7.5px] font-black uppercase tracking-wider">PROTECTED</span>
           </div>
         </div>
 
-        <h2 className="text-base font-display font-black text-slate-900 leading-none mb-1">
+        <h2 className="text-base font-semibold text-slate-900 leading-none mb-1.5">
           {user?.displayName 
             ? user.displayName.split(' ')[0] 
             : (user?.email ? user.email.split('@')[0] : 'Theo')}
         </h2>
-        <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-widest leading-none">
+        <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-widest leading-none">
           Safe Space Operator Nodes
         </p>
       </div>
 
       {/* Identity Cards Segment: Two white cards showing "Proxy ID" and "Joined Date" */}
       <div className="grid grid-cols-2 gap-3.5">
-        <div className="bg-white border border-slate-150 rounded-2xl p-4 text-left">
-          <span className="text-[8.5px] font-extrabold text-slate-400 uppercase tracking-widest block mb-1">Proxy ID</span>
-          <span className="text-xs font-mono font-black text-[#5F56F4] uppercase truncate block">
+        <div className="bg-white border border-slate-100 rounded-[20px] p-4 text-left shadow-xs">
+          <span className="text-[8.5px] font-semibold text-slate-400 uppercase tracking-widest block mb-1">Proxy ID</span>
+          <span className="text-xs font-mono font-bold text-[#4F46E5] uppercase truncate block">
             PRX-90EACC83
           </span>
         </div>
 
-        <div className="bg-white border border-slate-150 rounded-2xl p-4 text-left">
-          <span className="text-[8.5px] font-extrabold text-slate-400 uppercase tracking-widest block mb-1">Joined Date</span>
-          <span className="text-xs font-bold text-slate-800 uppercase block">
+        <div className="bg-white border border-slate-100 rounded-[20px] p-4 text-left shadow-xs">
+          <span className="text-[8.5px] font-semibold text-slate-400 uppercase tracking-widest block mb-1">Joined Date</span>
+          <span className="text-xs font-semibold text-slate-800 uppercase block">
             June 2026
           </span>
         </div>
       </div>
 
       {/* Settings List: Rows for School Code, Biometric Lock, and Language */}
-      <div className="bg-white border border-slate-150 rounded-[2rem] p-5 shadow-xs space-y-4">
-        <span className="text-[9.5px] font-extrabold text-slate-400 uppercase tracking-widest block border-b border-slate-50 pb-2.5">
+      <div className="bg-white border border-slate-100 rounded-[20px] p-5 shadow-xs space-y-4">
+        <span className="text-[9.5px] font-semibold text-slate-400 uppercase tracking-widest block border-b border-slate-50 pb-2.5">
           Local Security Parameters
         </span>
 
@@ -149,11 +149,11 @@ const Profile: React.FC = () => {
             <span className="font-bold text-slate-800">Language</span>
           </div>
 
-          <div className="flex gap-1 bg-slate-50 border border-slate-150 p-0.5 rounded-lg text-[9px] font-black uppercase">
+          <div className="flex gap-1 bg-slate-50 border border-slate-100 p-0.5 rounded-lg text-[9px] font-semibold uppercase">
             <button
               onClick={() => setLanguage('English')}
               className={`px-2 py-1 rounded transition-colors ${
-                language === 'English' ? 'bg-[#5F56F4] text-white shadow-sm' : 'text-slate-400 hover:text-slate-705'
+                language === 'English' ? 'bg-[#4F46E5] text-white shadow-xs' : 'text-slate-400 hover:text-slate-600'
               }`}
             >
               English
@@ -161,7 +161,7 @@ const Profile: React.FC = () => {
             <button
               onClick={() => setLanguage('Swahili')}
               className={`px-2 py-1 rounded transition-colors ${
-                language === 'Swahili' ? 'bg-[#5F56F4] text-white shadow-sm' : 'text-slate-400 hover:text-slate-705'
+                language === 'Swahili' ? 'bg-[#4F46E5] text-white shadow-xs' : 'text-slate-400 hover:text-slate-600'
               }`}
             >
               Swahili
@@ -189,7 +189,7 @@ const Profile: React.FC = () => {
                   // Trigger a global custom event to notify AppLayout to re-sync sidebar views
                   window.dispatchEvent(new Event('bonga_sync_simulated_profile'));
                 }}
-                className="bg-slate-50 border border-slate-150 rounded-lg px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-705 outline-none cursor-pointer hover:bg-slate-100 transition-all font-sans"
+                className="bg-slate-50 border border-slate-100 rounded-lg px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-700 outline-hidden cursor-pointer hover:bg-slate-100 transition-all font-sans"
               >
                 <option value="User">User / Child</option>
                 <option value="Admin">Admin Portal</option>
@@ -198,7 +198,7 @@ const Profile: React.FC = () => {
                 <option value="Disaster Management Officer">Disaster Officer</option>
               </select>
             ) : (
-              <span className="px-2 py-1 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-lg text-[9px] font-black uppercase tracking-wider">
+              <span className="px-2 py-1 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-lg text-[9px] font-semibold uppercase tracking-wider">
                 {profile?.role || 'User'}
               </span>
             )}
@@ -221,7 +221,7 @@ const Profile: React.FC = () => {
 
           <button
             onClick={() => window.dispatchEvent(new Event('bonga_trigger_onboarding_carousel'))}
-            className="px-2.5 py-1 bg-[#4F46E5] hover:bg-purple-dark text-white rounded-lg text-[9px] font-black uppercase tracking-wider shadow-xs transition-transform active:scale-95 text-center cursor-pointer"
+            className="px-2.5 py-1 bg-[#4F46E5] hover:bg-indigo-700 text-white rounded-lg text-[9px] font-semibold uppercase tracking-wider shadow-xs transition-transform active:scale-95 text-center cursor-pointer"
           >
             Launch Tour
           </button>
@@ -233,7 +233,7 @@ const Profile: React.FC = () => {
       <div className="pt-2">
         <button
           onClick={handleLogout}
-          className="w-full py-3 border border-red-500 bg-red-500/5 hover:bg-red-550/10 text-red-505 font-extrabold rounded-2xl flex items-center justify-center gap-2 text-xs transition-colors active:scale-[0.98] cursor-pointer"
+          className="w-full py-3 border border-red-100 bg-red-50 hover:bg-red-100/50 text-red-600 font-bold rounded-[20px] flex items-center justify-center gap-2 text-xs transition-colors active:scale-[0.98] cursor-pointer"
         >
           <LogOut size={13} />
           <span>Logout Session</span>

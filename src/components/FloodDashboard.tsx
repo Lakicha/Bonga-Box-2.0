@@ -183,11 +183,11 @@ const FloodDashboard: React.FC = () => {
         </div>
         
         <div className="flex gap-1.5 shrink-0">
-          <div className="bg-white border border-slate-150 rounded-xl px-2.5 py-1 flex items-center gap-1 shadow-xs text-[10px] font-bold text-slate-800">
+          <div className="bg-white border border-slate-100 rounded-xl px-2.5 py-1 flex items-center gap-1 shadow-xs text-[10px] font-bold text-slate-800">
             <Thermometer size={12} className="text-amber-500" />
             <span>29°C</span>
           </div>
-          <div className="bg-white border border-slate-150 rounded-xl px-2.5 py-1 flex items-center gap-1 shadow-xs text-[10px] font-bold text-purple-primary">
+          <div className="bg-white border border-slate-100 rounded-xl px-2.5 py-1 flex items-center gap-1 shadow-xs text-[10px] font-bold text-purple-primary">
             <CloudRain size={12} />
             <span>Dry Zone</span>
           </div>
@@ -195,7 +195,7 @@ const FloodDashboard: React.FC = () => {
       </div>
 
       {/* Main Physical Leaflet map visualization */}
-      <div className="bg-white border border-slate-150 rounded-2xl overflow-hidden h-[240px] relative shadow-md">
+      <div className="bg-white border border-slate-100 rounded-[24px] overflow-hidden h-[240px] relative shadow-md">
         <MapContainer center={ISIOLO_CENTER} zoom={10} style={{ height: '100%', width: '100%' }} zoomControl={false}>
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
           <ChangeView center={mapCenter} zoom={mapZoom} />
@@ -270,7 +270,7 @@ const FloodDashboard: React.FC = () => {
       </div>
 
       {/* Map Control and Safe House Toggle Settings Panels */}
-      <div className="bg-white border border-slate-150 rounded-2xl p-4 shadow-xs space-y-3.5">
+      <div className="bg-white border border-slate-100 rounded-[20px] p-4 shadow-xs space-y-3.5">
         
         {/* Plot Selector Toggles */}
         <div className="flex justify-between items-center text-xs">
@@ -349,7 +349,7 @@ const FloodDashboard: React.FC = () => {
                 setMapCenter([sh.lat, sh.lng]);
                 setMapZoom(12);
               }}
-              className="bg-white border border-slate-150 p-3.5 rounded-xl flex items-start gap-3 shadow-xs hover:border-emerald-500/40 cursor-pointer transition-colors"
+              className="bg-white border border-slate-100 p-3.5 rounded-xl flex items-start gap-3 shadow-xs hover:border-emerald-500/40 cursor-pointer transition-colors"
             >
               <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-605 flex items-center justify-center shrink-0 border border-emerald-201">
                 <Landmark size={15} />

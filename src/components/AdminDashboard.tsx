@@ -265,11 +265,11 @@ const AdminDashboard: React.FC = () => {
       </div>
 
       {/* tabbed container panel */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 overflow-hidden mb-6 min-h-[300px]">
+      <div className="bg-white border border-slate-100 rounded-[20px] shadow-xs p-4 overflow-hidden mb-6 min-h-[300px]">
         {/* TAB 1: Analytics and Overview */}
         {activeTab === 'analytics' && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="border border-slate-150 rounded-2xl p-4">
+            <div className="border border-slate-100 rounded-[20px] p-4 shadow-xs bg-slate-50/20">
               <h3 className="text-xs font-bold mb-4 uppercase tracking-widest text-text-dim">Reports by Category</h3>
               <div className="h-[200px]">
                 <ResponsiveContainer width="100%" height="100%">
@@ -284,7 +284,7 @@ const AdminDashboard: React.FC = () => {
               </div>
             </div>
 
-            <div className="border border-slate-150 rounded-2xl p-4">
+            <div className="border border-slate-100 rounded-[20px] p-4 shadow-xs bg-slate-50/20">
               <h3 className="text-xs font-bold mb-4 uppercase tracking-widest text-text-dim">Recent Location Intensity</h3>
               <div className="h-[200px]">
                 <ResponsiveContainer width="100%" height="100%">
@@ -346,7 +346,7 @@ const AdminDashboard: React.FC = () => {
         {activeTab === 'users' && (
           <div>
             {/* Pre-onboard Form */}
-            <form onSubmit={handleOnboardUser} className="bg-slate-50/50 border border-slate-150 p-4 rounded-2xl mb-5 space-y-4">
+            <form onSubmit={handleOnboardUser} className="bg-slate-50/50 border border-slate-100 p-4 rounded-[20px] mb-5 space-y-4 shadow-xs">
               <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
                 <div className="w-6 h-6 rounded-lg bg-indigo-50 text-[#4F46E5] flex items-center justify-center shrink-0">
                   <UserCog size={13} />

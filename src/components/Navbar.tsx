@@ -131,10 +131,10 @@ const Navbar: React.FC = () => {
 
                       {/* Display Info */}
                       <div className="hidden lg:block">
-                        <p className="text-[10px] font-extrabold text-slate-950 leading-none truncate max-w-[100px]">
+                        <p className="text-[11px] font-semibold text-slate-700 leading-none truncate max-w-[100px]">
                           {user.displayName?.split(' ')[0] || 'Active Handle'}
                         </p>
-                        <p className="text-[8px] font-bold text-text-dim leading-none mt-0.5 uppercase tracking-wider">
+                        <p className="text-[9px] font-medium text-slate-500 leading-none mt-0.5">
                           {profile?.role || 'Citizen'}
                         </p>
                       </div>
@@ -154,65 +154,65 @@ const Navbar: React.FC = () => {
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: 15, scale: 0.95 }}
                             transition={{ duration: 0.15, ease: 'easeOut' }}
-                            className="absolute right-0 mt-2.5 w-72 bg-white border border-slate-200 rounded-2xl shadow-xl z-20 overflow-hidden text-slate-800"
+                            className="absolute right-0 mt-2.5 w-72 bg-white border border-slate-100 rounded-[20px] shadow-xs z-20 overflow-hidden text-slate-800"
                           >
                             {/* Header Canvas */}
                             <div className="p-4 bg-slate-50 border-b border-slate-100 flex items-center gap-3.5 relative">
                               <div className="absolute top-2 right-2 flex items-center gap-1">
-                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                <span className="text-[7.5px] font-mono font-bold text-slate-400 tracking-wider">SECURE-LINK</span>
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                <span className="text-[9px] font-medium text-slate-450">Secure link</span>
                               </div>
-                              <div className="w-11 h-11 rounded-full p-0.5 bg-linear-to-tr from-purple-primary via-indigo-400 to-[#06B6D4] shrink-0">
+                              <div className="w-11 h-11 rounded-full p-0.5 bg-indigo-100 shrink-0">
                                 <div className="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden">
                                   {user.photoURL ? (
                                     <img src={user.photoURL} alt={user.displayName || ''} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                                   ) : (
-                                    <User size={18} className="text-[#4f46e5]/40" />
+                                    <User size={18} className="text-indigo-400" />
                                   )}
                                 </div>
                               </div>
                               <div className="min-w-0">
-                                <h4 className="text-xs font-display font-extrabold text-slate-900 leading-none truncate mb-1">
+                                <h4 className="text-xs font-semibold text-slate-900 leading-none mb-1">
                                   {user.displayName || 'Bonga Friend'}
                                 </h4>
                                 <p className="text-[9px] text-text-dim font-medium truncate leading-none mb-1">{user.email}</p>
-                                <span className="inline-block px-2 py-0.5 bg-purple-primary/10 text-purple-primary rounded-full text-[8px] font-bold leading-none">
+                                <span className="inline-block px-2 py-0.5 bg-purple-primary/10 text-purple-primary rounded-full text-[9px] font-medium leading-none">
                                   {profile?.role || 'County Citizen'}
                                 </span>
                               </div>
                             </div>
 
                             {/* Dynamic Live Metadata Bento Details - Explicitly distinct from home widgets */}
-                            <div className="p-3.5 space-y-2 border-b border-slate-150">
+                            <div className="p-4 space-y-3 border-b border-slate-100">
                               {/* Cryptographic SHA ID mask - Absolute secure privacy asset */}
-                              <div className="bg-slate-50 border border-slate-100 rounded-xl p-2.5 flex items-center justify-between">
+                              <div className="bg-slate-50 border border-slate-100/50 rounded-[20px] p-3 flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                   <Fingerprint size={14} className="text-indigo-600 shrink-0" />
                                   <div>
-                                    <p className="text-[8px] font-extrabold text-slate-400 uppercase tracking-widest leading-none mb-0.5">Secure Route Mask</p>
-                                    <p className="text-[9.5px] font-mono font-bold text-slate-800 leading-none">
+                                    <p className="text-[9px] font-medium text-slate-450 leading-none mb-1">Secure route mask</p>
+                                    <p className="text-[10px] font-mono text-slate-600 leading-none">
                                       bnga_anon_{user.uid.slice(0, 6).toLowerCase()}...
                                     </p>
                                   </div>
                                 </div>
-                                <span className="text-[6px] font-bold text-emerald-600 bg-emerald-50 px-1 py-0.5 rounded border border-emerald-200/50 uppercase">Active</span>
+                                <span className="text-[9px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100/50 font-medium h-fit">Active</span>
                               </div>
 
                               {/* Interactive Report stats & Creation Date - Absolute unique user attributes */}
-                              <div className="grid grid-cols-2 gap-2">
-                                <div className="bg-slate-50 border border-slate-100 rounded-xl p-2">
-                                  <span className="text-[8px] font-extrabold text-slate-400 uppercase tracking-wider block">Your Reports</span>
+                              <div className="grid grid-cols-2 gap-3">
+                                <div className="bg-slate-50 border border-slate-100/50 rounded-[20px] p-3">
+                                  <span className="text-[9px] text-slate-400 font-medium block">Your reports</span>
                                   <div className="flex items-baseline gap-1 mt-1">
-                                    <span className="text-[15px] font-black font-mono leading-none text-[#4f46e5]">
+                                    <span className="text-sm font-semibold leading-none text-[#4f46e5]">
                                       {personalReportsCount !== null ? personalReportsCount : '0'}
                                     </span>
-                                    <span className="text-[8px] text-slate-400 font-bold uppercase leading-none">Filed</span>
+                                    <span className="text-[9px] text-slate-400 font-medium">filed</span>
                                   </div>
                                 </div>
-                                <div className="bg-slate-50 border border-slate-100 rounded-xl p-2">
-                                  <span className="text-[8px] font-extrabold text-slate-400 uppercase tracking-wider block">Enrolled Date</span>
+                                <div className="bg-slate-50 border border-slate-100/50 rounded-[20px] p-3">
+                                  <span className="text-[9px] text-slate-400 font-medium block">Enrolled date</span>
                                   <div className="flex items-baseline gap-1 mt-1">
-                                    <span className="text-[11px] font-bold leading-none text-slate-700">
+                                    <span className="text-[11px] font-medium leading-none text-slate-700">
                                       {user.metadata.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString([], { month: 'short', year: '2-digit' }) : 'N/A'}
                                     </span>
                                   </div>
@@ -221,13 +221,13 @@ const Navbar: React.FC = () => {
 
                               {/* Authorized Clearances Section */}
                               <div>
-                                <span className="text-[8px] font-extrabold text-slate-400 uppercase tracking-wider pl-1.5 mb-1 block">Verified Access Clearances</span>
-                                <div className="text-[9px] text-slate-650 font-bold bg-indigo-50/50 rounded-xl p-2.5 border border-indigo-100/40 leading-snug">
-                                  {profile?.role === 'Admin' && '✓ Full Administration Workspace Level 4'}
-                                  {profile?.role === 'Disaster Management Officer' && '✓ Regional Hydrology Dispatch Level 3'}
-                                  {profile?.role === 'Protection Officer' && '✓ Legal Youth and Gender Safety Desk Level 3'}
-                                  {profile?.role === 'Mentor/Teacher' && '✓ High School Club Guidance Desk Level 2'}
-                                  {(profile?.role === 'User' || !profile?.role) && '✓ Standard Community Safety Uplink Level 1'}
+                                <span className="text-[9px] text-slate-400 font-medium mb-1 pl-1 block">Verified access clearances</span>
+                                <div className="text-[10px] text-slate-650 bg-indigo-50/30 rounded-[20px] p-3 border border-indigo-100/30 leading-snug font-medium">
+                                  {profile?.role === 'Admin' && '✓ Full Admin access (level 4)'}
+                                  {profile?.role === 'Disaster Management Officer' && '✓ Hydrology dispatch access (level 3)'}
+                                  {profile?.role === 'Protection Officer' && '✓ Youth & gender protection desk (level 3)'}
+                                  {profile?.role === 'Mentor/Teacher' && '✓ School guidance club desk (level 2)'}
+                                  {(profile?.role === 'User' || !profile?.role) && '✓ Standard safelink access (level 1)'}
                                 </div>
                               </div>
                             </div>
@@ -237,10 +237,10 @@ const Navbar: React.FC = () => {
                               <Link
                                 to="/profile"
                                 onClick={() => setIsDropdownOpen(false)}
-                                className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-all group"
+                                className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-all group"
                               >
                                 <span className="flex items-center gap-2">
-                                  <Settings size={13} className="text-slate-400 group-hover:text-slate-900 transition-colors" /> Manage Settings
+                                  <Settings size={13} className="text-slate-400 group-hover:text-slate-900 transition-colors" /> Settings
                                 </span>
                                 <ChevronRight size={12} className="text-slate-300 group-hover:translate-x-0.5 transition-transform" />
                               </Link>
@@ -250,10 +250,10 @@ const Navbar: React.FC = () => {
                                 <Link
                                   to="/admin-dashboard"
                                   onClick={() => setIsDropdownOpen(false)}
-                                  className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold text-[#4f46e5] hover:text-[#4f46e5] hover:bg-purple-primary/5 transition-all"
+                                  className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-[#4f46e5] hover:text-[#4f46e5] hover:bg-purple-primary/5 transition-all"
                                 >
                                   <span className="flex items-center gap-2">
-                                    <LayoutDashboard size={13} /> County Admin Room
+                                    <LayoutDashboard size={13} /> County administration dashboard
                                   </span>
                                   <ChevronRight size={12} />
                                 </Link>
@@ -264,9 +264,9 @@ const Navbar: React.FC = () => {
                                   setIsDropdownOpen(false);
                                   handleLogout();
                                 }}
-                                className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-red-600 hover:bg-red-50 hover:text-red-700 transition-all text-left cursor-pointer"
+                                className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-red-600 hover:bg-red-50 hover:text-red-700 transition-all text-left cursor-pointer"
                               >
-                                <LogOut size={13} /> Close Account Session
+                                <LogOut size={13} /> Close session
                               </button>
                             </div>
                           </motion.div>
@@ -346,23 +346,23 @@ const Navbar: React.FC = () => {
                 <p className="text-[10px] text-text-dim leading-none font-semibold mb-3">{user?.email || 'Secure Local Browsing Mode'}</p>
                 
                 {user ? (
-                  <div className="mt-4 space-y-2.5 text-left bg-slate-50 border border-slate-150 rounded-2xl p-3.5">
-                    <div className="flex items-center justify-between border-b border-slate-150/50 pb-1.5">
-                      <span className="text-[8.5px] font-extrabold text-slate-400 uppercase tracking-wider">Security Access</span>
-                      <span className="text-[8.5px] font-black uppercase text-[#4F46E5] bg-indigo-50 px-1.5 py-0.5 rounded">
+                  <div className="mt-4 space-y-2.5 text-left bg-slate-50 border border-slate-100 rounded-[20px] p-4">
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                      <span className="text-[10px] font-medium text-slate-500">Security access</span>
+                      <span className="text-[10px] font-semibold text-[#4F46E5] bg-indigo-50 px-2 py-0.5 rounded-full">
                         {profile?.role || 'Citizen'}
                       </span>
                     </div>
 
-                    <div className="flex items-center justify-between border-b border-slate-150/50 pb-1.5 text-[10px] font-semibold text-slate-700">
-                      <span className="text-[8.5px] font-extrabold text-slate-400 uppercase tracking-wider">Device Mask ID</span>
-                      <span className="font-mono font-bold text-slate-950">ANON-{user.uid.slice(0, 6).toUpperCase()}</span>
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-2 text-[10px] font-medium text-slate-750">
+                      <span className="text-[10px] text-slate-500">Device identifier</span>
+                      <span className="font-mono text-slate-600">ANON-{user.uid.slice(0, 6).toUpperCase()}</span>
                     </div>
 
-                    <div className="flex items-center justify-between text-[10px] font-semibold text-slate-700">
-                      <span className="text-[8.5px] font-extrabold text-slate-400 uppercase tracking-wider">Reports Authored</span>
-                      <span className="font-bold font-mono text-indigo-600 bg-white border border-slate-200 px-1.5 py-0.5 rounded">
-                        {personalReportsCount !== null ? personalReportsCount : '0'} Reports
+                    <div className="flex items-center justify-between text-[10px] font-medium text-slate-750">
+                      <span className="text-[10px] text-slate-500">Reports authored</span>
+                      <span className="font-mono text-indigo-600 bg-white border border-slate-100 px-2 py-0.5 rounded-full">
+                        {personalReportsCount !== null ? personalReportsCount : '0'} reports
                       </span>
                     </div>
                   </div>
@@ -370,9 +370,9 @@ const Navbar: React.FC = () => {
                   <Link 
                     to="/auth" 
                     onClick={() => setIsOpen(false)}
-                    className="btn-primary w-full inline-block !py-3 shadow-glow"
+                    className="btn-primary w-full inline-block !py-3 shadow-none"
                   >
-                    Login / Sign Up
+                    Log In / Sign Up
                   </Link>
                 )}
               </div>
@@ -382,48 +382,48 @@ const Navbar: React.FC = () => {
                 <Link
                   to="/profile"
                   onClick={() => setIsOpen(false)}
-                  className="w-full flex items-center justify-between p-4 rounded-2xl hover:bg-slate-50 transition-all group"
+                  className="w-full flex items-center justify-between p-3 rounded-[20px] hover:bg-slate-50 transition-all group"
                 >
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center group-hover:bg-purple-primary transition-all text-slate-600 group-hover:text-white">
-                      <User size={20} />
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center group-hover:bg-purple-primary transition-all text-slate-600 group-hover:text-white">
+                      <User size={18} />
                     </div>
-                    <span className="font-bold text-slate-800">My Profile</span>
+                    <span className="font-semibold text-slate-800">My profile</span>
                   </div>
-                  <ChevronRight size={18} className="text-slate-300 group-hover:text-slate-800 transition-all" />
+                  <ChevronRight size={16} className="text-slate-300 group-hover:text-slate-800 transition-all" />
                 </Link>
 
-                <div className="pt-8 mt-8 border-t border-slate-100 space-y-2">
-                  <p className="px-4 text-[10px] font-bold text-text-dim uppercase tracking-widest mb-4">Navigation</p>
+                <div className="pt-6 mt-6 border-t border-slate-100 space-y-1">
+                  <p className="px-3 text-[10px] font-semibold text-slate-400 mb-2">Navigation</p>
                   {navLinks.map((link) => (
                     <Link
                       key={link.path}
                       to={link.path}
                       onClick={() => setIsOpen(false)}
-                      className={`flex items-center gap-4 p-4 rounded-2xl transition-all ${
-                        location.pathname === link.path ? 'bg-purple-primary/10 text-purple-primary' : 'hover:bg-slate-50 text-text-dim hover:text-slate-900'
+                      className={`flex items-center gap-3 p-3 rounded-[20px] transition-all ${
+                        location.pathname === link.path ? 'bg-purple-primary/10 text-purple-primary font-semibold' : 'hover:bg-slate-50 text-slate-600 hover:text-slate-900'
                       }`}
                     >
-                      <link.icon size={20} />
-                      <span className="font-bold">{link.name}</span>
+                      <link.icon size={18} />
+                      <span>{link.name}</span>
                     </Link>
                   ))}
                 </div>
               </div>
 
               {/* Footer */}
-              <div className="p-8 border-t border-slate-100 flex justify-between items-center">
-                <span className="text-xs text-text-dim font-bold tracking-widest uppercase">Bonga Box v1.0</span>
+              <div className="p-6 border-t border-slate-100 flex justify-between items-center bg-slate-50">
+                <span className="text-xs text-slate-400 font-medium">Bonga Box v1.0</span>
                 {user && (
                   <button 
                     onClick={() => {
                       handleLogout();
                       setIsOpen(false);
                     }}
-                    className="flex items-center gap-2 text-red-500 hover:text-red-600 font-bold transition-all cursor-pointer"
+                    className="flex items-center gap-1.5 text-red-500 hover:text-red-650 text-xs font-semibold transition-all cursor-pointer"
                   >
-                    <LogOut size={18} />
-                    Logout
+                    <LogOut size={14} />
+                    Log out
                   </button>
                 )}
               </div>

@@ -63,11 +63,11 @@ export default function Support() {
       
       {/* Header telemetry info */}
       <div className="px-1">
-        <h1 className="text-xl font-display font-black text-slate-900 tracking-tight leading-none mb-0.5">
-          Counsel Support Hub
+        <h1 className="text-xl font-semibold text-slate-900 tracking-tight leading-none mb-1">
+          Counsel support hub
         </h1>
-        <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-widest leading-none">
-          Child Helplines & Direct Protection Networks
+        <p className="text-[10px] text-slate-500 font-medium">
+          Child helplines & direct protection networks
         </p>
       </div>
 
@@ -75,11 +75,11 @@ export default function Support() {
       <div className="space-y-3.5">
         
         {/* Counseling simulator */}
-        <div className="bg-white border border-slate-150 rounded-2xl p-3.5 shadow-sm flex flex-col h-[300px]">
+        <div className="bg-white border border-slate-100 rounded-[20px] p-4 shadow-xs flex flex-col h-[300px]">
           <div className="flex items-center gap-2 pb-2 border-b border-slate-100 shrink-0">
-            <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse" />
-            <span className="text-[10.5px] font-extrabold text-slate-900 uppercase tracking-wider block">Bonga Counselling Demo</span>
-            <span className="ml-auto text-[8px] font-mono text-indigo-600 font-extrabold bg-indigo-50 px-1.5 py-0.5 rounded">DEMO ACTIVE</span>
+            <div className="w-2 h-2 bg-[#4F46E5] rounded-full" />
+            <span className="text-[11px] font-semibold text-slate-800">Counselling assistant</span>
+            <span className="ml-auto text-[9px] text-[#4F46E5] bg-indigo-50/75 px-1.5 py-0.5 rounded-full font-medium">Demo active</span>
           </div>
 
           {/* Chat Messages flow */}
@@ -89,20 +89,20 @@ export default function Support() {
                 key={m.id} 
                 className={`flex flex-col max-w-[85%] ${m.sender === 'user' ? 'ml-auto items-end' : 'mr-auto items-start'}`}
               >
-                <div className={`p-2.5 rounded-xl text-[10.5px] leading-relaxed font-semibold shadow-xs ${
+                <div className={`p-2.5 rounded-[20px] text-[10.5px] leading-relaxed font-semibold shadow-xs ${
                   m.sender === 'user' 
                     ? 'bg-[#4F46E5] text-white rounded-tr-none' 
-                    : 'bg-slate-50 text-slate-800 border border-slate-150 rounded-tl-none'
+                    : 'bg-slate-50 text-slate-800 border border-slate-100 rounded-tl-none'
                 }`}>
                   {m.text}
                 </div>
-                <span className="text-[7px] text-slate-400 mt-0.5 font-bold italic px-0.5">{m.timestamp}</span>
+                <span className="text-[8px] text-slate-405 mt-0.5 font-medium px-0.5">{m.timestamp}</span>
               </div>
             ))}
 
             {isTyping && (
-              <div className="flex items-center gap-1 mr-auto p-1.5 px-2 bg-slate-50 border border-slate-150 rounded-xl text-[8.5px] text-slate-500 font-semibold animate-pulse">
-                <Sparkles size={9} className="text-[#4F46E5] animate-spin" />
+              <div className="flex items-center gap-1.5 mr-auto p-1.5 px-2.5 bg-slate-50 border border-slate-100 rounded-[20px] text-[9px] text-slate-500 font-medium animate-pulse">
+                <Sparkles size={9} className="text-[#4F46E5]" />
                 <span>Simulated counselor typing...</span>
               </div>
             )}
@@ -115,11 +115,11 @@ export default function Support() {
               value={inputVal}
               onChange={(e) => setInputVal(e.target.value)}
               placeholder="Ask the simulated demo counselor..."
-              className="flex-grow bg-slate-50 border border-slate-205 py-2 px-3 rounded-xl text-xs font-semibold focus:outline-none placeholder:text-slate-400 text-slate-800"
+              className="flex-grow bg-slate-50 border border-slate-100 py-2 px-3 rounded-[20px] text-xs font-semibold focus:outline-none placeholder:text-slate-400 text-slate-800"
             />
             <button 
               type="submit"
-              className="bg-[#4F46E5] hover:bg-[#3F37C9] text-white p-2 rounded-xl transition-all shadow-md active:scale-95 shrink-0 flex items-center justify-center w-8.5 h-8.5"
+              className="bg-[#4F46E5] hover:bg-[#3F37C9] text-white p-2 rounded-[20px] transition-all shadow-xs active:scale-95 shrink-0 flex items-center justify-center w-8.5 h-8.5 cursor-pointer"
             >
               <Send size={12} />
             </button>
@@ -128,24 +128,24 @@ export default function Support() {
 
         {/* Toll-Free Emergency Helpline Channels */}
         <div className="space-y-2.5">
-          <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-widest pl-1 block">
-            Direct Voice Helpline Hub
+          <span className="text-[10px] text-slate-400 font-semibold pl-1 block">
+            Direct voice helpline hub
           </span>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {helplines.map((h, idx) => (
               <div 
                 key={idx}
-                className="bg-white border border-slate-150 p-3 rounded-xl flex flex-col justify-between shadow-xs text-left hover:border-indigo-400/40 transition-colors"
+                className="bg-white border border-slate-100 p-4 rounded-[20px] flex flex-col justify-between shadow-xs text-left hover:border-indigo-400/30 transition-colors"
               >
                 <div>
-                  <h4 className="text-xs font-bold text-slate-900 leading-tight mb-0.5">{h.title}</h4>
-                  <p className="text-[10px] text-slate-400 font-semibold leading-normal mb-2">{h.desc}</p>
+                  <h4 className="text-xs font-semibold text-slate-900 leading-tight mb-0.5">{h.title}</h4>
+                  <p className="text-[10px] text-slate-500 leading-normal mb-2">{h.desc}</p>
                 </div>
                 
                 <a 
                   href={`tel:${h.phone.replace(/\s+/g, '')}`}
-                  className="w-full py-1.5 bg-indigo-50 hover:bg-indigo-100 text-[#4F46E5] text-[10px] font-black uppercase tracking-wider text-center rounded-lg flex items-center justify-center gap-1.5 transition-colors"
+                  className="w-full py-2 bg-indigo-50/70 hover:bg-indigo-100/80 text-[#4F46E5] text-[10px] font-semibold text-center rounded-xl flex items-center justify-center gap-1.5 transition-colors"
                 >
                   <Phone size={10} /> Dial {h.phone}
                 </a>
@@ -157,11 +157,11 @@ export default function Support() {
       </div>
 
       {/* Safety footprint advice footer */}
-      <footer className="bg-indigo-50/40 border border-indigo-100 text-slate-800 rounded-2xl p-4 shadow-xs text-center flex flex-col items-center">
-        <HeartHandshake size={20} className="text-indigo-600 mb-1.5 animate-pulse" />
-        <h3 className="font-display font-black text-xs text-slate-900 uppercase tracking-widest mb-1">Safe Directory Search</h3>
-        <p className="text-[9.5px] text-slate-500 max-w-xs font-semibold leading-relaxed">
-          The helplines dial directly from your device. Make sure you are in a safe, private location before making outreach phone calls.
+      <footer className="bg-indigo-50/30 border border-slate-100 text-slate-800 rounded-[20px] p-5 shadow-xs text-center flex flex-col items-center">
+        <HeartHandshake size={20} className="text-[#4F46E5] mb-2" />
+        <h3 className="font-semibold text-xs text-slate-900 mb-1">Safe directory search</h3>
+        <p className="text-[9.5px] text-slate-500 max-w-xs font-medium leading-relaxed">
+          The helplines dial directly from your device. Make sure you are in a private, safe location before making outreach phone calls.
         </p>
       </footer>
 

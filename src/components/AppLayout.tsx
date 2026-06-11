@@ -344,7 +344,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
-                    className="absolute right-0 mt-2 w-64 bg-white border border-slate-150 rounded-2xl shadow-xl p-4 z-50 space-y-2 text-left"
+                    className="absolute right-0 mt-2 w-64 bg-white border border-slate-100 rounded-[20px] shadow-xl p-4 z-50 space-y-2 text-left"
                     id="notifications-dropdown"
                   >
                     <div className="pb-2 border-b border-slate-100 flex items-center justify-between">
@@ -419,9 +419,9 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 220 }}
-              className="fixed top-0 right-0 bottom-0 w-[270px] bg-white border-l border-slate-150 shadow-2xl z-[110] flex flex-col p-5"
+              className="fixed top-0 right-0 bottom-0 w-[270px] bg-white border-l border-slate-100 shadow-2xl z-[110] flex flex-col p-5"
             >
-              <div className="flex justify-between items-center pb-3 border-b border-slate-150 mb-4 shrink-0">
+              <div className="flex justify-between items-center pb-3 border-b border-slate-100 mb-4 shrink-0">
                 <Logo size={48} />
                 <button onClick={() => setIsMenuOpen(false)} className="text-slate-500 hover:text-slate-900 p-1 rounded-lg hover:bg-slate-50 transition-colors">
                   <X size={16} />
@@ -502,7 +502,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
 
                 {/* If operator roles exist */}
                 {profile && profile.role !== 'User' && (
-                  <div className="pt-3 border-t border-slate-150">
+                  <div className="pt-3 border-t border-slate-100">
                     <p className="text-[10px] font-extrabold text-[#4F46E5] uppercase tracking-widest mb-2 px-1">Operator Portals</p>
                     <div className="space-y-1.5">
                       {profile.role === 'Admin' && (
@@ -555,7 +555,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                 )}
               </div>
 
-              <div className="border-t border-slate-150 pt-3">
+              <div className="border-t border-slate-100 pt-3">
                 {user ? (
                   <button 
                     onClick={handleLogout}
@@ -706,7 +706,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                   <div className={`p-3.5 rounded-2xl border transition-all ${
                     isSirenActive 
                       ? 'bg-red-50 border-red-200 animate-pulse' 
-                      : 'bg-slate-50 border-slate-150'
+                      : 'bg-slate-50 border-slate-100'
                   }`}>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
@@ -755,14 +755,14 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                         window.dispatchEvent(new Event('bonga_trigger_sms_modal'));
                       }, 100);
                     }}
-                    className="p-3.5 rounded-2xl bg-slate-50 border border-slate-150 hover:border-indigo-400 cursor-pointer transition-all flex items-center justify-between gap-3"
+                    className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100 hover:border-indigo-400 cursor-pointer transition-all flex items-center justify-between gap-3"
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-xl bg-indigo-50 text-[#4F46E5] flex items-center justify-center shrink-0">
                         <ShieldAlert size={18} />
                       </div>
                       <div>
-                        <h4 className="text-xs font-bold text-slate-800">
+                        <h4 className="text-xs font-semibold text-slate-800">
                           Offline SMS Dispatcher
                         </h4>
                         <p className="text-[10px] text-slate-400 font-medium leading-tight mt-0.5">
@@ -779,7 +779,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                       triggerClickHaptic();
                       alert("Simulating emergency dial to Country Child Rescue Hub: Dialing 116...");
                     }}
-                    className="p-3.5 rounded-2xl bg-slate-50 border border-slate-150 hover:border-indigo-400 cursor-pointer transition-all flex items-center justify-between gap-3"
+                    className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100 hover:border-indigo-400 cursor-pointer transition-all flex items-center justify-between gap-3"
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-xl bg-indigo-50 text-[#4F46E5] flex items-center justify-center shrink-0">
@@ -798,7 +798,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                   </div>
                 </div>
 
-                <div className="mt-4 bg-slate-50 rounded-xl p-3.5 border border-slate-150/40 text-[9.5px] text-slate-500 font-semibold leading-relaxed text-center">
+                <div className="mt-4 bg-slate-50 rounded-xl p-3.5 border border-slate-100/40 text-[9.5px] text-slate-500 font-semibold leading-relaxed text-center">
                   All transmissions are metadata-stripped. If you are in immediate physical threat, run towards the nearest high-altitude Safe House.
                 </div>
               </motion.div>

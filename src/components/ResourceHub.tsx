@@ -100,7 +100,7 @@ const ResourceHub: React.FC = () => {
 
         <div className="grid grid-cols-2 gap-3">
           {/* Card Category FGM Prevention */}
-          <div className="bg-white border border-slate-150 rounded-2xl p-3.5 flex flex-col text-left space-y-1.5 pb-4">
+          <div className="bg-white border border-slate-100 rounded-[20px] shadow-xs p-3.5 flex flex-col text-left space-y-1.5 pb-4">
             <div className="w-8.5 h-8.5 rounded-xl bg-purple-primary/5 text-purple-primary flex items-center justify-center shrink-0">
               <ShieldCheck size={18} />
             </div>
@@ -113,7 +113,7 @@ const ResourceHub: React.FC = () => {
           </div>
 
           {/* Card Category Legal Framework */}
-          <div className="bg-white border border-slate-150 rounded-2xl p-3.5 flex flex-col text-left space-y-1.5 pb-4">
+          <div className="bg-white border border-slate-100 rounded-[20px] shadow-xs p-3.5 flex flex-col text-left space-y-1.5 pb-4">
             <div className="w-8.5 h-8.5 rounded-xl bg-purple-primary/5 text-purple-primary flex items-center justify-center shrink-0">
               <BookOpen size={16} />
             </div>
@@ -128,7 +128,7 @@ const ResourceHub: React.FC = () => {
       </div>
 
       {/* Download List: A list of PDF guides with purple download arrows next to them */}
-      <div className="bg-white border border-slate-150 rounded-2xl p-4 shadow-xs space-y-3">
+      <div className="bg-white border border-slate-100 rounded-[20px] p-4 shadow-xs space-y-3">
         <div className="flex justify-between items-center pb-2 border-b border-slate-100">
           <span className="text-[10px] font-extrabold text-slate-900 uppercase tracking-widest block">
             Downloadable Toolkits & Publications
@@ -184,7 +184,7 @@ const ResourceHub: React.FC = () => {
       </div>
 
       {/* Banner: A vibrant purple-to-blue gradient banner at the bottom with "Knowledge is Power" and a "Download All" button */}
-      <div className="bg-gradient-to-r from-[#4F46E5] via-[#3F37C9] to-[#06B6D4] text-white rounded-2xl p-4.5 shadow-lg relative overflow-hidden text-center flex flex-col items-center">
+      <div className="bg-gradient-to-r from-[#4F46E5] via-[#3F37C9] to-[#06B6D4] text-white rounded-[20px] p-4.5 shadow-lg relative overflow-hidden text-center flex flex-col items-center">
         <div className="absolute inset-0 bg-white/5 backdrop-blur-xs pointer-events-none" />
         <div className="relative z-10 w-full flex flex-col items-center">
           <Lightbulb size={20} className="text-amber-300 animate-bounce mb-1.5" />

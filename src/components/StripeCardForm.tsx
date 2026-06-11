@@ -173,7 +173,7 @@ export default function StripeCardForm({
   const cardBrand = getCardBrand(cardNumber);
 
   return (
-    <div className="bg-slate-50 border border-slate-150 rounded-2xl p-4.5 space-y-4">
+    <div className="bg-slate-50 border border-slate-100 rounded-[20px] p-4.5 space-y-4 shadow-xs">
       <div className="flex items-center justify-between pb-2 border-b border-slate-100">
         <span className="text-[9px] font-black uppercase tracking-wider text-slate-500 flex items-center gap-1">
           <CreditCard size={11} className="text-[#4F46E5]" /> Secure Stripe Elements Form

@@ -101,7 +101,7 @@ const AuthPage: React.FC = () => {
       <motion.div 
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md bg-white border border-slate-150 p-8 rounded-[2.5rem] shadow-xl text-slate-800 text-center flex flex-col items-center relative overflow-hidden"
+        className="w-full max-w-md bg-white border border-slate-100 p-8 rounded-[20px] shadow-xs text-slate-800 text-center flex flex-col items-center relative overflow-hidden"
       >
         {/* Glow backdrop graphic */}
         <div className="absolute top-[-10%] left-[-10%] w-[180px] h-[180px] bg-purple-100/40 rounded-full blur-3xl pointer-events-none" />

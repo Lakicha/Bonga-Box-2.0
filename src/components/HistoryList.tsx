@@ -173,8 +173,8 @@ const HistoryList: React.FC = () => {
           <SkeletonReportItem />
         </div>
       ) : reports.length === 0 ? (
-        <div className="bg-white border border-slate-150 rounded-[2.2rem] p-8 text-center flex flex-col items-center my-4 shadow-sm">
-          <div className="w-14 h-14 bg-slate-50 border border-slate-150 rounded-full flex items-center justify-center mb-4 text-slate-400">
+        <div className="bg-white border border-slate-100 rounded-[20px] p-8 text-center flex flex-col items-center my-4 shadow-xs">
+          <div className="w-14 h-14 bg-slate-50 border border-slate-100 rounded-full flex items-center justify-center mb-4 text-slate-400">
             <Lock size={22} />
           </div>
           <h3 className="font-display font-black text-sm mb-1 text-slate-900 uppercase">Archive Empty</h3>
@@ -195,7 +195,7 @@ const HistoryList: React.FC = () => {
             return (
               <div 
                 key={report.id} 
-                className="bg-white border border-slate-150 rounded-2xl p-4.5 shadow-sm hover:border-purple-primary/35 transition-all"
+                className="bg-white border border-slate-100 rounded-[20px] p-5 shadow-xs hover:border-[#4F46E5]/40 transition-all"
               >
                 {/* Header section of cards */}
                 <div className="flex justify-between items-center mb-2.5">
@@ -258,7 +258,7 @@ const HistoryList: React.FC = () => {
                   <span className="text-slate-400 font-extrabold uppercase tracking-widest pl-0.5">
                     Local Receipt Tracking ID
                   </span>
-                  <div className="font-mono text-slate-500 bg-slate-50 p-2 rounded-lg border border-dashed border-slate-150 overflow-x-auto whitespace-nowrap scrollbar-none scroll-smooth text-left">
+                  <div className="font-mono text-slate-500 bg-slate-50 p-2 rounded-lg border border-dashed border-slate-200 overflow-x-auto whitespace-nowrap scrollbar-none scroll-smooth text-left">
                     {hash}
                   </div>
                 </div>
