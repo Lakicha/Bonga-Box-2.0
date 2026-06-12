@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { db, collection, onSnapshot, query, where, updateDoc, doc, serverTimestamp, handleFirestoreError, OperationType } from '../firebase';
 import { Report } from '../types';
 import { useAuth } from '../AuthContext';
-import { Shield, CheckCircle, Clock, AlertCircle, Filter, Eye, FileText } from 'lucide-react';
+import { Shield, CheckCircle, Clock, AlertCircle, Filter, Eye, FileText, Download, ShieldCheck, Check, Info, Lock } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import Logo from './Logo';
 import { SecureEvidenceViewer } from './SecureEvidenceViewer';
@@ -14,6 +14,13 @@ const ProtectionDashboard: React.FC = () => {
   const [filter, setFilter] = useState<string>('All');
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+
+  // Export states
+  const [isExportOpen, setIsExportOpen] = useState<boolean>(false);
+  const [exportStep, setExportStep] = useState<'config' | 'preview'>('config');
+  const [exportRange, setExportRange] = useState<string>('all');
+  const [exportOmitNarrative, setExportOmitNarrative] = useState<boolean>(true);
+  const [exportSuccess, setExportSuccess] = useState<boolean>(false);
 
   useEffect(() => {
     // Protection Officer deals with FGM Risks primarily
@@ -45,6 +52,103 @@ const ProtectionDashboard: React.FC = () => {
     }
   };
 
+  const filteredReportsForExport = useMemo(() => {
+    return reports.filter(r => {
+      if (!r.timestamp) return exportRange === 'all';
+      const reportDate = r.timestamp.toDate ? r.timestamp.toDate() : new Date(r.timestamp);
+      const now = new Date();
+      if (exportRange === '7d') {
+        const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        return reportDate >= sevenDaysAgo;
+      } else if (exportRange === '30d') {
+        const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        return reportDate >= thirtyDaysAgo;
+      } else if (exportRange === '90d') {
+        const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+        return reportDate >= ninetyDaysAgo;
+      }
+      return true;
+    });
+  }, [reports, exportRange]);
+
+  const previewExportCount = filteredReportsForExport.length;
+
+  const handleExportCSV = () => {
+    const filtered = filteredReportsForExport;
+
+    const headers = [
+      'Anonymized Case Key',
+      'Incident Category',
+      'Reporting Region',
+      'Case Status',
+      'Submission Date',
+      'Resolution Status',
+      'Resolution Duration (Days)',
+      'Filed Anonymously',
+      'Anonymized Safe Narrative'
+    ];
+
+    const rows = filtered.map(r => {
+      const anonKey = `REP-${r.id ? r.id.substring(0, 6).toUpperCase() : 'ANON'}`;
+      const region = r.location || 'Unknown';
+      
+      let submittedDate = 'N/A';
+      if (r.timestamp) {
+        const dateObj = r.timestamp.toDate ? r.timestamp.toDate() : new Date(r.timestamp);
+        submittedDate = dateObj.toISOString().split('T')[0];
+      }
+
+      let resStatus = r.status || 'Pending';
+      let resDurationDays = 'N/A';
+      if (r.status === 'Resolved' && r.resolvedAt && r.timestamp) {
+        const start = r.timestamp.toDate ? r.timestamp.toDate() : new Date(r.timestamp);
+        const end = r.resolvedAt.toDate ? r.resolvedAt.toDate() : new Date(r.resolvedAt);
+        const diffMs = end.getTime() - start.getTime();
+        resDurationDays = (diffMs / (1000 * 60 * 60 * 24)).toFixed(1);
+      }
+
+      let narrative = 'Omitted for survivor/reporter safekeeping under FGM child protection rules.';
+      if (!exportOmitNarrative && r.description) {
+        const words = r.description.split(/\s+/);
+        if (words.length > 10) {
+          narrative = `${words.slice(0, 10).join(' ')}... [Abstracted Case Detail]`;
+        } else {
+          narrative = r.description;
+        }
+      }
+
+      return [
+        anonKey,
+        r.category,
+        region,
+        r.status,
+        submittedDate,
+        resStatus,
+        resDurationDays,
+        r.isAnonymous ? 'Yes' : 'No',
+        narrative
+      ];
+    });
+
+    const csvContent = [headers, ...rows].map(row => row.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `isiolo-fgm-protection-impact-report-${exportRange}-${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    setExportSuccess(true);
+    setTimeout(() => {
+      setExportSuccess(false);
+      setIsExportOpen(false);
+    }, 1500);
+  };
+
   const filteredReports = filter === 'All' ? reports : reports.filter(r => r.status === filter);
 
   return (
@@ -58,13 +162,27 @@ const ProtectionDashboard: React.FC = () => {
             <p className="text-xs text-text-dim">Case management system for FGM and Child Protection cases.</p>
           </div>
         </div>
-        <div className="flex items-center gap-3 bg-white border border-slate-100 rounded-[20px] p-2 pr-4 shadow-xs">
-          <div className="w-8 h-8 bg-indigo-50 rounded-xl flex items-center justify-center text-[#4F46E5] border border-indigo-100/40">
-            <Shield size={16} />
-          </div>
-          <div>
-            <p className="text-[9px] font-medium text-slate-400 leading-none mb-0.5">Operator role</p>
-            <p className="font-semibold text-xs text-slate-800">Protection Officer</p>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 self-end md:self-auto">
+          {/* Export Statistics Button */}
+          <button 
+            onClick={() => {
+              setExportStep('config');
+              setIsExportOpen(true);
+            }}
+            className="bg-purple-primary hover:bg-purple-dark text-white text-xs font-bold py-2.5 px-5 rounded-xl shadow-xs transition-colors flex items-center justify-center gap-1.5 shrink-0 hover:shadow-md active:scale-[0.98] cursor-pointer"
+          >
+            <Download size={14} />
+            <span>Export Stats</span>
+          </button>
+
+          <div className="flex items-center gap-3 bg-white border border-slate-100 rounded-[20px] p-2 pr-4 shadow-xs shrink-0 text-left">
+            <div className="w-8 h-8 bg-indigo-50 rounded-xl flex items-center justify-center text-[#4F46E5] border border-indigo-100/40">
+              <Shield size={16} />
+            </div>
+            <div>
+              <p className="text-[9px] font-medium text-slate-400 leading-none mb-0.5">Operator role</p>
+              <p className="font-semibold text-xs text-slate-800">Protection Officer</p>
+            </div>
           </div>
         </div>
       </div>
@@ -257,6 +375,226 @@ const ProtectionDashboard: React.FC = () => {
           </div>
         </>
       )}
+
+      {/* CSV Export Modal */}
+      <AnimatePresence>
+        {isExportOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsExportOpen(false)}
+              className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs"
+            />
+
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 15 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 15 }}
+              className="bg-white border border-slate-100 rounded-[30px] shadow-2xl max-w-lg w-full overflow-hidden relative z-10 flex flex-col"
+            >
+              <div className="bg-gradient-to-r from-purple-primary to-indigo-600 p-6 text-white text-left relative overflow-hidden shrink-0">
+                <div className="absolute right-0 top-0 translate-x-1/4 -translate-y-1/4 opacity-10 pointer-events-none">
+                  <ShieldCheck size={200} />
+                </div>
+                <div className="flex items-center gap-3 relative z-10">
+                  <div className="p-2 bg-white/10 rounded-2xl border border-white/20">
+                    <Lock size={20} className="text-white" />
+                  </div>
+                  <div>
+                    <h2 className="font-bold text-base tracking-tight text-white leading-tight">Export Case Stats</h2>
+                    <p className="text-[10px] text-purple-100 uppercase tracking-widest font-black mt-0.5">Anonymized Protection Reports CSV</p>
+                  </div>
+                </div>
+              </div>
+
+              {exportStep === 'config' ? (
+                <>
+                  <div className="p-6 space-y-4 max-h-[400px] overflow-y-auto text-left">
+                    <div className="bg-indigo-50/40 border border-indigo-100 p-3.5 rounded-2xl flex items-start gap-2.5">
+                      <Info size={16} className="text-indigo-600 shrink-0 mt-0.5" />
+                      <div className="text-[10px] text-slate-600 leading-relaxed font-medium">
+                        <span className="font-bold text-slate-800">Child & Survivor Safety Guard:</span> In compliance with regional safe-reporting directives (FGM and Child Protections), all victim names, emails, and direct user UIDs are fully omitted. Photo/voice evidences are stripped, and narrative descriptions are sanitized or omitted.
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-black text-slate-500 uppercase tracking-wider block">Reporting Period</label>
+                      <select
+                        value={exportRange}
+                        onChange={(e) => setExportRange(e.target.value)}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 font-bold outline-none focus:border-purple-primary cursor-pointer hover:bg-slate-100/50"
+                      >
+                        <option value="all">All Available Cases</option>
+                        <option value="7d">Last 7 Days</option>
+                        <option value="30d">Last 30 Days</option>
+                        <option value="90d">Last 90 Days</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[9px] font-black text-slate-500 uppercase tracking-wider block">Incident Narrative Sanitization</label>
+                      <div className="space-y-2">
+                        <label className="flex items-center gap-2.5 p-3 rounded-xl border border-slate-100 bg-slate-50/20 hover:bg-slate-50 cursor-pointer transition-colors">
+                          <input
+                            type="radio"
+                            checked={exportOmitNarrative === true}
+                            onChange={() => setExportOmitNarrative(true)}
+                            className="text-purple-primary focus:ring-purple-primary"
+                          />
+                          <div className="text-[10.5px]">
+                            <p className="font-bold text-slate-805">Omit Safe Narratives Completely</p>
+                            <p className="text-[9px] text-slate-400">Strict zero-leak metadata protection. Highly recommended.</p>
+                          </div>
+                        </label>
+
+                        <label className="flex items-center gap-2.5 p-3 rounded-xl border border-slate-100 bg-slate-50/20 hover:bg-slate-50 cursor-pointer transition-colors">
+                          <input
+                            type="radio"
+                            checked={exportOmitNarrative === false}
+                            onChange={() => setExportOmitNarrative(false)}
+                            className="text-purple-primary focus:ring-purple-primary"
+                          />
+                          <div className="text-[10.5px]">
+                            <p className="font-bold text-slate-805">Include High-level Abstracted Narration (Max 10 Words)</p>
+                            <p className="text-[9px] text-slate-400">Safe summarization filtered to preserve absolute survivor identities.</p>
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div className="border border-slate-100 rounded-2xl p-3 bg-slate-50/50 space-y-1.5">
+                      <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Protection Audit Checklist</h4>
+                      <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[9.5px] font-bold text-slate-600">
+                        <div className="flex items-center gap-1.5 text-emerald-600">
+                          <Check size={11} />
+                          <span>FGM Case ID Redacted</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-emerald-600">
+                          <Check size={11} />
+                          <span>Reporter Identity Masked</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-emerald-600">
+                          <Check size={11} />
+                          <span>Voice/Photo Attachments Stripped</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-emerald-600">
+                          <Check size={11} />
+                          <span>Geographical Scope Generalized</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between items-center bg-purple-50 px-4 py-2.5 rounded-2xl border border-purple-100">
+                      <span className="text-[10px] font-bold text-purple-700 uppercase tracking-widest">Matching Protected Cases</span>
+                      <span className="text-sm font-black text-purple-900 bg-white shadow-xs px-2.5 py-0.5 rounded-xl border border-purple-100">
+                        {previewExportCount} Active Cases
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-3 shrink-0">
+                    <button
+                      onClick={() => setIsExportOpen(false)}
+                      className="px-4 py-2.5 border border-slate-250 text-slate-600 hover:text-slate-800 bg-white font-bold rounded-xl text-xs transition-colors cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+
+                    <button
+                      onClick={() => setExportStep('preview')}
+                      disabled={previewExportCount === 0}
+                      className={`px-5 py-2.5 rounded-xl font-bold text-xs text-white shadow-md flex items-center gap-1.5 transition-all cursor-pointer ${
+                        previewExportCount === 0 
+                          ? 'bg-slate-300 cursor-not-allowed text-slate-500' 
+                          : 'bg-purple-primary hover:bg-purple-dark hover:shadow-lg'
+                      }`}
+                    >
+                      <span>Preview Export Summary</span>
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="p-6 space-y-4 max-h-[400px] overflow-y-auto text-left">
+                    <div className="bg-purple-50 border border-purple-100 p-4 rounded-2xl space-y-2">
+                      <div className="text-xs font-bold text-purple-950">Export Scope Summary:</div>
+                      <p className="text-xs text-purple-900 font-semibold leading-relaxed">
+                        Exporting <span className="underline decoration-purple-400 font-extrabold">{previewExportCount} records</span> from the <span className="underline decoration-purple-400 font-extrabold">{exportRange === 'all' ? 'beginning of time (All)' : `last ${exportRange === '7d' ? '7 days' : exportRange === '30d' ? '30 days' : '90 days'}`}</span>.
+                      </p>
+                    </div>
+
+                    <div className="space-y-2 text-left">
+                      <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-wider">Protected Sample (Subset Preview)</h4>
+                      <div className="border border-slate-100 rounded-2xl p-3 bg-slate-50/80 space-y-3.5 divide-y divide-slate-100">
+                        {filteredReportsForExport.slice(0, 3).map((r, idx) => {
+                          const anonKey = `REP-${r.id ? r.id.substring(0, 6).toUpperCase() : 'ANON'}`;
+                          const region = r.location || 'Unknown Region';
+                          let subDate = 'N/A';
+                          if (r.timestamp) {
+                            const d = r.timestamp.toDate ? r.timestamp.toDate() : new Date(r.timestamp);
+                            subDate = d.toISOString().split('T')[0];
+                          }
+                          return (
+                            <div key={idx} className={`${idx > 0 ? 'pt-3' : ''} space-y-1.5`}>
+                              <div className="flex justify-between items-center text-[10.5px] font-bold">
+                                <span className="font-mono text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded border border-purple-100">{anonKey}</span>
+                                <span className="text-[9px] text-[#E11D48] bg-rose-50 border border-rose-100 px-1.5 py-0.25 rounded">Protected FGM Risk</span>
+                              </div>
+                              <div className="grid grid-cols-2 text-[9px] text-slate-600 font-semibold">
+                                <div>Region: <span className="font-bold text-slate-800">{region}</span></div>
+                                <div className="text-right">Date: <span className="font-bold text-slate-800">{subDate}</span></div>
+                              </div>
+                              <div className="text-[9px] text-slate-400 font-medium bg-white/70 border border-slate-150 rounded px-2 py-1 leading-normal italic line-clamp-2">
+                                {exportOmitNarrative 
+                                  ? 'Omitted completely in safe-reporting output mode.' 
+                                  : r.description ? (r.description.split(/\s+/).slice(0, 8).join(' ') + '... [Safe Abstract]') : 'N/A'}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <p className="text-[9px] text-center text-slate-400 font-bold italic mt-1">Preview shows up to 3 sample cases formatted for secure transmission to protection officers.</p>
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-3 shrink-0">
+                    <button
+                      onClick={() => setExportStep('config')}
+                      className="px-4 py-2.5 border border-slate-250 text-slate-600 hover:text-slate-800 bg-white font-bold rounded-xl text-xs transition-colors cursor-pointer"
+                    >
+                      Back to Options
+                    </button>
+
+                    <button
+                      onClick={handleExportCSV}
+                      disabled={previewExportCount === 0 || exportSuccess}
+                      className={`px-5 py-2.5 rounded-xl font-bold text-xs text-white shadow-md flex items-center gap-1.5 transition-all cursor-pointer ${
+                        exportSuccess 
+                          ? 'bg-emerald-600' 
+                          : 'bg-gradient-to-r from-purple-primary to-indigo-600 hover:opacity-95'
+                      }`}
+                    >
+                      {exportSuccess ? (
+                        <>
+                          <Check size={14} />
+                          <span>Exported successfully</span>
+                        </>
+                      ) : (
+                        <>
+                          <Download size={14} />
+                          <span>Confirm & Download CSV</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </>
+              )}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

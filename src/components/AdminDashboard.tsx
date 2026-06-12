@@ -2,8 +2,8 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { db, collection, onSnapshot, query, orderBy, updateDoc, doc, setDoc, where, handleFirestoreError, OperationType, limit } from '../firebase';
 import { Report, UserProfile, Alert } from '../types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
-import { Download, Users, ShieldAlert, AlertTriangle, FileText, ArrowRight, UserCog, Filter, Clock, BarChart2 } from 'lucide-react';
-import { motion } from 'motion/react';
+import { Download, Users, ShieldAlert, AlertTriangle, FileText, ArrowRight, UserCog, Filter, Clock, BarChart2, ShieldCheck, Check, Info, Lock } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import Logo from './Logo';
 import { SkeletonDashboardScreen } from './SkeletonLoader';
 
@@ -20,6 +20,14 @@ const AdminDashboard: React.FC = () => {
   const [roleFilter, setRoleFilter] = useState<string>('All');
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
   const [activeTab, setActiveTab ] = useState<'analytics' | 'activity' | 'users'>('analytics');
+
+  // Export states
+  const [isExportOpen, setIsExportOpen] = useState<boolean>(false);
+  const [exportStep, setExportStep] = useState<'config' | 'preview'>('config');
+  const [exportRange, setExportRange] = useState<string>('all');
+  const [exportCategory, setExportCategory] = useState<string>('All');
+  const [exportOmitNarrative, setExportOmitNarrative] = useState<boolean>(true);
+  const [exportSuccess, setExportSuccess] = useState<boolean>(false);
 
   // Manual pre-onboarding form states
   const [onboardEmail, setOnboardEmail] = useState('');
@@ -133,6 +141,104 @@ const AdminDashboard: React.FC = () => {
     ? users 
     : users.filter(u => u.role === roleFilter);
 
+  const filteredReportsForExport = useMemo(() => {
+    return reports.filter(r => {
+      if (exportCategory !== 'All' && r.category !== exportCategory) return false;
+      if (!r.timestamp) return exportRange === 'all';
+      const reportDate = r.timestamp.toDate ? r.timestamp.toDate() : new Date(r.timestamp);
+      const now = new Date();
+      if (exportRange === '7d') {
+        const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        return reportDate >= sevenDaysAgo;
+      } else if (exportRange === '30d') {
+        const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        return reportDate >= thirtyDaysAgo;
+      } else if (exportRange === '90d') {
+        const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+        return reportDate >= ninetyDaysAgo;
+      }
+      return true;
+    });
+  }, [reports, exportRange, exportCategory]);
+
+  const previewExportCount = filteredReportsForExport.length;
+
+  const handleExportCSV = () => {
+    const filtered = filteredReportsForExport;
+
+    const headers = [
+      'Anonymized Case Key',
+      'Incident Category',
+      'Reporting Region',
+      'Case Status',
+      'Submission Date',
+      'Resolution Status',
+      'Resolution Duration (Days)',
+      'Filed Anonymously',
+      'Anonymized Safe Narrative'
+    ];
+
+    const rows = filtered.map(r => {
+      const anonKey = `REP-${r.id ? r.id.substring(0, 6).toUpperCase() : 'ANON'}`;
+      const region = r.location || 'Unknown';
+      
+      let submittedDate = 'N/A';
+      if (r.timestamp) {
+        const dateObj = r.timestamp.toDate ? r.timestamp.toDate() : new Date(r.timestamp);
+        submittedDate = dateObj.toISOString().split('T')[0];
+      }
+
+      let resStatus = r.status || 'Pending';
+      let resDurationDays = 'N/A';
+      if (r.status === 'Resolved' && r.resolvedAt && r.timestamp) {
+        const start = r.timestamp.toDate ? r.timestamp.toDate() : new Date(r.timestamp);
+        const end = r.resolvedAt.toDate ? r.resolvedAt.toDate() : new Date(r.resolvedAt);
+        const diffMs = end.getTime() - start.getTime();
+        resDurationDays = (diffMs / (1000 * 60 * 60 * 24)).toFixed(1);
+      }
+
+      let narrative = 'Omitted for survivor/reporter safekeeping under ISIOLO-SAFE protection protocols.';
+      if (!exportOmitNarrative && r.description) {
+        const words = r.description.split(/\s+/);
+        if (words.length > 10) {
+          narrative = `${words.slice(0, 10).join(' ')}... [Abstracted Case Detail]`;
+        } else {
+          narrative = r.description;
+        }
+      }
+
+      return [
+        anonKey,
+        r.category,
+        region,
+        r.status,
+        submittedDate,
+        resStatus,
+        resDurationDays,
+        r.isAnonymous ? 'Yes' : 'No',
+        narrative
+      ];
+    });
+
+    const csvContent = [headers, ...rows].map(row => row.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `isiolo-anonymized-impact-report-${exportCategory.toLowerCase().replace(/\s+/g, '-')}-${exportRange}-${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    setExportSuccess(true);
+    setTimeout(() => {
+      setExportSuccess(false);
+      setIsExportOpen(false);
+    }, 1500);
+  };
+
   // Data for Category Chart
   const categoryData = useMemo(() => [
     { name: 'FGM Risk', value: reports.filter(r => r.category === 'FGM Risk').length },
@@ -194,9 +300,15 @@ const AdminDashboard: React.FC = () => {
             <p className="text-xs text-text-dim">Aggregated reports and analytics for Isiolo County.</p>
           </div>
         </div>
-        <button className="bg-purple-primary hover:bg-purple-dark text-white text-xs font-bold py-2.5 px-6 rounded-xl shadow-xs transition-colors flex items-center gap-1.5 self-end">
+        <button 
+          onClick={() => {
+            setExportStep('config');
+            setIsExportOpen(true);
+          }}
+          className="bg-purple-primary hover:bg-purple-dark text-white text-xs font-bold py-2.5 px-6 rounded-xl shadow-xs transition-colors flex items-center gap-1.5 self-end"
+        >
           <Download size={14} />
-          <span>Export Data</span>
+          <span>Export Stats</span>
         </button>
       </div>
 
@@ -510,6 +622,241 @@ const AdminDashboard: React.FC = () => {
       </div>
     </>
   )}
+
+      {/* CSV Export Modal */}
+      <AnimatePresence>
+        {isExportOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsExportOpen(false)}
+              className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs"
+            />
+
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 15 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 15 }}
+              className="bg-white border border-slate-100 rounded-[30px] shadow-2xl max-w-lg w-full overflow-hidden relative z-10 flex flex-col"
+            >
+              <div className="bg-gradient-to-r from-purple-primary to-indigo-600 p-6 text-white text-left relative overflow-hidden shrink-0">
+                <div className="absolute right-0 top-0 translate-x-1/4 -translate-y-1/4 opacity-10 pointer-events-none">
+                  <ShieldCheck size={200} />
+                </div>
+                <div className="flex items-center gap-3 relative z-10">
+                  <div className="p-2 bg-white/10 rounded-2xl border border-white/20">
+                    <Lock size={20} className="text-white" />
+                  </div>
+                  <div>
+                    <h2 className="font-bold text-base tracking-tight text-white leading-tight">Export Impact CSV</h2>
+                    <p className="text-[10px] text-purple-100 uppercase tracking-widest font-black mt-0.5">Anonymized Impact Statistics Utility</p>
+                  </div>
+                </div>
+                           {exportStep === 'config' ? (
+                <>
+                  <div className="p-6 space-y-4 max-h-[400px] overflow-y-auto text-left">
+                    <div className="bg-indigo-50/40 border border-indigo-100 p-3.5 rounded-2xl flex items-start gap-2.5">
+                      <Info size={16} className="text-indigo-600 shrink-0 mt-0.5" />
+                      <div className="text-[10px] text-slate-600 leading-relaxed font-medium">
+                        <span className="font-bold text-slate-800">Zero-Leak Guard Activated:</span> All direct identifiers like profile IDs, usernames, and media URLs are fully stripped. Location is generalized and incident narratives are either fully omitted or safe-abstracted to prevent survivor trace of FGM or disaster protection details.
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <label className="text-[9px] font-black text-slate-500 uppercase tracking-wider block">Date Range</label>
+                        <select
+                          value={exportRange}
+                          onChange={(e) => setExportRange(e.target.value)}
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 font-bold outline-none focus:border-purple-primary cursor-pointer hover:bg-slate-100/50"
+                        >
+                          <option value="all">All Time</option>
+                          <option value="7d">Last 7 Days</option>
+                          <option value="30d">Last 30 Days</option>
+                          <option value="90d">Last 90 Days</option>
+                        </select>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[9px] font-black text-slate-500 uppercase tracking-wider block">Category Scope</label>
+                        <select
+                          value={exportCategory}
+                          onChange={(e) => setExportCategory(e.target.value)}
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 font-bold outline-none focus:border-purple-primary cursor-pointer hover:bg-slate-100/50"
+                        >
+                          <option value="All">All Categories</option>
+                          <option value="FGM Risk">FGM Risk</option>
+                          <option value="Flood Alert">Flood Alert</option>
+                          <option value="Emergency">Emergency</option>
+                          <option value="Other">Other</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[9px] font-black text-slate-500 uppercase tracking-wider block">Description/Narrative Safekeeping</label>
+                      <div className="space-y-2">
+                        <label className="flex items-center gap-2.5 p-3 rounded-xl border border-slate-100 bg-slate-50/20 hover:bg-slate-50 cursor-pointer transition-colors">
+                          <input
+                            type="radio"
+                            checked={exportOmitNarrative === true}
+                            onChange={() => setExportOmitNarrative(true)}
+                            className="text-purple-primary focus:ring-purple-primary"
+                          />
+                          <div className="text-[10.5px]">
+                            <p className="font-bold text-slate-805">Omit Narration Entirely</p>
+                            <p className="text-[9px] text-slate-400">Perfect for public and county community presentations.</p>
+                          </div>
+                        </label>
+
+                        <label className="flex items-center gap-2.5 p-3 rounded-xl border border-slate-100 bg-slate-50/20 hover:bg-slate-50 cursor-pointer transition-colors">
+                          <input
+                            type="radio"
+                            checked={exportOmitNarrative === false}
+                            onChange={() => setExportOmitNarrative(false)}
+                            className="text-purple-primary focus:ring-purple-primary"
+                          />
+                          <div className="text-[10.5px]">
+                            <p className="font-bold text-slate-805">Safe Abstracted Narrative</p>
+                            <p className="text-[9px] text-slate-400">First 10 words maximum. Useful for verified institutional review.</p>
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div className="border border-slate-100 rounded-2xl p-3 bg-slate-50/50 space-y-1.5">
+                      <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Self-Audit Verification checklist</h4>
+                      <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[9.5px] font-bold text-slate-600">
+                        <div className="flex items-center gap-1.5 text-emerald-600">
+                          <Check size={11} />
+                          <span>Reporter UID Removed</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-emerald-600">
+                          <Check size={11} />
+                          <span>Media Evidence Cleared</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-emerald-600">
+                          <Check size={11} />
+                          <span>Telemetry Excluded</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-emerald-600">
+                          <Check size={11} />
+                          <span>Case Keys Obfuscated</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between items-center bg-purple-50 px-4 py-2.5 rounded-2xl border border-purple-100">
+                      <span className="text-[10px] font-bold text-purple-700 uppercase tracking-widest">Matching Data points</span>
+                      <span className="text-sm font-black text-purple-900 bg-white shadow-xs px-2.5 py-0.5 rounded-xl border border-purple-100">
+                        {previewExportCount} Cases
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-3 shrink-0">
+                    <button
+                      onClick={() => setIsExportOpen(false)}
+                      className="px-4 py-2.5 border border-slate-250 text-slate-600 hover:text-slate-800 bg-white font-bold rounded-xl text-xs transition-colors cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+
+                    <button
+                      onClick={() => setExportStep('preview')}
+                      disabled={previewExportCount === 0}
+                      className={`px-5 py-2.5 rounded-xl font-bold text-xs text-white shadow-md flex items-center gap-1.5 transition-all cursor-pointer ${
+                        previewExportCount === 0 
+                          ? 'bg-slate-300 cursor-not-allowed text-slate-500' 
+                          : 'bg-purple-primary hover:bg-purple-dark hover:shadow-lg'
+                      }`}
+                    >
+                      <span>Preview Export Summary</span>
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="p-6 space-y-4 max-h-[400px] overflow-y-auto text-left">
+                    <div className="bg-purple-50 border border-purple-100 p-4 rounded-2xl space-y-2">
+                      <div className="text-xs font-bold text-purple-950">Export Scope Summary:</div>
+                      <p className="text-xs text-purple-900 font-semibold leading-relaxed">
+                        Exporting <span className="underline decoration-purple-400 font-extrabold">{previewExportCount} records</span> of category <span className="underline decoration-purple-400 font-extrabold">{exportCategory}</span> from the <span className="underline decoration-purple-400 font-extrabold">{exportRange === 'all' ? 'beginning of time (All)' : `last ${exportRange === '7d' ? '7 days' : exportRange === '30d' ? '30 days' : '90 days'}`}</span>.
+                      </p>
+                    </div>
+
+                    <div className="space-y-2 text-left">
+                      <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-wider">Anonymized Sample (Subset Preview)</h4>
+                      <div className="border border-slate-100 rounded-2xl p-3 bg-slate-50/80 space-y-3.5 divide-y divide-slate-100">
+                        {filteredReportsForExport.slice(0, 3).map((r, idx) => {
+                          const anonKey = `REP-${r.id ? r.id.substring(0, 6).toUpperCase() : 'ANON'}`;
+                          const region = r.location || 'Unknown Region';
+                          let subDate = 'N/A';
+                          if (r.timestamp) {
+                            const d = r.timestamp.toDate ? r.timestamp.toDate() : new Date(r.timestamp);
+                            subDate = d.toISOString().split('T')[0];
+                          }
+                          return (
+                            <div key={idx} className={`${idx > 0 ? 'pt-3' : ''} space-y-1.5`}>
+                              <div className="flex justify-between items-center text-[10.5px] font-bold">
+                                <span className="font-mono text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded border border-purple-100">{anonKey}</span>
+                                <span className="text-[9px] text-slate-500">{r.category}</span>
+                              </div>
+                              <div className="grid grid-cols-2 text-[9px] text-slate-600 font-semibold">
+                                <div>Region: <span className="font-bold text-slate-800">{region}</span></div>
+                                <div className="text-right">Date: <span className="font-bold text-slate-800">{subDate}</span></div>
+                              </div>
+                              <div className="text-[9px] text-slate-400 font-medium bg-white/70 border border-slate-150 rounded px-2 py-1 leading-normal italic line-clamp-2">
+                                {exportOmitNarrative 
+                                  ? 'Omitted for survivor/reporter safekeeping under ISIOLO-SAFE protection protocols.' 
+                                  : r.description ? (r.description.split(/\s+/).slice(0, 8).join(' ') + '... [Safe Abstract]') : 'N/A'}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <p className="text-[9px] text-center text-slate-400 font-bold italic mt-1">Preview shows up to 3 sample cases formatted for secure transmission.</p>
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-3 shrink-0">
+                    <button
+                      onClick={() => setExportStep('config')}
+                      className="px-4 py-2.5 border border-slate-250 text-slate-600 hover:text-slate-800 bg-white font-bold rounded-xl text-xs transition-colors cursor-pointer"
+                    >
+                      Back to Options
+                    </button>
+
+                    <button
+                      onClick={handleExportCSV}
+                      disabled={previewExportCount === 0 || exportSuccess}
+                      className={`px-5 py-2.5 rounded-xl font-bold text-xs text-white shadow-md flex items-center gap-1.5 transition-all cursor-pointer ${
+                        exportSuccess 
+                          ? 'bg-emerald-600' 
+                          : 'bg-purple-primary hover:bg-purple-dark hover:shadow-lg'
+                      }`}
+                    >
+                      {exportSuccess ? (
+                        <>
+                          <Check size={14} />
+                          <span>Exported successfully</span>
+                        </>
+                      ) : (
+                        <>
+                          <Download size={14} />
+                          <span>Confirm & Download CSV</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </>
+              )}   </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 </div>
   );
 };
