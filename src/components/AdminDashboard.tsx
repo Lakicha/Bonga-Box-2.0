@@ -639,7 +639,7 @@ const AdminDashboard: React.FC = () => {
               initial={{ scale: 0.95, opacity: 0, y: 15 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 15 }}
-              className="bg-white border border-slate-100 rounded-[30px] shadow-2xl max-w-lg w-full overflow-hidden relative z-10 flex flex-col"
+              className="bg-white border border-slate-100 rounded-2xl shadow-xl max-w-lg w-full overflow-hidden relative z-10 flex flex-col"
             >
               <div className="bg-gradient-to-r from-purple-primary to-indigo-600 p-6 text-white text-left relative overflow-hidden shrink-0">
                 <div className="absolute right-0 top-0 translate-x-1/4 -translate-y-1/4 opacity-10 pointer-events-none">
@@ -650,8 +650,8 @@ const AdminDashboard: React.FC = () => {
                     <Lock size={20} className="text-white" />
                   </div>
                   <div>
-                    <h2 className="font-bold text-base tracking-tight text-white leading-tight">Export Impact CSV</h2>
-                    <p className="text-[10px] text-purple-100 uppercase tracking-widest font-black mt-0.5">Anonymized Impact Statistics Utility</p>
+                    <h2 className="font-semibold text-base tracking-tight text-white leading-tight">Export impact CSV</h2>
+                    <p className="text-[10px] text-purple-100 mt-0.5">Anonymized impact statistics summary</p>
                   </div>
                 </div>
                            {exportStep === 'config' ? (
@@ -781,9 +781,9 @@ const AdminDashboard: React.FC = () => {
                 <>
                   <div className="p-6 space-y-4 max-h-[400px] overflow-y-auto text-left">
                     <div className="bg-purple-50 border border-purple-100 p-4 rounded-2xl space-y-2">
-                      <div className="text-xs font-bold text-purple-950">Export Scope Summary:</div>
-                      <p className="text-xs text-purple-900 font-semibold leading-relaxed">
-                        Exporting <span className="underline decoration-purple-400 font-extrabold">{previewExportCount} records</span> of category <span className="underline decoration-purple-400 font-extrabold">{exportCategory}</span> from the <span className="underline decoration-purple-400 font-extrabold">{exportRange === 'all' ? 'beginning of time (All)' : `last ${exportRange === '7d' ? '7 days' : exportRange === '30d' ? '30 days' : '90 days'}`}</span>.
+                      <div className="text-xs font-semibold text-purple-950">Export scope summary:</div>
+                      <p className="text-xs text-purple-900 font-medium leading-relaxed">
+                        Exporting <span className="underline decoration-purple-300 font-semibold">{previewExportCount} records</span> from the <span className="underline decoration-purple-300 font-semibold">{exportRange === 'all' ? 'last 30 days' : `last ${exportRange === '7d' ? '7 days' : exportRange === '30d' ? '30 days' : '90 days'}`}</span>.
                       </p>
                     </div>
 

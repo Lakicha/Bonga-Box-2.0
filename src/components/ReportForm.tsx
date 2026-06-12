@@ -1,19 +1,14 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { db, collection, addDoc, serverTimestamp, storage, ref, uploadBytes, getDownloadURL, handleFirestoreError, OperationType } from '../firebase';
+import React, { useState, useEffect } from 'react';
+import { db, collection, addDoc, serverTimestamp } from '../firebase';
 import { useAuth } from '../AuthContext';
 import VoiceRecorder from './VoiceRecorder';
 import { 
   ShieldAlert, 
   MapPin, 
-  FileText, 
-  Camera, 
-  Mic, 
   CheckCircle2, 
   AlertTriangle, 
   ArrowRight, 
   X, 
-  Loader2, 
-  LogOut, 
   Compass, 
   Droplet, 
   FileWarning, 
@@ -55,7 +50,7 @@ const ReportForm: React.FC = () => {
   const [floodLocation, setFloodLocation] = useState('Isiolo Central');
   const [floodDataSentViaSMS, setFloodDataSentViaSMS] = useState(false);
 
-  // Quick Exit procedure to hide the screen quickly for immediate security
+  // Quick Exit procedure to hide the screen quickly for immediate safety
   const handleQuickExit = () => {
     // Clear any active session states and bypass credentials
     localStorage.removeItem('bonga_biometric_unlocked');
@@ -157,18 +152,18 @@ const ReportForm: React.FC = () => {
 
   if (submitted) {
     return (
-      <div className="p-8 text-center max-w-md mx-auto flex flex-col items-center justify-center my-10 bg-white border border-slate-100 rounded-[20px] shadow-xs">
+      <div className="p-6 text-center max-w-md mx-auto flex flex-col items-center justify-center my-8 bg-white border border-slate-100 rounded-2xl shadow-xs">
         <motion.div
           initial={{ scale: 0.8 }}
           animate={{ scale: 1 }}
-          className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mb-5 border border-emerald-150"
+          className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mb-4 border border-emerald-150"
         >
-          <CheckCircle2 size={32} />
+          <CheckCircle2 size={24} />
         </motion.div>
         
-        <h2 className="text-lg font-display font-black mb-2 text-slate-900 uppercase tracking-tight">Transmission OK</h2>
-        <p className="text-xs text-slate-500 mb-6 leading-relaxed font-semibold">
-          Your incident record has been filed to Bonga Box. All metadata fingerprints and ISP logging targets were successfully scrambled.
+        <h2 className="text-base font-semibold mb-1 text-slate-900 tracking-tight">Report filed successfully</h2>
+        <p className="text-xs text-slate-500 mb-5 leading-relaxed">
+          Your report has been received securely. All identifying information and digital traces have been safely removed to protect your privacy.
         </p>
 
         <button 
@@ -180,32 +175,32 @@ const ReportForm: React.FC = () => {
             setFgmDescription('');
             setSelectedIndicators([]);
           }} 
-          className="w-full py-3 bg-[#4F46E5] text-white hover:bg-[#3F37C9] text-xs font-bold rounded-xl transition-all shadow-sm"
+          className="w-full py-2.5 bg-purple-primary text-white hover:bg-purple-dark text-xs font-medium rounded-xl transition-all"
         >
-          Back to Safety Portal
+          Return to safety portal
         </button>
       </div>
     );
   }
 
   return (
-    <div className="font-sans max-w-md mx-auto select-none relative py-2">
+    <div className="max-w-md mx-auto select-none relative py-1">
       
       {/* 3. FGM INCIDENT REPORT HEADER / GHOST QUICK EXIT BUTTON */}
-      <div className="flex justify-between items-center mb-5">
+      <div className="flex justify-between items-center mb-4">
         <button
           onClick={() => setSelectedFlow('none')}
-          className="text-[10px] uppercase font-black tracking-widest text-[#4F46E5] hover:underline"
+          className="text-xs font-medium text-purple-primary hover:underline"
         >
-          ← Choose Protection Category
+          ← Choose protection category
         </button>
 
         {/* Universal Quick Exit Ghost button (White with purple outline for immediate safety) */}
         <button
           onClick={handleQuickExit}
-          className="px-3.5 py-1.5 border border-purple-primary hover:bg-purple-primary/5 text-purple-primary hover:text-purple-dark text-[9.5px] font-black uppercase tracking-wider rounded-xl transition-all shadow-xs"
+          className="px-3.5 py-1.5 border border-purple-primary hover:bg-purple-primary/5 text-purple-primary text-xs font-semibold rounded-xl transition-all shadow-xs"
         >
-          Quick Exit 
+          Quick exit
         </button>
       </div>
 
@@ -216,39 +211,39 @@ const ReportForm: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="bg-white border border-slate-100 rounded-[20px] p-6 shadow-xs text-center"
+            className="bg-white border border-slate-100 rounded-2xl p-5 shadow-xs text-center"
           >
-            <h2 className="text-base font-display font-black mb-1">Incident Dispatch Portal</h2>
-            <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-6">Choose active incident stream</p>
+            <h2 className="text-base font-semibold mb-1 text-slate-950">Incident dispatch portal</h2>
+            <p className="text-xs text-slate-400 font-medium mb-5">Choose active incident stream</p>
             
-            <div className="grid grid-cols-1 gap-4 text-left">
+            <div className="grid grid-cols-1 gap-3.5 text-left">
               <button
                 onClick={() => setSelectedFlow('fgm')}
-                className="p-5 bg-slate-50/50 border border-slate-200/80 rounded-2xl flex items-center gap-4 hover:border-[#4F46E5]/45 transition-all text-left group"
+                className="p-4 bg-slate-50/50 border border-slate-200/80 rounded-2xl flex items-center gap-3.5 hover:border-purple-primary/45 transition-all text-left group"
               >
-                <div className="w-12 h-12 rounded-xl bg-indigo-50 text-[#4F46E5] flex items-center justify-center shrink-0">
-                  <ShieldAlert size={24} />
+                <div className="w-10 h-10 rounded-xl bg-indigo-50 text-purple-primary flex items-center justify-center shrink-0">
+                  <ShieldAlert size={20} />
                 </div>
                 <div>
-                  <h3 className="font-display font-black text-xs text-slate-900 group-hover:text-purple-primary transition-colors leading-none mb-1">
-                    FGM Incident Report (Urgent Flow)
+                  <h3 className="font-semibold text-xs text-slate-900 group-hover:text-purple-primary transition-colors leading-none mb-1">
+                    Fgm protection report
                   </h3>
-                  <p className="text-[10px] text-slate-500 font-medium">Protect minor targets, trace threat areas, find secure shelters.</p>
+                  <p className="text-xs text-slate-500 font-normal">Protect minor targets, trace threat areas, find secure shelters.</p>
                 </div>
               </button>
 
               <button
                 onClick={() => setSelectedFlow('flood')}
-                className="p-5 bg-slate-50/50 border border-slate-200/80 rounded-2xl flex items-center gap-4 hover:border-cyan-500/40 transition-all text-left group"
+                className="p-4 bg-slate-50/50 border border-slate-200/80 rounded-2xl flex items-center gap-3.5 hover:border-cyan-500/40 transition-all text-left group"
               >
-                <div className="w-12 h-12 rounded-xl bg-cyan-100/70 text-[#06B6D4] flex items-center justify-center shrink-0">
-                  <AlertTriangle size={24} />
+                <div className="w-10 h-10 rounded-xl bg-cyan-100/70 text-cyan-700 flex items-center justify-center shrink-0">
+                  <AlertTriangle size={20} />
                 </div>
                 <div>
-                  <h3 className="font-display font-black text-xs text-slate-900 group-hover:text-purple-primary transition-colors leading-none mb-1">
-                    Flood Incident Report (Emergency Flow)
+                  <h3 className="font-semibold text-xs text-slate-900 group-hover:text-purple-primary transition-colors leading-none mb-1">
+                    Flood incident report
                   </h3>
-                  <p className="text-[10px] text-slate-500 font-medium">Indicate water levels, blockades, bridge closures instantly.</p>
+                  <p className="text-xs text-slate-500 font-normal">Indicate water levels, blockades, bridge closures instantly.</p>
                 </div>
               </button>
             </div>
@@ -264,7 +259,7 @@ const ReportForm: React.FC = () => {
             initial={{ opacity: 0, x: 12 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -12 }}
-            className="space-y-5"
+            className="space-y-4"
           >
             {/* Step Progress Line */}
             <div className="bg-slate-100 rounded-full h-1 w-full overflow-hidden mb-1">
@@ -274,41 +269,41 @@ const ReportForm: React.FC = () => {
               />
             </div>
             <div className="flex justify-between items-center px-1">
-              <span className="text-[9.5px] font-extrabold text-purple-primary uppercase tracking-widest">
-                FGM Protection Stream
+              <span className="text-xs font-semibold text-purple-primary">
+                Fgm protection stream
               </span>
-              <span className="text-[9px] font-mono text-slate-400 font-bold">
+              <span className="text-xs font-medium text-slate-400">
                 Step {fgmStep} of 3
               </span>
             </div>
 
-            <div className="bg-white border border-slate-100 rounded-[20px] p-6 shadow-xs space-y-4">
+            <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-xs space-y-4Box">
               
               {fgmStep === 1 && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
                   <div>
-                    <label className="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">Location of Incident</label>
+                    <label className="block text-xs font-medium text-slate-500 mb-1">Location of incident</label>
                     <input 
                       type="text" 
                       value={fgmLocation}
                       onChange={(e) => setFgmLocation(e.target.value)}
-                      placeholder="e.g., Garbatulla"
-                      className="w-full bg-transparent border-b-2 border-purple-primary focus:border-purple-dark text-xs font-bold py-2 outline-none placeholder:text-slate-350 text-slate-800 transition-colors"
+                      placeholder="e.g., Garba Tulla"
+                      className="w-full bg-transparent border-b-2 border-purple-primary focus:border-purple-dark text-xs font-medium py-1.5 outline-none placeholder:text-slate-300 text-slate-800 transition-colors"
                       required
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5">Number of Girls Vulnerable / At Risk</label>
+                    <label className="block text-xs font-medium text-slate-500 mb-1.5">Number of girls vulnerable or at risk</label>
                     <div className="flex gap-2">
                       {['1', '2-3', '4-5', '6+'].map((num) => (
                         <button
                           key={num}
                           type="button"
                           onClick={() => setFgmNumberGirls(num)}
-                          className={`flex-1 py-2 text-xs font-bold border rounded-xl transition-all ${
+                          className={`flex-1 py-1.5 text-xs font-semibold border rounded-xl transition-all ${
                             fgmNumberGirls === num
-                              ? 'border-purple-primary bg-purple-primary/5 text-purple-primary font-black shadow-xs'
+                              ? 'border-purple-primary bg-purple-primary/5 text-purple-primary font-semibold shadow-xs'
                               : 'border-slate-200 bg-slate-50 text-slate-500 hover:border-slate-300'
                           }`}
                         >
@@ -319,10 +314,10 @@ const ReportForm: React.FC = () => {
                   </div>
 
                   <button
-                    onClick={() => fgmLocation ? setFgmStep(2) : alert("Please fill location info.")}
-                    className="w-full py-3 bg-purple-primary hover:bg-purple-dark text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-colors mt-6 shadow-sm"
+                    onClick={() => fgmLocation ? setFgmStep(2) : alert("Please provide the location.")}
+                    className="w-full py-2.5 bg-purple-primary hover:bg-purple-dark text-white font-semibold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-colors mt-4 shadow-sm"
                   >
-                    <span>Continue to Step 2</span>
+                    <span>Continue to step 2</span>
                     <ArrowRight size={13} />
                   </button>
                 </motion.div>
@@ -331,13 +326,13 @@ const ReportForm: React.FC = () => {
               {fgmStep === 2 && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
                   <div>
-                    <label className="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">Description / Vulnerability Details</label>
+                    <label className="block text-xs font-medium text-slate-500 mb-1">Description of vulnerability details</label>
                     <textarea 
-                      rows={5}
+                      rows={4}
                       value={fgmDescription}
                       onChange={(e) => setFgmDescription(e.target.value)}
                       placeholder="Indicate key markers, timeline emergency level, and if transport is required..."
-                      className="w-full bg-transparent border-b-2 border-purple-primary focus:border-purple-dark text-xs font-bold py-2 outline-none placeholder:text-slate-350 text-slate-800 transition-colors resize-none"
+                      className="w-full bg-transparent border-b-2 border-purple-primary focus:border-purple-dark text-xs font-medium py-1.5 outline-none placeholder:text-slate-300 text-slate-800 transition-colors resize-none"
                       required
                     />
                   </div>
@@ -354,13 +349,13 @@ const ReportForm: React.FC = () => {
                   <div className="flex justify-between gap-1.5">
                     <button
                       onClick={() => setFgmStep(1)}
-                      className="flex-1 py-3 bg-slate-50 hover:bg-slate-100 text-slate-500 border border-slate-200 font-bold rounded-xl text-xs"
+                      className="flex-1 py-2 bg-slate-50 hover:bg-slate-100 text-slate-500 border border-slate-200 font-semibold rounded-xl text-xs"
                     >
                       Back
                     </button>
                     <button
-                      onClick={() => fgmDescription ? setFgmStep(3) : alert("Please log description.")}
-                      className="flex-1 py-3 bg-[#4F46E5] hover:bg-[#3F37C9] text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1"
+                      onClick={() => fgmDescription ? setFgmStep(3) : alert("Please provide details first.")}
+                      className="flex-1 py-2 bg-purple-primary hover:bg-purple-dark text-white font-semibold rounded-xl text-xs flex items-center justify-center gap-1"
                     >
                       <span>Continue step 3</span>
                     </button>
@@ -370,39 +365,39 @@ const ReportForm: React.FC = () => {
 
               {fgmStep === 3 && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-                  <div className="bg-purple-primary/5 border border-purple-primary/10 rounded-xl p-3 text-[10px] space-y-1.5">
-                    <p className="font-extrabold text-purple-primary uppercase tracking-wide">Review & Secure Handshake Encryption</p>
-                    <p className="text-slate-600 font-semibold">Location: <span className="font-bold text-slate-900">{fgmLocation}</span></p>
-                    <p className="text-slate-600 font-semibold">Volume Category: <span className="font-bold text-slate-900">{fgmNumberGirls} girls vulnerable</span></p>
-                    <p className="text-slate-600 font-semibold line-clamp-2">Detail Profile: <span className="font-bold text-slate-900">{fgmDescription}</span></p>
+                  <div className="bg-purple-primary/5 border border-purple-primary/10 rounded-xl p-3 text-xs space-y-1.5 text-left">
+                    <p className="font-semibold text-purple-primary">Review secure incident info</p>
+                    <p className="text-slate-600 font-medium">Location: <span className="font-semibold text-slate-900">{fgmLocation}</span></p>
+                    <p className="text-slate-600 font-medium">Girls at risk: <span className="font-semibold text-slate-900">{fgmNumberGirls} girls vulnerable</span></p>
+                    <p className="text-slate-600 font-medium line-clamp-2">Detail profile: <span className="font-semibold text-slate-900">{fgmDescription}</span></p>
                   </div>
 
                   <div>
                     <button
                       type="button"
                       onClick={() => setFgmIsAnonymous(!fgmIsAnonymous)}
-                      className={`w-full py-2.5 px-3 border border-slate-200 rounded-xl text-left text-[10px] font-bold flex justify-between items-center transition-all ${
-                        fgmIsAnonymous ? 'bg-purple-primary/5 border-purple-primary text-[#4F46E5]' : 'bg-slate-50'
+                      className={`w-full py-2 px-3 border border-slate-200 rounded-xl text-left text-xs font-medium flex justify-between items-center transition-all ${
+                        fgmIsAnonymous ? 'bg-purple-primary/5 border-purple-primary text-purple-primary font-semibold' : 'bg-slate-50'
                       }`}
                     >
-                      <span>Send anonymously? (No logs mapped)</span>
-                      <span>{fgmIsAnonymous ? 'YES' : 'NO'}</span>
+                      <span>Send anonymously (no logs saved)</span>
+                      <span>{fgmIsAnonymous ? 'Yes' : 'No'}</span>
                     </button>
                   </div>
 
                   <div className="flex justify-between gap-1.5 pt-2">
                     <button
                       onClick={() => setFgmStep(2)}
-                      className="flex-1 py-3 bg-slate-50 hover:bg-slate-100 text-slate-500 border border-slate-200 font-bold rounded-xl text-xs"
+                      className="flex-1 py-2 bg-slate-50 hover:bg-slate-100 text-slate-500 border border-slate-200 font-semibold rounded-xl text-xs"
                     >
                       Back
                     </button>
                     <button
                       onClick={handleFGMSubmit}
                       disabled={isSubmitting}
-                      className="flex-1 py-3 bg-purple-primary hover:bg-purple-dark text-white font-extrabold rounded-xl text-xs uppercase tracking-wider shadow-md"
+                      className="flex-1 py-2 bg-purple-primary hover:bg-purple-dark text-white font-semibold rounded-xl text-xs tracking-wide shadow-xs"
                     >
-                      {isSubmitting ? 'Sending...' : 'Continue to Secure Send'}
+                      {isSubmitting ? 'Sending...' : 'Confirm and send report'}
                     </button>
                   </div>
                 </motion.div>
@@ -421,15 +416,15 @@ const ReportForm: React.FC = () => {
             initial={{ opacity: 0, x: 12 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -12 }}
-            className="space-y-4"
+            className="space-y-3.5"
           >
             {/* 2x2 Grid of Minimalist Icons representing Flood Threats */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2.5">
               {[
-                { label: 'Rising Water', icon: Droplet, desc: 'Rivers overflowing' },
-                { label: 'Blocked Road', icon: FileWarning, desc: 'Debris/mudslides blocking transit' },
-                { label: 'Bridge Out', icon: Skull, desc: 'River bridge unsafe/broken' },
-                { label: 'Missing Person', icon: Compass, desc: 'Contact lost' }
+                { label: 'Rising water', icon: Droplet, desc: 'Rivers overflowing' },
+                { label: 'Blocked road', icon: FileWarning, desc: 'Debris or mudslides blocking transit' },
+                { label: 'Bridge broken', icon: Skull, desc: 'River bridge unsafe or broken' },
+                { label: 'Missing person', icon: Compass, desc: 'Emergency contact lost' }
               ].map((item) => {
                 const isSelected = selectedIndicators.includes(item.label);
                 return (
@@ -437,43 +432,43 @@ const ReportForm: React.FC = () => {
                     key={item.label}
                     type="button"
                     onClick={() => toggleIndicator(item.label)}
-                    className={`p-4 border rounded-2xl flex flex-col text-left transition-all ${
+                    className={`p-3 border rounded-2xl flex flex-col text-left transition-all ${
                       isSelected 
-                        ? 'border-[#06B6D4] bg-[#06B6D4]/5 text-[#06B6D4] font-black shadow-xs' 
-                        : 'border-slate-200 bg-white hover:border-slate-250 text-slate-600'
+                        ? 'border-cyan-500 bg-cyan-500/5 text-cyan-700 font-semibold shadow-xs' 
+                        : 'border-slate-150 bg-white hover:border-slate-200 text-slate-600'
                     }`}
                   >
-                    <item.icon size={20} className={isSelected ? 'text-[#06B6D4]' : 'text-slate-400'} />
-                    <span className="text-xs font-display font-black mt-2.5 leading-none block">{item.label}</span>
-                    <span className="text-[8px] text-slate-400 font-semibold mt-0.5">{item.desc}</span>
+                    <item.icon size={18} className={isSelected ? 'text-cyan-600' : 'text-slate-400'} />
+                    <span className="text-xs font-semibold mt-2 leading-none block">{item.label}</span>
+                    <span className="text-[10px] text-slate-400 font-normal mt-0.5">{item.desc}</span>
                   </button>
                 );
               })}
             </div>
 
             {/* Input Location Selection for context */}
-            <div className="bg-white border border-slate-100 rounded-[20px] p-4 shadow-xs space-y-3">
+            <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-xs space-y-3">
               <div>
-                <label className="block text-[9px] font-extrabold text-slate-400 uppercase tracking-widest mb-1 pl-0.5">Location in Isiolo County</label>
+                <label className="block text-xs font-medium text-slate-500 mb-1 pl-0.5">Location in Isiolo county</label>
                 <input 
                   type="text" 
                   value={floodLocation}
                   onChange={(e) => setFloodLocation(e.target.value)}
                   placeholder="e.g., Merti Sub-county"
-                  className="w-full bg-slate-50 border border-slate-100 focus:border-cyan-500 rounded-xl text-xs font-bold px-3 py-2 outline-none text-slate-800 transition-colors"
+                  className="w-full bg-slate-50 border border-slate-100 focus:border-cyan-500 rounded-xl text-xs font-medium px-3 py-2 outline-none text-slate-800 transition-colors"
                 />
               </div>
 
               {/* Grid map mock view */}
-              <div className="border border-slate-100 rounded-xl overflow-hidden text-center relative p-3 bg-purple-50/15">
-                <div className="absolute top-0 right-0 py-0.5 px-1 bg-purple-105 text-purple-primary text-[6.5px] font-black uppercase tracking-widest rounded-bl-lg">
-                  Safe Zone Grid
+              <div className="border border-slate-100 rounded-xl overflow-hidden text-center relative p-3 bg-purple-50/10">
+                <div className="absolute top-0 right-0 py-0.5 px-2 bg-purple-100 text-purple-primary text-[9px] font-medium rounded-bl-lg">
+                  Safe zone grid
                 </div>
-                <div className="flex gap-2 items-center text-left">
-                  <Map size={22} className="text-purple-primary shrink-0 animate-pulse" />
+                <div className="flex gap-2.5 items-center text-left">
+                  <Map size={20} className="text-purple-primary shrink-0 animate-pulse" />
                   <div>
-                    <span className="text-[9.5px] font-display font-black text-slate-800 block">Isiolo High-Elevation zones ready</span>
-                    <span className="text-[8px] text-slate-400 font-bold block mt-0.5 leading-none">Safe shelter grids mapped to light purple.</span>
+                    <span className="text-xs font-semibold text-slate-800 block">Isiolo high-elevation zones ready</span>
+                    <span className="text-[10px] text-slate-400 font-normal block mt-0.5 leading-none">Safe shelter grids mapped for emergency guidance.</span>
                   </div>
                 </div>
               </div>
@@ -484,19 +479,19 @@ const ReportForm: React.FC = () => {
               <button
                 type="button"
                 onClick={handleSMSFloodSubmit}
-                className="w-full py-3.5 bg-purple-primary hover:bg-purple-dark text-white font-extrabold rounded-2xl flex items-center justify-center gap-1.5 text-xs transition-transform active:scale-[0.98] shadow-md"
+                className="w-full py-2.5 bg-purple-primary hover:bg-purple-dark text-white font-medium rounded-xl flex items-center justify-center gap-1.5 text-xs transition-transform active:scale-[0.98] shadow-xs"
               >
                 <Send size={12} />
-                <span>Send Report via SMS</span>
+                <span>Send report via SMS</span>
               </button>
 
               <button
                 type="button"
                 onClick={handleFloodSubmit}
                 disabled={isSubmitting}
-                className="w-full py-3 bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 font-bold rounded-2xl text-xs"
+                className="w-full py-2.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-medium rounded-xl text-xs"
               >
-                {isSubmitting ? 'Transmitting Data stream...' : 'Submit via Internet'}
+                {isSubmitting ? 'Transmitting data stream...' : 'Submit via internet'}
               </button>
             </div>
           </motion.div>
@@ -504,8 +499,8 @@ const ReportForm: React.FC = () => {
       </AnimatePresence>
 
       {/* FOOTER DISPATCH INFO */}
-      <footer className="mt-8 text-center pt-2.5 border-t border-slate-100">
-        <p className="text-[8px] text-slate-400 font-semibold leading-relaxed uppercase tracking-wider max-w-xs mx-auto">
+      <footer className="mt-6 text-center pt-2.5 border-t border-slate-100">
+        <p className="text-[10px] text-slate-400 font-normal leading-relaxed max-w-xs mx-auto">
           Active secure end-to-end sandbox handshake with Isiolo regional dispatch centers.
         </p>
       </footer>

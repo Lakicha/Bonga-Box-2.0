@@ -403,8 +403,8 @@ const ProtectionDashboard: React.FC = () => {
                     <Lock size={20} className="text-white" />
                   </div>
                   <div>
-                    <h2 className="font-bold text-base tracking-tight text-white leading-tight">Export Case Stats</h2>
-                    <p className="text-[10px] text-purple-100 uppercase tracking-widest font-black mt-0.5">Anonymized Protection Reports CSV</p>
+                    <h2 className="font-semibold text-base tracking-tight text-white leading-tight">Export case stats</h2>
+                    <p className="text-[10px] text-purple-100 mt-0.5">Anonymized protection reports summary</p>
                   </div>
                 </div>
               </div>
@@ -519,9 +519,9 @@ const ProtectionDashboard: React.FC = () => {
                 <>
                   <div className="p-6 space-y-4 max-h-[400px] overflow-y-auto text-left">
                     <div className="bg-purple-50 border border-purple-100 p-4 rounded-2xl space-y-2">
-                      <div className="text-xs font-bold text-purple-950">Export Scope Summary:</div>
-                      <p className="text-xs text-purple-900 font-semibold leading-relaxed">
-                        Exporting <span className="underline decoration-purple-400 font-extrabold">{previewExportCount} records</span> from the <span className="underline decoration-purple-400 font-extrabold">{exportRange === 'all' ? 'beginning of time (All)' : `last ${exportRange === '7d' ? '7 days' : exportRange === '30d' ? '30 days' : '90 days'}`}</span>.
+                      <div className="text-xs font-semibold text-purple-950">Export scope summary:</div>
+                      <p className="text-xs text-purple-900 font-medium leading-relaxed">
+                        Exporting <span className="underline decoration-purple-300 font-semibold">{previewExportCount} records</span> from the <span className="underline decoration-purple-300 font-semibold">{exportRange === 'all' ? 'last 30 days' : `last ${exportRange === '7d' ? '7 days' : exportRange === '30d' ? '30 days' : '90 days'}`}</span>.
                       </p>
                     </div>
 
