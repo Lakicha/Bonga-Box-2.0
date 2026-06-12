@@ -214,7 +214,7 @@ const AdminDashboard: React.FC = () => {
         ].map((stat, i) => (
           <div 
             key={i}
-            className={`bg-white p-3 rounded-2xl border-l-[4px] ${stat.color} border border-slate-205 shadow-xs flex items-center justify-between`}
+            className={`bg-white p-3 rounded-2xl border-l-[4px] ${stat.color} border border-slate-200 shadow-xs flex items-center justify-between`}
           >
             <div>
               <p className="text-[9px] font-bold text-text-dim uppercase tracking-widest mb-0.5">{stat.label}</p>
@@ -306,7 +306,7 @@ const AdminDashboard: React.FC = () => {
           <div className="overflow-x-auto overflow-y-auto max-h-[350px]">
             <table className="w-full text-left">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-205">
+                <tr className="bg-slate-50 border-b border-slate-200">
                   <th className="px-5 py-2 text-[9px] font-bold text-text-dim uppercase tracking-widest">Date</th>
                   <th className="px-5 py-2 text-[9px] font-bold text-text-dim uppercase tracking-widest">Category</th>
                   <th className="px-5 py-2 text-[9px] font-bold text-text-dim uppercase tracking-widest">Location</th>

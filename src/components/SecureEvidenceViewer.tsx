@@ -202,7 +202,7 @@ export const SecureEvidenceViewer: React.FC<SecureEvidenceViewerProps> = ({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="flex flex-col md:flex-row items-center gap-4 bg-white border border-slate-205 rounded-xl p-4 min-h-[140px]"
+              className="flex flex-col md:flex-row items-center gap-4 bg-white border border-slate-200 rounded-xl p-4 min-h-[140px]"
             >
               <div className="w-12 h-12 bg-indigo-50 text-[#4F46E5] rounded-full shrink-0 flex items-center justify-center border border-indigo-150 animate-pulse relative">
                 <Lock size={20} />
@@ -297,7 +297,7 @@ export const SecureEvidenceViewer: React.FC<SecureEvidenceViewerProps> = ({
                       triggerHaptic(10);
                       alert('Security Guideline: Downloading encrypted local asset files violates the District zero-leak metadata protection protocols.');
                     }}
-                    className="px-2.5 py-1.5 bg-white hover:bg-slate-50 text-slate-600 border border-slate-205 rounded-lg text-[9.5px] font-bold uppercase transition-all cursor-pointer shrink-0 flex items-center justify-center"
+                    className="px-2.5 py-1.5 bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 rounded-lg text-[9.5px] font-bold uppercase transition-all cursor-pointer shrink-0 flex items-center justify-center"
                     title="Action classified"
                   >
                     <Download size={11} />

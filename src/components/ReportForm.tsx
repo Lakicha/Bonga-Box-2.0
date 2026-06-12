@@ -309,7 +309,7 @@ const ReportForm: React.FC = () => {
                           className={`flex-1 py-2 text-xs font-bold border rounded-xl transition-all ${
                             fgmNumberGirls === num
                               ? 'border-purple-primary bg-purple-primary/5 text-purple-primary font-black shadow-xs'
-                              : 'border-slate-205 bg-slate-50 text-slate-500 hover:border-slate-300'
+                              : 'border-slate-200 bg-slate-50 text-slate-500 hover:border-slate-300'
                           }`}
                         >
                           {num}
@@ -354,7 +354,7 @@ const ReportForm: React.FC = () => {
                   <div className="flex justify-between gap-1.5">
                     <button
                       onClick={() => setFgmStep(1)}
-                      className="flex-1 py-3 bg-slate-50 hover:bg-slate-100 text-slate-500 border border-slate-205 font-bold rounded-xl text-xs"
+                      className="flex-1 py-3 bg-slate-50 hover:bg-slate-100 text-slate-500 border border-slate-200 font-bold rounded-xl text-xs"
                     >
                       Back
                     </button>
@@ -381,7 +381,7 @@ const ReportForm: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setFgmIsAnonymous(!fgmIsAnonymous)}
-                      className={`w-full py-2.5 px-3 border border-slate-205 rounded-xl text-left text-[10px] font-bold flex justify-between items-center transition-all ${
+                      className={`w-full py-2.5 px-3 border border-slate-200 rounded-xl text-left text-[10px] font-bold flex justify-between items-center transition-all ${
                         fgmIsAnonymous ? 'bg-purple-primary/5 border-purple-primary text-[#4F46E5]' : 'bg-slate-50'
                       }`}
                     >
@@ -393,7 +393,7 @@ const ReportForm: React.FC = () => {
                   <div className="flex justify-between gap-1.5 pt-2">
                     <button
                       onClick={() => setFgmStep(2)}
-                      className="flex-1 py-3 bg-slate-50 hover:bg-slate-100 text-slate-500 border border-slate-205 font-bold rounded-xl text-xs"
+                      className="flex-1 py-3 bg-slate-50 hover:bg-slate-100 text-slate-500 border border-slate-200 font-bold rounded-xl text-xs"
                     >
                       Back
                     </button>
@@ -440,7 +440,7 @@ const ReportForm: React.FC = () => {
                     className={`p-4 border rounded-2xl flex flex-col text-left transition-all ${
                       isSelected 
                         ? 'border-[#06B6D4] bg-[#06B6D4]/5 text-[#06B6D4] font-black shadow-xs' 
-                        : 'border-slate-205 bg-white hover:border-slate-250 text-slate-600'
+                        : 'border-slate-200 bg-white hover:border-slate-250 text-slate-600'
                     }`}
                   >
                     <item.icon size={20} className={isSelected ? 'text-[#06B6D4]' : 'text-slate-400'} />
@@ -494,7 +494,7 @@ const ReportForm: React.FC = () => {
                 type="button"
                 onClick={handleFloodSubmit}
                 disabled={isSubmitting}
-                className="w-full py-3 bg-white hover:bg-slate-50 text-slate-800 border border-slate-205 font-bold rounded-2xl text-xs"
+                className="w-full py-3 bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 font-bold rounded-2xl text-xs"
               >
                 {isSubmitting ? 'Transmitting Data stream...' : 'Submit via Internet'}
               </button>

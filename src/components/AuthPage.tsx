@@ -130,7 +130,7 @@ const AuthPage: React.FC = () => {
                 ? 'border-purple-primary bg-purple-primary/5 scale-105'
                 : scanState === 'success'
                 ? 'border-emerald-500 bg-emerald-50 scale-100'
-                : 'border-slate-205 bg-slate-50/50 hover:bg-slate-100 hover:border-purple-primary/40'
+                : 'border-slate-200 bg-slate-50/50 hover:bg-slate-100 hover:border-purple-primary/40'
             }`}
           >
             <AnimatePresence mode="wait">

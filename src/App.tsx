@@ -18,9 +18,23 @@ import Donate from './components/Donate';
 import PremiumSafetySuite from './components/PremiumSafetySuite';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode; roles?: string[] }> = ({ children, roles }) => {
-  const { profile } = useAuth();
+  const { profile, loading } = useAuth();
 
-  if (roles && profile && !roles.includes(profile.role)) return <Navigate to="/" />;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Verifying Authorization...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // If there is no profile, or the role is not authorized, redirect to Home
+  if (!profile || (roles && !roles.includes(profile.role))) {
+    return <Navigate to="/" replace />;
+  }
 
   return <>{children}</>;
 };

@@ -197,20 +197,20 @@ const Onboarding: React.FC = () => {
 
           {/* Indicator meter bar */}
           <div className="space-y-1.5 flex-grow flex flex-col justify-center">
-            <div className="w-full bg-slate-201 rounded-full h-3.5 overflow-hidden border border-slate-205 flex items-center relative">
+            <div className="w-full bg-slate-200 rounded-full h-3.5 overflow-hidden border border-slate-200 flex items-center relative">
               <motion.div 
                 animate={{ width: `${floodSimulationLevel}%` }}
                 className={`h-full transition-all duration-300 ${
                   floodSimulationLevel > 80 ? 'bg-red-500' : floodSimulationLevel > 50 ? 'bg-amber-400' : 'bg-emerald-400'
                 }`}
               />
-              <span className="absolute right-2 text-[8px] font-black text-slate-650 tracking-wider">EWASO NG'IRO</span>
+              <span className="absolute right-2 text-[8px] font-black text-slate-600 tracking-wider">EWASO NG'IRO</span>
             </div>
 
             <div className="flex justify-between items-center text-[7.5px] font-bold text-slate-400 uppercase">
               <span>Stable Low Flow</span>
               {floodSimulationLevel > 80 ? (
-                <span className="text-red-505 font-black flex items-center gap-0.5 animate-pulse">● CRITICAL EVACUATE</span>
+                <span className="text-red-500 font-black flex items-center gap-0.5 animate-pulse">● CRITICAL EVACUATE</span>
               ) : (
                 <span>Level Sensor Node</span>
               )}
@@ -429,7 +429,7 @@ const Onboarding: React.FC = () => {
                       key={idx}
                       onClick={() => setCurrentStep(idx)}
                       className={`h-1.5 rounded-full transition-all duration-300 ${
-                        idx === currentStep ? 'w-6 bg-purple-primary' : 'w-1.5 bg-slate-205 hover:bg-slate-350'
+                        idx === currentStep ? 'w-6 bg-purple-primary' : 'w-1.5 bg-slate-200 hover:bg-slate-300'
                       }`}
                       title={`Go to step ${idx + 1}`}
                     />
@@ -443,7 +443,7 @@ const Onboarding: React.FC = () => {
                     <button
                       onClick={handlePrev}
                       disabled={currentStep === 0}
-                      className="w-full py-2.5 border border-slate-205 text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 disabled:opacity-35 text-[10px] font-black rounded-xl tracking-wider uppercase flex items-center justify-center gap-1 transition-all disabled:pointer-events-none"
+                      className="w-full py-2.5 border border-slate-250 text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 disabled:opacity-35 text-[10px] font-black rounded-xl tracking-wider uppercase flex items-center justify-center gap-1 transition-all disabled:pointer-events-none"
                     >
                       <ArrowLeft size={10} />
                       <span>Prev</span>

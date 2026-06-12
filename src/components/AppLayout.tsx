@@ -737,7 +737,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                         className={`px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-colors ${
                           isSirenActive 
                             ? 'bg-red-600 text-white' 
-                            : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-205'
+                            : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
                         }`}
                       >
                         {isSirenActive ? 'Mute' : 'Activate'}

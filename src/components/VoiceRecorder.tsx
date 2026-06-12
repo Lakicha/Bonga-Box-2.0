@@ -381,7 +381,7 @@ export default function VoiceRecorder({ onTranscriptComplete, language = 'EN' }:
               height={80} 
               className="w-full h-20 rounded-xl bg-slate-50 border border-slate-100"
             />
-            <div className="absolute top-2 right-2 px-2 py-0.5 bg-red-650 text-white rounded text-[8px] font-black tracking-widest uppercase flex items-center gap-1 animate-pulse">
+            <div className="absolute top-2 right-2 px-2 py-0.5 bg-red-600 text-white rounded text-[8px] font-black tracking-widest uppercase flex items-center gap-1 animate-pulse">
               <span>REC</span>
             </div>
           </div>

@@ -280,7 +280,7 @@ const DisasterDashboard: React.FC = () => {
           <div className="bg-white border border-slate-200/90 rounded-2xl p-2 px-3 shadow-xs flex items-center gap-3">
             <span className="flex h-2 w-2 relative">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-505 bg-indigo-500"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
             </span>
             <span className="text-[10px] font-bold text-slate-700">Telemetry Feed</span>
             <div className="flex items-center gap-1.5 border-l border-slate-200 pl-3">
@@ -580,7 +580,7 @@ const DisasterDashboard: React.FC = () => {
                     </div>
 
                     {/* Sensor Progress Gauge */}
-                    <div className="w-full bg-slate-150 rounded-full h-1.5 overflow-hidden">
+                    <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
                       <div 
                         className={`h-full transition-all duration-500 rounded-full ${
                           s.status === 'Critical' ? 'bg-red-500' :
