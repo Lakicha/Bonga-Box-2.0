@@ -175,16 +175,16 @@ export default function StripeCardForm({
   return (
     <div className="bg-slate-50 border border-slate-100 rounded-[20px] p-4.5 space-y-4 shadow-xs">
       <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-        <span className="text-[9px] font-black uppercase tracking-wider text-slate-500 flex items-center gap-1">
+        <span className="text-xxs font-black uppercase tracking-wider text-slate-500 flex items-center gap-1">
           <CreditCard size={11} className="text-[#4F46E5]" /> Secure Stripe Elements Form
         </span>
-        <div className="flex items-center gap-1 text-[8.5px] text-emerald-600 font-extrabold bg-emerald-50 px-2 py-0.5 rounded-full uppercase tracking-wider">
+        <div className="flex items-center gap-1 text-xxs text-emerald-600 font-extrabold bg-emerald-50 px-2 py-0.5 rounded-full uppercase tracking-wider">
           <Lock size={9} /> Custom Encrypted SSL
         </div>
       </div>
 
       {errorMsg && (
-        <div className="bg-rose-50 border border-rose-150 text-[10.5px] font-bold text-rose-800 rounded-xl p-3 leading-relaxed flex items-start gap-2 animate-fadeIn">
+        <div className="bg-rose-50 border border-rose-150 text-xxs font-bold text-rose-800 rounded-xl p-3 leading-relaxed flex items-start gap-2 animate-fadeIn">
           <Info size={14} className="text-rose-600 shrink-0 mt-0.5" />
           <span>{errorMsg}</span>
         </div>
@@ -194,8 +194,8 @@ export default function StripeCardForm({
         <div className="flex flex-col items-center justify-center py-10 space-y-4 bg-white/70 backdrop-blur-xs rounded-xl border border-dashed border-slate-200">
           <Loader2 size={24} className="animate-spin text-[#4F46E5]" />
           <div className="text-center space-y-1.5 max-w-[280px]">
-            <span className="text-[10px] font-black uppercase text-[#4F46E5] tracking-widest block">Processing Handshake</span>
-            <p className="text-[9.5px] text-slate-550 font-semibold animate-pulse leading-normal">{stepText}</p>
+            <span className="text-xxs font-black uppercase text-[#4F46E5] tracking-widest block">Processing Handshake</span>
+            <p className="text-xxs text-slate-550 font-semibold animate-pulse leading-normal">{stepText}</p>
           </div>
         </div>
       ) : (
@@ -203,7 +203,7 @@ export default function StripeCardForm({
           
           {/* Email Block */}
           <div>
-            <label className="text-[8.5px] font-extrabold text-slate-400 uppercase tracking-widest pl-0.5 block mb-1">
+            <label className="text-xxs font-extrabold text-slate-400 uppercase tracking-widest pl-0.5 block mb-1">
               Receipt email
             </label>
             <div className="relative">
@@ -223,7 +223,7 @@ export default function StripeCardForm({
 
           {/* Cardholder Name */}
           <div>
-            <label className="text-[8.5px] font-extrabold text-slate-400 uppercase tracking-widest pl-0.5 block mb-1">
+            <label className="text-xxs font-extrabold text-slate-400 uppercase tracking-widest pl-0.5 block mb-1">
               Cardholder Name
             </label>
             <div className="relative">
@@ -243,7 +243,7 @@ export default function StripeCardForm({
 
           {/* Card Number */}
           <div>
-            <label className="text-[8.5px] font-extrabold text-slate-400 uppercase tracking-widest pl-0.5 block mb-1">
+            <label className="text-xxs font-extrabold text-slate-400 uppercase tracking-widest pl-0.5 block mb-1">
               Card Number
             </label>
             <div className="relative">
@@ -259,7 +259,7 @@ export default function StripeCardForm({
                 className="w-full pl-8.5 pr-14 py-2 text-xs font-mono font-semibold bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-[#4F46E5] placeholder:text-slate-400 text-slate-850"
               />
               {/* Dynamic brand selector indicators */}
-              <div className="absolute right-3 top-2 text-[8px] font-black uppercase text-slate-400 tracking-wider">
+              <div className="absolute right-3 top-2 text-xxs font-black uppercase text-slate-400 tracking-wider">
                 {cardBrand === 'visa' && <span className="text-[#1A1F71] font-bold">Visa</span>}
                 {cardBrand === 'mastercard' && <span className="text-orange-600 font-bold">MCard</span>}
                 {cardBrand === 'amex' && <span className="text-teal-600 font-bold">AMEX</span>}
@@ -272,7 +272,7 @@ export default function StripeCardForm({
           {/* Dual Row: Expiry & CVC */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-[8.5px] font-extrabold text-slate-400 uppercase tracking-widest pl-0.5 block mb-1">
+              <label className="text-xxs font-extrabold text-slate-400 uppercase tracking-widest pl-0.5 block mb-1">
                 Expiry (MM/YY)
               </label>
               <div className="relative">
@@ -291,7 +291,7 @@ export default function StripeCardForm({
             </div>
 
             <div>
-              <label className="text-[8.5px] font-extrabold text-slate-400 uppercase tracking-widest pl-0.5 block mb-1">
+              <label className="text-xxs font-extrabold text-slate-400 uppercase tracking-widest pl-0.5 block mb-1">
                 CVC / CVV
               </label>
               <div className="relative">
@@ -310,14 +310,14 @@ export default function StripeCardForm({
             </div>
           </div>
 
-          <div className="text-[8.5px] text-slate-400 text-center leading-normal pt-1 flex items-start gap-1 justify-center">
+          <div className="text-xxs text-slate-400 text-center leading-normal pt-1 flex items-start gap-1 justify-center">
             <Lock size={9} className="text-emerald-500 shrink-0 mt-0.5" />
             <span>PCI-DSS Compliant: Card data is parsed directly to Stripe. No credit credentials ever persist on our logs.</span>
           </div>
 
           <button
             type="submit"
-            className="w-full mt-2 py-2.5 bg-[#4F46E5] text-white hover:bg-[#3F37C9] text-[10px] font-black uppercase tracking-widest rounded-xl shadow-xs transition-colors text-center"
+            className="w-full mt-2 py-2.5 bg-[#4F46E5] text-white hover:bg-[#3F37C9] text-xxs font-black uppercase tracking-widest rounded-xl shadow-xs transition-colors text-center"
           >
             Authorize Simulated KES {amount} Payment
           </button>

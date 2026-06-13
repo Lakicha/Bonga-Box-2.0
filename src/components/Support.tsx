@@ -62,11 +62,11 @@ export default function Support() {
     <div className="font-sans max-w-md mx-auto py-1.5 space-y-4 select-none">
       
       {/* Header telemetry info */}
-      <div className="px-1">
+      <div className="px-1 font-sans">
         <h1 className="text-xl font-semibold text-slate-900 tracking-tight leading-none mb-1">
           Counsel support hub
         </h1>
-        <p className="text-[10px] text-slate-500 font-medium">
+        <p className="text-xxs text-slate-500 font-medium">
           Child helplines & direct protection networks
         </p>
       </div>
@@ -76,32 +76,32 @@ export default function Support() {
         
         {/* Counseling simulator */}
         <div className="bg-white border border-slate-100 rounded-[20px] p-4 shadow-xs flex flex-col h-[300px]">
-          <div className="flex items-center gap-2 pb-2 border-b border-slate-100 shrink-0">
+          <div className="flex items-center gap-2 pb-2 border-b border-slate-100 shrink-0 font-sans">
             <div className="w-2 h-2 bg-[#4F46E5] rounded-full" />
-            <span className="text-[11px] font-semibold text-slate-800">Counselling assistant</span>
-            <span className="ml-auto text-[9px] text-[#4F46E5] bg-indigo-50/75 px-1.5 py-0.5 rounded-full font-medium">Demo active</span>
+            <span className="text-xxs font-semibold text-slate-800">Counselling assistant</span>
+            <span className="ml-auto text-xxs text-[#4F46E5] bg-indigo-50/75 px-1.5 py-0.5 rounded-full font-medium">Demo active</span>
           </div>
 
           {/* Chat Messages flow */}
-          <div className="flex-grow overflow-y-auto py-2.5 space-y-2.5 scrollbar-none">
+          <div className="flex-grow overflow-y-auto py-2.5 space-y-2.5 scrollbar-none font-sans">
             {messages.map((m) => (
               <div 
                 key={m.id} 
                 className={`flex flex-col max-w-[85%] ${m.sender === 'user' ? 'ml-auto items-end' : 'mr-auto items-start'}`}
               >
-                <div className={`p-2.5 rounded-[20px] text-[10.5px] leading-relaxed font-semibold shadow-xs ${
+                <div className={`p-2.5 rounded-[20px] text-xxs leading-relaxed font-semibold shadow-xs ${
                   m.sender === 'user' 
                     ? 'bg-[#4F46E5] text-white rounded-tr-none' 
                     : 'bg-slate-50 text-slate-800 border border-slate-100 rounded-tl-none'
                 }`}>
                   {m.text}
                 </div>
-                <span className="text-[8px] text-slate-405 mt-0.5 font-medium px-0.5">{m.timestamp}</span>
+                <span className="text-xxs text-slate-400 mt-0.5 font-medium px-0.5">{m.timestamp}</span>
               </div>
             ))}
 
             {isTyping && (
-              <div className="flex items-center gap-1.5 mr-auto p-1.5 px-2.5 bg-slate-50 border border-slate-100 rounded-[20px] text-[9px] text-slate-500 font-medium animate-pulse">
+              <div className="flex items-center gap-1.5 mr-auto p-1.5 px-2.5 bg-slate-50 border border-slate-100 rounded-[20px] text-xxs text-slate-500 font-medium animate-pulse">
                 <Sparkles size={9} className="text-[#4F46E5]" />
                 <span>Simulated counselor typing...</span>
               </div>
@@ -128,7 +128,7 @@ export default function Support() {
 
         {/* Toll-Free Emergency Helpline Channels */}
         <div className="space-y-2.5">
-          <span className="text-[10px] text-slate-400 font-semibold pl-1 block">
+          <span className="text-xxs text-slate-400 font-semibold pl-1 block">
             Direct voice helpline hub
           </span>
 
@@ -140,12 +140,12 @@ export default function Support() {
               >
                 <div>
                   <h4 className="text-xs font-semibold text-slate-900 leading-tight mb-0.5">{h.title}</h4>
-                  <p className="text-[10px] text-slate-500 leading-normal mb-2">{h.desc}</p>
+                  <p className="text-xxs text-slate-500 leading-normal mb-2">{h.desc}</p>
                 </div>
                 
                 <a 
                   href={`tel:${h.phone.replace(/\s+/g, '')}`}
-                  className="w-full py-2 bg-indigo-50/70 hover:bg-indigo-100/80 text-[#4F46E5] text-[10px] font-semibold text-center rounded-xl flex items-center justify-center gap-1.5 transition-colors"
+                  className="w-full py-2 bg-indigo-50/70 hover:bg-indigo-100/80 text-[#4F46E5] text-xxs font-semibold text-center rounded-xl flex items-center justify-center gap-1.5 transition-colors"
                 >
                   <Phone size={10} /> Dial {h.phone}
                 </a>
@@ -160,7 +160,7 @@ export default function Support() {
       <footer className="bg-indigo-50/30 border border-slate-100 text-slate-800 rounded-[20px] p-5 shadow-xs text-center flex flex-col items-center">
         <HeartHandshake size={20} className="text-[#4F46E5] mb-2" />
         <h3 className="font-semibold text-xs text-slate-900 mb-1">Safe directory search</h3>
-        <p className="text-[9.5px] text-slate-500 max-w-xs font-medium leading-relaxed">
+        <p className="text-xxs text-slate-500 max-w-xs font-medium leading-relaxed">
           The helplines dial directly from your device. Make sure you are in a private, safe location before making outreach phone calls.
         </p>
       </footer>

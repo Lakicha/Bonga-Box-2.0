@@ -130,11 +130,11 @@ const Navbar: React.FC = () => {
                       </div>
 
                       {/* Display Info */}
-                      <div className="hidden lg:block">
-                        <p className="text-[11px] font-semibold text-slate-700 leading-none truncate max-w-[100px]">
+                      <div className="hidden lg:block font-sans">
+                        <p className="text-xxs font-semibold text-slate-700 leading-none truncate max-w-[100px]">
                           {user.displayName?.split(' ')[0] || 'Active Handle'}
                         </p>
-                        <p className="text-[9px] font-medium text-slate-500 leading-none mt-0.5">
+                        <p className="text-xxs font-medium text-slate-500 leading-none mt-0.5">
                           {profile?.role || 'Citizen'}
                         </p>
                       </div>
@@ -154,13 +154,13 @@ const Navbar: React.FC = () => {
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: 15, scale: 0.95 }}
                             transition={{ duration: 0.15, ease: 'easeOut' }}
-                            className="absolute right-0 mt-2.5 w-72 bg-white border border-slate-100 rounded-[20px] shadow-xs z-20 overflow-hidden text-slate-800"
+                            className="absolute right-0 mt-2.5 w-72 bg-white border border-slate-100 rounded-[20px] shadow-xs z-20 overflow-hidden text-slate-800 font-sans"
                           >
                             {/* Header Canvas */}
                             <div className="p-4 bg-slate-50 border-b border-slate-100 flex items-center gap-3.5 relative">
                               <div className="absolute top-2 right-2 flex items-center gap-1">
                                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                                <span className="text-[9px] font-medium text-slate-450">Secure link</span>
+                                <span className="text-xxs font-medium text-slate-450">Secure link</span>
                               </div>
                               <div className="w-11 h-11 rounded-full p-0.5 bg-indigo-100 shrink-0">
                                 <div className="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden">
@@ -175,8 +175,8 @@ const Navbar: React.FC = () => {
                                 <h4 className="text-xs font-semibold text-slate-900 leading-none mb-1">
                                   {user.displayName || 'Bonga Friend'}
                                 </h4>
-                                <p className="text-[9px] text-text-dim font-medium truncate leading-none mb-1">{user.email}</p>
-                                <span className="inline-block px-2 py-0.5 bg-purple-primary/10 text-purple-primary rounded-full text-[9px] font-medium leading-none">
+                                <p className="text-xxs text-text-dim font-medium truncate leading-none mb-1">{user.email}</p>
+                                <span className="inline-block px-2 py-0.5 bg-purple-primary/10 text-purple-primary rounded-full text-xxs font-medium leading-none">
                                   {profile?.role || 'County Citizen'}
                                 </span>
                               </div>
@@ -189,30 +189,30 @@ const Navbar: React.FC = () => {
                                 <div className="flex items-center gap-2">
                                   <Fingerprint size={14} className="text-indigo-600 shrink-0" />
                                   <div>
-                                    <p className="text-[9px] font-medium text-slate-450 leading-none mb-1">Secure route mask</p>
-                                    <p className="text-[10px] font-mono text-slate-600 leading-none">
+                                    <p className="text-xxs font-medium text-slate-450 leading-none mb-1">Secure route mask</p>
+                                    <p className="text-xxs font-mono text-slate-600 leading-none">
                                       bnga_anon_{user.uid.slice(0, 6).toLowerCase()}...
                                     </p>
                                   </div>
                                 </div>
-                                <span className="text-[9px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100/50 font-medium h-fit">Active</span>
+                                <span className="text-xxs text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100/50 font-medium h-fit">Active</span>
                               </div>
 
                               {/* Interactive Report stats & Creation Date - Absolute unique user attributes */}
                               <div className="grid grid-cols-2 gap-3">
                                 <div className="bg-slate-50 border border-slate-100/50 rounded-[20px] p-3">
-                                  <span className="text-[9px] text-slate-400 font-medium block">Your reports</span>
+                                  <span className="text-xxs text-slate-400 font-medium block">Your reports</span>
                                   <div className="flex items-baseline gap-1 mt-1">
                                     <span className="text-sm font-semibold leading-none text-[#4f46e5]">
                                       {personalReportsCount !== null ? personalReportsCount : '0'}
                                     </span>
-                                    <span className="text-[9px] text-slate-400 font-medium">filed</span>
+                                    <span className="text-xxs text-slate-400 font-medium">filed</span>
                                   </div>
                                 </div>
                                 <div className="bg-slate-50 border border-slate-100/50 rounded-[20px] p-3">
-                                  <span className="text-[9px] text-slate-400 font-medium block">Enrolled date</span>
+                                  <span className="text-xxs text-slate-400 font-medium block">Enrolled date</span>
                                   <div className="flex items-baseline gap-1 mt-1">
-                                    <span className="text-[11px] font-medium leading-none text-slate-700">
+                                    <span className="text-xxs font-medium leading-none text-slate-700">
                                       {user.metadata.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString([], { month: 'short', year: '2-digit' }) : 'N/A'}
                                     </span>
                                   </div>
@@ -221,8 +221,8 @@ const Navbar: React.FC = () => {
 
                               {/* Authorized Clearances Section */}
                               <div>
-                                <span className="text-[9px] text-slate-400 font-medium mb-1 pl-1 block">Verified access clearances</span>
-                                <div className="text-[10px] text-slate-650 bg-indigo-50/30 rounded-[20px] p-3 border border-indigo-100/30 leading-snug font-medium">
+                                <span className="text-xxs text-slate-400 font-medium mb-1 pl-1 block">Verified access clearances</span>
+                                <div className="text-xxs text-slate-650 bg-indigo-50/30 rounded-[20px] p-3 border border-indigo-100/30 leading-snug font-medium">
                                   {profile?.role === 'Admin' && '✓ Full Admin access (level 4)'}
                                   {profile?.role === 'Disaster Management Officer' && '✓ Hydrology dispatch access (level 3)'}
                                   {profile?.role === 'Protection Officer' && '✓ Youth & gender protection desk (level 3)'}

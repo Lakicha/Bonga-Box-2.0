@@ -2,11 +2,106 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../AuthContext';
 import { db, collection, query, where, onSnapshot, orderBy, doc, getDoc, handleFirestoreError, OperationType, limit } from '../firebase';
 import { Report } from '../types';
-import { History, RefreshCw, ChevronRight, Lock, KeyRound, Check } from 'lucide-react';
+import { 
+  History, 
+  RefreshCw, 
+  ChevronRight, 
+  Lock, 
+  KeyRound, 
+  Check, 
+  Clock, 
+  ShieldCheck, 
+  FileText, 
+  User, 
+  Activity, 
+  CheckCircle2 
+} from 'lucide-react';
 import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { SkeletonReportItem } from './SkeletonLoader';
+
+interface TimelineStep {
+  label: string;
+  description: string;
+  status: 'completed' | 'active' | 'pending';
+  timestampStr: string;
+}
+
+const getReportDate = (timestamp: any): Date => {
+  if (!timestamp) return new Date();
+  if (timestamp.toDate && typeof timestamp.toDate === 'function') {
+    return timestamp.toDate();
+  }
+  if (timestamp.seconds) {
+    return new Date(timestamp.seconds * 1000);
+  }
+  return new Date(timestamp);
+};
+
+const getTimelineSteps = (report: Report): TimelineStep[] => {
+  const baseDate = getReportDate(report.timestamp);
+  // Subtract or add standard times to visualize updates starting from creation time
+  const now = new Date();
+  
+  const formatDate = (date: Date) => {
+    return date.toLocaleString([], {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const getStepTime = (offsetMs: number) => {
+    const computed = new Date(baseDate.getTime() + offsetMs);
+    // If the computed time would be in the future relative to "now", cap it to "now"
+    if (computed > now) {
+      const minOffset = Math.min(now.getTime() - baseDate.getTime(), 5 * 60 * 1000);
+      return new Date(baseDate.getTime() + Math.max(0, minOffset));
+    }
+    return computed;
+  };
+
+  const reportStatus = report.status || 'Pending';
+
+  return [
+    {
+      label: 'Received',
+      description: 'Report successfully logged inside our secure database and metadata coordinates scrubbed for complete anonymity.',
+      status: 'completed',
+      timestampStr: formatDate(baseDate)
+    },
+    {
+      label: 'Under Review',
+      description: reportStatus === 'Pending'
+        ? 'Awaiting review verification by certified localized response officers.'
+        : `Under live coordination. Assigned to protective expert: ${report.assignedOfficer || 'Regional Guard Desk'}.`,
+      status: reportStatus === 'Pending' ? 'active' : 'completed',
+      timestampStr: formatDate(getStepTime(35 * 60 * 1000)) // 35 minutes later
+    },
+    {
+      label: 'Action Taken',
+      description: reportStatus === 'Pending'
+        ? 'Pending situational validation check.'
+        : reportStatus === 'In Progress'
+          ? 'Emergency units dispatched. Liaison established with emergency hubs or local rescue assets.'
+          : `Dispatch validated. Incident intervention completed successfully.`,
+      status: reportStatus === 'Pending' ? 'pending' : reportStatus === 'In Progress' ? 'active' : 'completed',
+      timestampStr: reportStatus === 'Pending' ? '' : formatDate(getStepTime(2 * 60 * 60 * 1000)) // 2 hours later
+    },
+    {
+      label: 'Resolved',
+      description: reportStatus === 'Resolved'
+        ? `Incident successfully resolved. Survivors/targets safely transitioned and files secured.`
+        : 'Resolution protocol will be signed once complete field confirmation is received.',
+      status: reportStatus === 'Resolved' ? 'completed' : 'pending',
+      timestampStr: reportStatus === 'Resolved' 
+        ? formatDate(report.resolvedAt ? getReportDate(report.resolvedAt) : getStepTime(5 * 60 * 60 * 1000)) 
+        : ''
+    }
+  ];
+};
 
 const HistoryList: React.FC = () => {
   const { user } = useAuth();
@@ -205,10 +300,12 @@ const HistoryList: React.FC = () => {
                   </span>
 
                   {/* Status pill in soft-purple outline */}
-                  <span className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border ${
+                  <span className={`px-2 py-0.5 rounded-full text-[8.5px] font-black uppercase tracking-widest border ${
                     report.status === 'Pending' 
-                      ? 'bg-amber-50/40 border-amber-205 text-amber-700' 
-                      : 'bg-emerald-50/40 border-emerald-250 text-emerald-700'
+                      ? 'bg-amber-50/40 border-amber-200 text-amber-700' 
+                      : report.status === 'In Progress'
+                        ? 'bg-purple-50/40 border-purple-200 text-purple-700'
+                        : 'bg-emerald-50/40 border-emerald-250 text-emerald-700'
                   }`}>
                     {report.status}
                   </span>
@@ -220,7 +317,7 @@ const HistoryList: React.FC = () => {
                 </p>
 
                 {/* Tracking Interactive section */}
-                <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 space-y-2 mb-3">
+                <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 mb-3">
                   <div className="flex justify-between items-center">
                     <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest block pl-0.5">
                       Report Routing Status
@@ -229,32 +326,82 @@ const HistoryList: React.FC = () => {
                     {/* Track Button */}
                     <button
                       onClick={() => handleTrackClick(report.id || '')}
-                      className="px-2.5 py-0.5 border border-purple-primary hover:bg-purple-primary/5 text-purple-primary hover:text-purple-dark text-[8.5px] font-black rounded-lg transition-colors flex items-center gap-0.5"
+                      className="px-2.5 py-0.5 border border-purple-primary hover:bg-purple-primary/5 text-purple-primary hover:text-purple-dark text-[8.5px] font-black rounded-lg transition-colors flex items-center gap-0.5 cursor-pointer"
                     >
                       {isTracking ? 'Close Tracker' : 'Track Status'}
                     </button>
                   </div>
 
                   {isTracking && (
-                    <div className="text-[10px] space-y-1 text-slate-655 border-t border-slate-201 pt-2 animate-fadeIn pl-0.5">
-                      <div className="flex justify-between">
-                        <span>Tracking Status:</span>
-                        <span className="font-extrabold text-[#4F46E5]">Active</span>
+                    <div className="border-t border-slate-200/50 mt-2.5 pt-3 space-y-3.5 pl-0.5 text-left">
+                      {/* Sub-header inside tracker */}
+                      <div className="flex items-center justify-between text-[8px] font-black uppercase tracking-widest text-[#4F46E5] mb-2 pl-0.5">
+                        <span className="flex items-center gap-1">
+                          <Activity size={10} className="animate-pulse" /> Live Dispatch Timeline
+                        </span>
+                        <span className="text-slate-400 font-mono">
+                          Secure Key: AES-250
+                        </span>
                       </div>
-                      <div className="flex justify-between">
-                        <span>Database Node:</span>
-                        <span className="font-bold text-slate-800">Connected to Firebase</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Security:</span>
-                        <span className="font-mono text-emerald-600 font-extrabold text-[9px]">Standard Encrypted SSL</span>
+
+                      {/* Timeline List */}
+                      <div className="relative pl-3 space-y-4">
+                        {/* Connecting Line */}
+                        <div className="absolute left-[4px] top-1.5 bottom-1.5 w-[1px] bg-slate-205" />
+
+                        {getTimelineSteps(report).map((step, sIdx) => {
+                          const isCompleted = step.status === 'completed';
+                          const isActive = step.status === 'active';
+                          const isPending = step.status === 'pending';
+
+                          return (
+                            <div key={sIdx} className="relative flex flex-col gap-0.5 pl-2.5 transition-all">
+                              {/* Node Circle */}
+                              <div className={`absolute -left-[1.5px] top-[2px] w-[12px] h-[12px] rounded-full flex items-center justify-center border transition-all z-10 ${
+                                isCompleted 
+                                  ? 'bg-emerald-500 border-emerald-500 text-white' 
+                                  : isActive
+                                    ? 'bg-purple-primary border-purple-primary ring-2 ring-purple-100 text-white animate-pulse'
+                                    : 'bg-white border-slate-200 text-slate-300'
+                              }`}>
+                                {isCompleted && <Check size={8} strokeWidth={4} />}
+                                {isActive && <div className="w-[4px] h-[4px] rounded-full bg-white" />}
+                              </div>
+
+                              {/* Label and Timestamp */}
+                              <div className="flex items-center justify-between gap-2">
+                                <span className={`text-[10px] font-black tracking-tight ${
+                                  isCompleted ? 'text-slate-800' : isActive ? 'text-purple-primary' : 'text-slate-400'
+                                }`}>
+                                  {step.label}
+                                </span>
+                                {step.timestampStr ? (
+                                  <span className="text-[8.5px] font-sans font-bold text-slate-400 shrink-0 flex items-center gap-0.5">
+                                    <Clock size={9} /> {step.timestampStr}
+                                  </span>
+                                ) : (
+                                  <span className="text-[8.5px] font-sans font-bold text-slate-300 italic shrink-0">
+                                    Pending
+                                  </span>
+                                )}
+                              </div>
+
+                              {/* Description */}
+                              <p className={`text-[9.5px] leading-relaxed font-semibold ${
+                                isCompleted ? 'text-slate-500' : isActive ? 'text-slate-700' : 'text-slate-400/80 italic'
+                              }`}>
+                                {step.description}
+                              </p>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   )}
                 </div>
 
                 {/* Footer containing reference code */}
-                <div className="border-t border-slate-50 pt-2.5 flex flex-col gap-1 text-[8px]">
+                <div className="border-t border-slate-50 pt-2.5 flex flex-col gap-1 text-xxs font-sans">
                   <span className="text-slate-400 font-extrabold uppercase tracking-widest pl-0.5">
                     Local Receipt Tracking ID
                   </span>
@@ -267,8 +414,8 @@ const HistoryList: React.FC = () => {
             );
           })}
 
-          <footer className="pt-3 text-center">
-            <p className="text-[8.5px] text-slate-400 leading-normal uppercase tracking-widest font-extrabold">
+          <footer className="pt-3 text-center font-sans">
+            <p className="text-xxs text-slate-400 leading-normal uppercase tracking-widest font-extrabold">
               Bonga Box local reports history log. Clear browser cache to wipe local receipts.
             </p>
           </footer>

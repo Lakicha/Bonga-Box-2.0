@@ -116,7 +116,7 @@ const AuthPage: React.FC = () => {
           <p className="text-purple-primary font-display font-medium text-lg leading-none mb-1">
             Welcome back, {user?.displayName ? user.displayName.split(' ')[0] : (localStorage.getItem('bonga_user_nickname') || 'Operator')}
           </p>
-          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-none">
+          <p className="text-xxs text-slate-400 font-bold uppercase tracking-widest leading-none">
             Developer Sandbox Core
           </p>
         </div>
@@ -168,7 +168,7 @@ const AuthPage: React.FC = () => {
             </AnimatePresence>
           </div>
 
-          <p className="text-[9.5px] font-extrabold text-slate-500 uppercase tracking-widest mt-3.5 mb-1">
+          <p className="text-xxs font-extrabold text-slate-500 uppercase tracking-widest mt-3.5 mb-1">
             {scanState === 'scanning' 
               ? 'Simulating Bypass Check...' 
               : scanState === 'success'
@@ -223,7 +223,7 @@ const AuthPage: React.FC = () => {
           {!showRealAuth ? (
             <button 
               onClick={() => setShowRealAuth(true)}
-              className="text-[9.5px] font-black uppercase tracking-wider text-slate-400 hover:text-purple-primary transition-colors flex items-center gap-1"
+              className="text-xxs font-black uppercase tracking-wider text-slate-400 hover:text-purple-primary transition-colors flex items-center gap-1"
             >
               Operator Google Sign In <CornerDownRight size={10} />
             </button>
@@ -248,10 +248,10 @@ const AuthPage: React.FC = () => {
                     <Shield size={14} className="shrink-0" />
                     <span>Firebase Auth Error</span>
                   </div>
-                  <p className="text-[10px] text-red-600 leading-normal font-medium">
+                  <p className="text-xxs text-red-600 leading-normal font-medium">
                     {authError}
                   </p>
-                  <p className="text-[9px] text-slate-500 font-medium border-t border-red-100 pt-1.5 leading-normal">
+                  <p className="text-xxs text-slate-500 font-medium border-t border-red-100 pt-1.5 leading-normal">
                     💡 <strong>Setup Checklist:</strong><br />
                     1. Enable <strong>Google Provider</strong> in Firebase Console (Authentication &rarr; Sign-in method).<br />
                     2. Add authorized domain <strong>{window.location.hostname}</strong> in Firebase settings.<br />
@@ -265,7 +265,7 @@ const AuthPage: React.FC = () => {
                   setShowRealAuth(false);
                   setAuthError(null);
                 }}
-                className="text-[9px] font-bold text-slate-400 hover:text-slate-700 block mx-auto"
+                className="text-xxs font-bold text-slate-400 hover:text-slate-700 block mx-auto"
               >
                 Back to Simulator View
               </button>

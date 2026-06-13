@@ -251,22 +251,22 @@ export const SecureEvidenceViewer: React.FC<SecureEvidenceViewerProps> = ({
                 <div className="absolute inset-0 bg-transparent z-15 pointer-events-none opacity-[0.03] bg-[linear-gradient(to_right,#808080_1px,transparent_1px),linear-gradient(to_bottom,#808080_1px,transparent_1px)] bg-[size:10px_10px]" />
 
                 {/* WATERMARK 1: TOP-LEFT DIAG */}
-                <div className="absolute top-3 left-3 text-[10px] font-mono text-white/35 z-20 select-none uppercase tracking-wider font-bold">
+                <div className="absolute top-3 left-3 text-xxs font-mono text-white/35 z-20 select-none uppercase tracking-wider font-bold">
                   CONFIDENTIAL PROTECTION EVIDENCE
                 </div>
 
                 {/* WATERMARK 2: RECURRING FLOATING EMAIL & DEVICE TOKEN */}
                 <div className="absolute inset-0 z-20 flex flex-col justify-around items-center select-none rotate-[-12deg] pointer-events-none">
-                  <div className="text-[10px] font-mono text-white/15 bg-black/25 px-2 py-0.5 rounded font-black tracking-normal whitespace-nowrap">
+                  <div className="text-xxs font-mono text-white/15 bg-black/25 px-2 py-0.5 rounded font-black tracking-normal whitespace-nowrap">
                     {profile?.email || 'OFFICER@BONGA-SECURITY'} • ACCESS {currentTimeString}
                   </div>
-                  <div className="text-[10.5px] font-mono text-white/15 bg-black/25 px-2 py-0.5 rounded font-black tracking-normal whitespace-nowrap">
+                  <div className="text-xxs font-mono text-white/15 bg-black/25 px-2 py-0.5 rounded font-black tracking-normal whitespace-nowrap">
                     CASE EXPIRY COUNTDOWN: {timeLeft}s • RESP_KEY_{profile?.uid?.substring(0, 8).toUpperCase() || 'SYS'}
                   </div>
                 </div>
 
                 {/* WATERMARK 3: SOLID FOOTER */}
-                <div className="absolute bottom-2 inset-x-2 z-20 text-center text-[8.5px] font-mono text-white/40 bg-black/45 py-1 px-1.5 rounded-md backdrop-blur-xs select-none">
+                <div className="absolute bottom-2 inset-x-2 z-20 text-center text-xxs font-mono text-white/40 bg-black/45 py-1 px-1.5 rounded-md backdrop-blur-xs select-none">
                   Authorized Session: {profile?.email || 'Officer'} | {currentTimeString} | IP Verfied
                 </div>
               </div>
@@ -277,18 +277,18 @@ export const SecureEvidenceViewer: React.FC<SecureEvidenceViewerProps> = ({
                   <div className="w-8 h-8 rounded-lg bg-indigo-500/10 text-[#4F46E5] flex items-center justify-center shrink-0">
                     <Timer size={14} className={timeLeft < 10 ? 'animate-bounce text-rose-600' : 'animate-spin'} style={{ animationDuration: timeLeft < 10 ? '0.4s' : '9s' }} />
                   </div>
-                  <div className="text-left">
+                  <div className="text-left font-sans">
                     <span id="case-countdown-timer" className={`text-xs font-bold font-mono tracking-tight ${timeLeft < 10 ? 'text-rose-600 animate-pulse' : 'text-[#4F46E5]'}`}>
                       Expires in {timeLeft} seconds
                     </span>
-                    <p className="text-[9px] text-slate-400 font-semibold leading-none mt-0.5 uppercase tracking-wide">Dynamic terminal block purge</p>
+                    <p className="text-xxs text-slate-400 font-semibold leading-none mt-0.5 uppercase tracking-wide">Dynamic terminal block purge</p>
                   </div>
                 </div>
 
-                <div className="flex gap-2 w-full sm:w-auto">
+                <div className="flex gap-2 w-full sm:w-auto font-sans">
                   <button
                     onClick={reLockEvidence}
-                    className="flex-1 sm:flex-initial px-3 py-1.5 bg-[#0F172A] hover:bg-slate-800 text-white rounded-lg text-[9.5px] font-bold uppercase transition-all cursor-pointer flex items-center justify-center gap-1 shrink-0"
+                    className="flex-1 sm:flex-initial px-3 py-1.5 bg-[#0F172A] hover:bg-slate-800 text-white rounded-lg text-xxs font-bold uppercase transition-all cursor-pointer flex items-center justify-center gap-1 shrink-0"
                   >
                     <EyeOff size={11} /> Re-Lock Vault
                   </button>
@@ -297,7 +297,7 @@ export const SecureEvidenceViewer: React.FC<SecureEvidenceViewerProps> = ({
                       triggerHaptic(10);
                       alert('Security Guideline: Downloading encrypted local asset files violates the District zero-leak metadata protection protocols.');
                     }}
-                    className="px-2.5 py-1.5 bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 rounded-lg text-[9.5px] font-bold uppercase transition-all cursor-pointer shrink-0 flex items-center justify-center"
+                    className="px-2.5 py-1.5 bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 rounded-lg text-xxs font-bold uppercase transition-all cursor-pointer shrink-0 flex items-center justify-center"
                     title="Action classified"
                   >
                     <Download size={11} />

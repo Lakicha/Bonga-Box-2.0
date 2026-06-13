@@ -439,8 +439,8 @@ const ReportForm: React.FC = () => {
                     }`}
                   >
                     <item.icon size={18} className={isSelected ? 'text-cyan-600' : 'text-slate-400'} />
-                    <span className="text-xs font-semibold mt-2 leading-none block">{item.label}</span>
-                    <span className="text-[10px] text-slate-400 font-normal mt-0.5">{item.desc}</span>
+                    <span className="text-xxs font-semibold mt-2 leading-none block">{item.label}</span>
+                    <span className="text-xxs text-slate-400 font-normal mt-0.5">{item.desc}</span>
                   </button>
                 );
               })}
@@ -460,15 +460,15 @@ const ReportForm: React.FC = () => {
               </div>
 
               {/* Grid map mock view */}
-              <div className="border border-slate-100 rounded-xl overflow-hidden text-center relative p-3 bg-purple-50/10">
-                <div className="absolute top-0 right-0 py-0.5 px-2 bg-purple-100 text-purple-primary text-[9px] font-medium rounded-bl-lg">
+              <div className="border border-slate-100 rounded-xl overflow-hidden text-center relative p-3 bg-purple-50/10 font-sans">
+                <div className="absolute top-0 right-0 py-0.5 px-2 bg-purple-100 text-purple-primary text-xxs font-medium rounded-bl-lg">
                   Safe zone grid
                 </div>
                 <div className="flex gap-2.5 items-center text-left">
                   <Map size={20} className="text-purple-primary shrink-0 animate-pulse" />
                   <div>
                     <span className="text-xs font-semibold text-slate-800 block">Isiolo high-elevation zones ready</span>
-                    <span className="text-[10px] text-slate-400 font-normal block mt-0.5 leading-none">Safe shelter grids mapped for emergency guidance.</span>
+                    <span className="text-xxs text-slate-400 font-normal block mt-0.5 leading-none">Safe shelter grids mapped for emergency guidance.</span>
                   </div>
                 </div>
               </div>
@@ -499,8 +499,8 @@ const ReportForm: React.FC = () => {
       </AnimatePresence>
 
       {/* FOOTER DISPATCH INFO */}
-      <footer className="mt-6 text-center pt-2.5 border-t border-slate-100">
-        <p className="text-[10px] text-slate-400 font-normal leading-relaxed max-w-xs mx-auto">
+      <footer className="mt-6 text-center pt-2.5 border-t border-slate-100 font-sans">
+        <p className="text-xxs text-slate-400 font-normal leading-relaxed max-w-xs mx-auto">
           Active secure end-to-end sandbox handshake with Isiolo regional dispatch centers.
         </p>
       </footer>

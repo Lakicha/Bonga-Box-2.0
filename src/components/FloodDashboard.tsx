@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { db, collection, onSnapshot, query, orderBy, handleFirestoreError, OperationType } from '../firebase';
+import { useGraphics } from '../GraphicsContext';
 import { Alert } from '../types';
 import { MapContainer, TileLayer, Popup, Circle, ImageOverlay, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -125,6 +126,7 @@ const HeatmapLayer: React.FC<{ points: HeatmapPoint[]; radius: number; opacity: 
 };
 
 const FloodDashboard: React.FC = () => {
+  const { isLowEnd, borderClass } = useGraphics();
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [weather] = useState({ temp: 29, risk: 'Moderate' });
   
@@ -177,17 +179,17 @@ const FloodDashboard: React.FC = () => {
           <h1 className="text-xl font-display font-black text-slate-900 tracking-tight leading-none mb-1">
             Safe Telemetry Map
           </h1>
-          <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-widest leading-none">
+          <p className="text-xxs text-slate-400 font-extrabold uppercase tracking-widest leading-none">
             Isiolo Safe Haven Directory Nodes
           </p>
         </div>
         
         <div className="flex gap-1.5 shrink-0">
-          <div className="bg-white border border-slate-100 rounded-xl px-2.5 py-1 flex items-center gap-1 shadow-xs text-[10px] font-bold text-slate-800">
+          <div className="bg-white border border-slate-100 rounded-xl px-2.5 py-1 flex items-center gap-1 shadow-xs text-xxs font-bold text-slate-800">
             <Thermometer size={12} className="text-amber-500" />
             <span>29°C</span>
           </div>
-          <div className="bg-white border border-slate-100 rounded-xl px-2.5 py-1 flex items-center gap-1 shadow-xs text-[10px] font-bold text-purple-primary">
+          <div className="bg-white border border-slate-100 rounded-xl px-2.5 py-1 flex items-center gap-1 shadow-xs text-xxs font-bold text-purple-primary">
             <CloudRain size={12} />
             <span>Dry Zone</span>
           </div>
@@ -200,8 +202,8 @@ const FloodDashboard: React.FC = () => {
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
           <ChangeView center={mapCenter} zoom={mapZoom} />
           
-          {/* Custom Heatmap Layer */}
-          {heatmapMode !== 'none' && (
+          {/* Custom Heatmap Layer - Suspended on low-end performance devices */}
+          {heatmapMode !== 'none' && !isLowEnd && (
             <HeatmapLayer points={heatmapPoints} radius={35} opacity={0.7} />
           )}
           
@@ -233,7 +235,7 @@ const FloodDashboard: React.FC = () => {
               <Popup>
                 <div className="p-1 min-w-[130px]">
                   <h4 className="font-bold text-slate-900 text-xs mb-0.5">{alert.location}</h4>
-                  <p className="text-[9px] text-slate-500 leading-snug">{alert.message}</p>
+                  <p className="text-xxs text-slate-500 leading-snug">{alert.message}</p>
                 </div>
               </Popup>
             </Circle>
@@ -259,9 +261,9 @@ const FloodDashboard: React.FC = () => {
                     <span className="font-display font-black text-xs text-emerald-700 uppercase">SAFE HOUSE</span>
                   </div>
                   <h4 className="font-bold text-slate-900 text-xs leading-tight">{sh.name}</h4>
-                  <p className="text-[10px] text-slate-600 font-semibold mt-0.5">Specialty: <span className="text-[#4F46E5]">{sh.specialty}</span></p>
-                  <p className="text-[9px] text-slate-400 font-bold">Capacity: {sh.capacity}</p>
-                  <p className="text-[9px] text-slate-405 font-bold">Liaison: {sh.contact}</p>
+                  <p className="text-xxs text-slate-600 font-semibold mt-0.5">Specialty: <span className="text-[#4F46E5]">{sh.specialty}</span></p>
+                  <p className="text-xxs text-slate-400 font-bold">Capacity: {sh.capacity}</p>
+                  <p className="text-xxs text-slate-400 font-bold">Liaison: {sh.contact}</p>
                 </div>
               </Popup>
             </Circle>
@@ -270,7 +272,12 @@ const FloodDashboard: React.FC = () => {
       </div>
 
       {/* Map Control and Safe House Toggle Settings Panels */}
-      <div className="bg-white border border-slate-100 rounded-[20px] p-4 shadow-xs space-y-3.5">
+      <div className={`bg-white border rounded-[20px] p-4 shadow-xs space-y-3.5 ${borderClass('light')}`}>
+        {isLowEnd && (
+          <div className="p-2.5 border border-indigo-200 bg-indigo-50/50 rounded-xl text-xxs text-purple-primary leading-normal font-sans font-medium">
+            <strong>Adaptive Performance Mode:</strong> Canvas thermal heatmapping is automatically deactivated on low-spec displays to protect battery, processor load, and rendering stability.
+          </div>
+        )}
         
         {/* Plot Selector Toggles */}
         <div className="flex justify-between items-center text-xs">
@@ -314,19 +321,19 @@ const FloodDashboard: React.FC = () => {
 
         {/* District Shortcuts Grid */}
         <div className="border-t border-slate-50 pt-3">
-          <label className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5 block">
+          <label className="text-xxs font-extrabold text-slate-400 uppercase tracking-widest mb-1.5 block">
             Regional Telemetry Jumps
           </label>
           <div className="grid grid-cols-2 gap-2">
             <button
               onClick={() => { setMapCenter(ISIOLO_CENTER); setMapZoom(11); }}
-              className="p-2 border border-slate-205 rounded-xl text-center text-[10px] font-black bg-slate-50 hover:bg-slate-100 text-slate-800 transition-colors"
+              className="p-2 border border-slate-205 rounded-xl text-center text-xxs font-black bg-slate-50 hover:bg-slate-100 text-slate-800 transition-colors"
             >
               Isiolo Central Safelands
             </button>
             <button
               onClick={() => { setMapCenter([1.0750, 38.6650]); setMapZoom(11); }}
-              className="p-2 border border-slate-205 rounded-xl text-center text-[10px] font-black bg-slate-50 hover:bg-slate-100 text-slate-800 transition-colors"
+              className="p-2 border border-slate-205 rounded-xl text-center text-xxs font-black bg-slate-50 hover:bg-slate-100 text-slate-800 transition-colors"
             >
               Merti Outpost Shelters
             </button>
@@ -337,7 +344,7 @@ const FloodDashboard: React.FC = () => {
 
       {/* Safe Houses listings */}
       <div className="space-y-3">
-        <span className="text-[9.5px] text-slate-400 font-extrabold uppercase tracking-widest pl-1 block">
+        <span className="text-xxs text-slate-400 font-extrabold uppercase tracking-widest pl-1 block">
           Endangered Haven Directories
         </span>
 
@@ -359,10 +366,10 @@ const FloodDashboard: React.FC = () => {
                 <h4 className="text-xs font-bold text-slate-900 leading-none mb-1">
                   {sh.name}
                 </h4>
-                <p className="text-[10px] text-[#4F46E5] font-semibold leading-relaxed">
+                <p className="text-xxs text-[#4F46E5] font-semibold leading-relaxed">
                   Focus: {sh.specialty}
                 </p>
-                <p className="text-[9px] text-slate-400 mt-0.5 font-bold">
+                <p className="text-xxs text-slate-400 mt-0.5 font-bold">
                   Capacity: {sh.capacity} · Liaison: {sh.contact}
                 </p>
               </div>

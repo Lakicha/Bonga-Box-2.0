@@ -7,6 +7,89 @@ import { motion, AnimatePresence } from 'motion/react';
 import Logo from './Logo';
 import { SkeletonDashboardScreen } from './SkeletonLoader';
 
+const CustomChartTooltip: React.FC<any> = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload;
+    const fgmCount = data.fgmCount || 0;
+    const floodCount = data.floodCount || 0;
+    
+    // Determine context or guidelines based on values and spikes
+    let fgmGuideline = "";
+    let fgmTitle = "";
+    if (fgmCount >= 3) {
+      fgmTitle = "⚠️ Critical Protection Peak";
+      fgmGuideline = "Significant risk spike detected. Initiate emergency rescue protocol, dispatch school liaison officer, and alert nearby safe-housing coordinators immediately.";
+    } else if (fgmCount > 0) {
+      fgmTitle = "🛡️ Active Protection Check";
+      fgmGuideline = "FGM risks identified in local sub-counties. Activate community mentor patrols and connect with local health safehouses.";
+    }
+
+    let floodGuideline = "";
+    let floodTitle = "";
+    if (floodCount >= 3) {
+      floodTitle = "🚨 Severe Hydrological Threat";
+      floodGuideline = "Dangerous flood levels detected. Coordinate active evacuation, sound community alerts, and close lower-elevation school yards.";
+    } else if (floodCount > 0) {
+      floodTitle = "🌊 Active Flood Precaution";
+      floodGuideline = "Elevated surface water levels. Monitor main river pathways and maintain clear communication links with emergency responders.";
+    }
+
+    return (
+      <div className="bg-white border border-slate-200 rounded-2xl shadow-xl p-3.5 max-w-[290px] font-sans text-left">
+        <p className="font-black text-slate-800 mb-2 uppercase tracking-widest text-[10px] border-b border-slate-100 pb-1.5 flex justify-between items-center">
+          <span>📅 {label || data.formattedDate || data.monthKey}</span>
+          <span className="text-[9px] bg-purple-50 text-purple-700 px-1.5 py-0.5 rounded border border-purple-100 font-bold">Trend Analysis</span>
+        </p>
+        
+        <div className="space-y-1.5 py-1">
+          {payload.map((p: any, idx: number) => {
+            const isFgm = p.dataKey === 'fgmCount' || p.name === 'FGM Risks' || p.name === 'FGM Risk';
+            const val = p.value;
+            const strokeColor = p.color || (isFgm ? '#F43F5E' : '#3B82F6');
+            return (
+              <div key={idx} className="flex justify-between items-center text-[11px] font-semibold">
+                <span className="flex items-center gap-1.5 text-slate-500">
+                  <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: strokeColor }} />
+                  {p.name}:
+                </span>
+                <span className="font-extrabold text-slate-900 bg-slate-50 border border-slate-150 rounded px-1.5 py-0.5">
+                  {val} {val === 1 ? 'case' : 'cases'}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+
+        {(fgmTitle || floodTitle) ? (
+          <div className="mt-3 pt-2.5 border-t border-dashed border-slate-200 space-y-2">
+            {fgmTitle && (
+              <div className="bg-rose-50/70 border border-rose-100 rounded-lg p-2 text-[9.5px] leading-relaxed text-rose-800">
+                <p className="font-extrabold text-rose-900 mb-0.5 flex items-center gap-1">
+                  {fgmTitle}
+                </p>
+                <p className="font-medium">{fgmGuideline}</p>
+              </div>
+            )}
+            {floodTitle && (
+              <div className="bg-blue-50/70 border border-blue-100 rounded-lg p-2 text-[9.5px] leading-relaxed text-blue-800">
+                <p className="font-extrabold text-blue-900 mb-0.5 flex items-center gap-1">
+                  {floodTitle}
+                </p>
+                <p className="font-medium">{floodGuideline}</p>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="mt-2.5 pt-2 border-t border-dashed border-slate-150 text-[9px] text-slate-450 italic leading-snug">
+            🛡️ Safe threshold. Keep routine tracking systems and weekly mentoring circles active.
+          </div>
+        )}
+      </div>
+    );
+  }
+  return null;
+};
+
 const COLORS = ['#F59E0B', '#4F46E5', '#10B981', '#64748B'];
 
 const AdminDashboard: React.FC = () => {
@@ -20,6 +103,7 @@ const AdminDashboard: React.FC = () => {
   const [roleFilter, setRoleFilter] = useState<string>('All');
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
   const [activeTab, setActiveTab ] = useState<'analytics' | 'activity' | 'users'>('analytics');
+  const [analyticsTimeRange, setAnalyticsTimeRange] = useState<'7d' | '30d' | 'ytd' | 'all'>('30d');
 
   // Export states
   const [isExportOpen, setIsExportOpen] = useState<boolean>(false);
@@ -141,6 +225,31 @@ const AdminDashboard: React.FC = () => {
     ? users 
     : users.filter(u => u.role === roleFilter);
 
+  const chartFilteredReports = useMemo(() => {
+    const now = new Date();
+    return reports.filter(r => {
+      if (!r.timestamp) return false;
+      const reportDate = r.timestamp.toDate ? r.timestamp.toDate() : new Date(r.timestamp);
+      
+      if (analyticsTimeRange === '7d') {
+        const boundary = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6);
+        boundary.setHours(0, 0, 0, 0);
+        return reportDate >= boundary;
+      }
+      if (analyticsTimeRange === '30d') {
+        const boundary = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 29);
+        boundary.setHours(0, 0, 0, 0);
+        return reportDate >= boundary;
+      }
+      if (analyticsTimeRange === 'ytd') {
+        const boundary = new Date(now.getFullYear(), 0, 1);
+        boundary.setHours(0, 0, 0, 0);
+        return reportDate >= boundary;
+      }
+      return true; // 'all'
+    });
+  }, [reports, analyticsTimeRange]);
+
   const filteredReportsForExport = useMemo(() => {
     return reports.filter(r => {
       if (exportCategory !== 'All' && r.category !== exportCategory) return false;
@@ -241,35 +350,35 @@ const AdminDashboard: React.FC = () => {
 
   // Data for Category Chart
   const categoryData = useMemo(() => [
-    { name: 'FGM Risk', value: reports.filter(r => r.category === 'FGM Risk').length },
-    { name: 'Flood Alert', value: reports.filter(r => r.category === 'Flood Alert').length },
-    { name: 'Emergency', value: reports.filter(r => r.category === 'Emergency').length },
-    { name: 'Other', value: reports.filter(r => r.category === 'Other').length }
-  ], [reports]);
+    { name: 'FGM Risk', value: chartFilteredReports.filter(r => r.category === 'FGM Risk').length },
+    { name: 'Flood Alert', value: chartFilteredReports.filter(r => r.category === 'Flood Alert').length },
+    { name: 'Emergency', value: chartFilteredReports.filter(r => r.category === 'Emergency').length },
+    { name: 'Other', value: chartFilteredReports.filter(r => r.category === 'Other').length }
+  ], [chartFilteredReports]);
 
   // Data for Location Chart
   const locationData = useMemo(() => {
     const locationCounts: Record<string, number> = {};
-    reports.forEach(r => {
+    chartFilteredReports.forEach(r => {
       locationCounts[r.location] = (locationCounts[r.location] || 0) + 1;
     });
     return Object.entries(locationCounts)
       .map(([name, value]) => ({ name, value }))
       .sort((a, b) => b.value - a.value)
       .slice(0, 5);
-  }, [reports]);
+  }, [chartFilteredReports]);
 
   // Data for Status Chart
   const statusData = useMemo(() => [
-    { name: 'Pending', value: reports.filter(r => r.status === 'Pending').length },
-    { name: 'In Progress', value: reports.filter(r => r.status === 'In Progress').length },
-    { name: 'Resolved', value: reports.filter(r => r.status === 'Resolved').length }
-  ], [reports]);
+    { name: 'Pending', value: chartFilteredReports.filter(r => r.status === 'Pending').length },
+    { name: 'In Progress', value: chartFilteredReports.filter(r => r.status === 'In Progress').length },
+    { name: 'Resolved', value: chartFilteredReports.filter(r => r.status === 'Resolved').length }
+  ], [chartFilteredReports]);
 
   // Data for Resolution Time Chart (Average days to resolve by category)
   const resolutionData = useMemo(() => {
     const resolutionTimesByCategory: Record<string, { total: number, count: number }> = {};
-    reports.forEach(r => {
+    chartFilteredReports.forEach(r => {
       if (r.status === 'Resolved' && r.resolvedAt && r.timestamp) {
         const start = r.timestamp.toDate ? r.timestamp.toDate() : new Date(r.timestamp);
         const end = r.resolvedAt.toDate ? r.resolvedAt.toDate() : new Date(r.resolvedAt);
@@ -287,7 +396,110 @@ const AdminDashboard: React.FC = () => {
       name,
       avgDays: parseFloat((data.total / data.count).toFixed(1))
     }));
-  }, [reports]);
+  }, [chartFilteredReports]);
+
+  // Data for dynamic time-range incident trend (FGM and Flood incidents frequency over selected period)
+  const incidentTrendData = useMemo(() => {
+    const now = new Date();
+    
+    if (analyticsTimeRange === '7d' || analyticsTimeRange === '30d') {
+      const trend: Record<string, { date: string; formattedDate: string; fgmCount: number; floodCount: number }> = {};
+      const limitDays = analyticsTimeRange === '7d' ? 7 : 30;
+      
+      for (let i = limitDays - 1; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+        const dateStr = d.toISOString().split('T')[0];
+        const formattedDate = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        trend[dateStr] = {
+          date: dateStr,
+          formattedDate,
+          fgmCount: 0,
+          floodCount: 0
+        };
+      }
+      
+      chartFilteredReports.forEach(r => {
+        if (!r.timestamp) return;
+        const rDate = r.timestamp.toDate ? r.timestamp.toDate() : new Date(r.timestamp);
+        const rDateStr = rDate.toISOString().split('T')[0];
+        if (trend[rDateStr]) {
+          if (r.category === 'FGM Risk') {
+            trend[rDateStr].fgmCount += 1;
+          } else if (r.category === 'Flood Alert') {
+            trend[rDateStr].floodCount += 1;
+          }
+        }
+      });
+      
+      return Object.values(trend);
+    } else if (analyticsTimeRange === 'ytd') {
+      const trend: Record<string, { monthKey: string; formattedDate: string; fgmCount: number; floodCount: number }> = {};
+      const currentYear = now.getFullYear();
+      const currentMonth = now.getMonth();
+      
+      for (let m = 0; m <= currentMonth; m++) {
+        const d = new Date(currentYear, m, 1);
+        const monthKey = `${currentYear}-${String(m + 1).padStart(2, '0')}`;
+        const formattedDate = d.toLocaleDateString('en-US', { month: 'short' });
+        trend[monthKey] = {
+          monthKey,
+          formattedDate,
+          fgmCount: 0,
+          floodCount: 0
+        };
+      }
+      
+      chartFilteredReports.forEach(r => {
+        if (!r.timestamp) return;
+        const rDate = r.timestamp.toDate ? r.timestamp.toDate() : new Date(r.timestamp);
+        if (rDate.getFullYear() !== currentYear) return;
+        const m = rDate.getMonth();
+        const monthKey = `${currentYear}-${String(m + 1).padStart(2, '0')}`;
+        if (trend[monthKey]) {
+          if (r.category === 'FGM Risk') {
+            trend[monthKey].fgmCount += 1;
+          } else if (r.category === 'Flood Alert') {
+            trend[monthKey].floodCount += 1;
+          }
+        }
+      });
+      
+      return Object.values(trend);
+    } else { // 'all' - past 12 months
+      const trend: Record<string, { monthKey: string; formattedDate: string; fgmCount: number; floodCount: number }> = {};
+      
+      for (let i = 11; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const year = d.getFullYear();
+        const m = d.getMonth();
+        const monthKey = `${year}-${String(m + 1).padStart(2, '0')}`;
+        const formattedDate = d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+        trend[monthKey] = {
+          monthKey,
+          formattedDate,
+          fgmCount: 0,
+          floodCount: 0
+        };
+      }
+      
+      chartFilteredReports.forEach(r => {
+        if (!r.timestamp) return;
+        const rDate = r.timestamp.toDate ? r.timestamp.toDate() : new Date(r.timestamp);
+        const year = rDate.getFullYear();
+        const m = rDate.getMonth();
+        const monthKey = `${year}-${String(m + 1).padStart(2, '0')}`;
+        if (trend[monthKey]) {
+          if (r.category === 'FGM Risk') {
+            trend[monthKey].fgmCount += 1;
+          } else if (r.category === 'Flood Alert') {
+            trend[monthKey].floodCount += 1;
+          }
+        }
+      });
+      
+      return Object.values(trend);
+    }
+  }, [chartFilteredReports, analyticsTimeRange]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 pt-20 pb-8 text-slate-800">
@@ -317,7 +529,7 @@ const AdminDashboard: React.FC = () => {
       ) : (
         <>
           {/* Overview Stats Row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         {[
           { icon: FileText, label: "Total Reports", value: reports.length, color: "border-purple-primary", bg: "bg-purple-50", text: "text-purple-primary" },
           { icon: ShieldAlert, label: "FGM Risks", value: reports.filter(r => r.category === 'FGM Risk').length, color: "border-orange-500", bg: "bg-orange-50", text: "text-orange-500" },
@@ -326,7 +538,7 @@ const AdminDashboard: React.FC = () => {
         ].map((stat, i) => (
           <div 
             key={i}
-            className={`bg-white p-3 rounded-2xl border-l-[4px] ${stat.color} border border-slate-200 shadow-xs flex items-center justify-between`}
+            className={`bg-white p-4 rounded-[20px] border-l-[4px] ${stat.color} border border-slate-100 shadow-xs flex items-center justify-between`}
           >
             <div>
               <p className="text-[9px] font-bold text-text-dim uppercase tracking-widest mb-0.5">{stat.label}</p>
@@ -380,33 +592,109 @@ const AdminDashboard: React.FC = () => {
       <div className="bg-white border border-slate-100 rounded-[20px] shadow-xs p-4 overflow-hidden mb-6 min-h-[300px]">
         {/* TAB 1: Analytics and Overview */}
         {activeTab === 'analytics' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="border border-slate-100 rounded-[20px] p-4 shadow-xs bg-slate-50/20">
-              <h3 className="text-xs font-bold mb-4 uppercase tracking-widest text-text-dim">Reports by Category</h3>
-              <div className="h-[200px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={categoryData}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 9, fontWeight: 700, fill: '#64748B' }} />
-                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 9, fontWeight: 700, fill: '#64748B' }} />
-                    <Tooltip contentStyle={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '0.5rem', fontSize: '11px' }} />
-                    <Bar dataKey="value" fill="#4F46E5" radius={[4, 4, 0, 0]} barSize={34} />
-                  </BarChart>
-                </ResponsiveContainer>
+          <div className="flex flex-col gap-6">
+            {/* Dynamic Time-Range Selector */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-slate-50/70 p-3.5 rounded-2xl border border-slate-100 font-sans">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 bg-purple-50 text-purple-primary rounded-lg border border-purple-100/50">
+                  <Filter size={14} />
+                </div>
+                <div>
+                  <h3 className="text-xs font-black text-slate-700 uppercase tracking-widest leading-none">County Analytics Period</h3>
+                  <p className="text-[9.5px] font-semibold text-slate-400 mt-1 leading-none">Filters all charts below by incident registration date</p>
+                </div>
+              </div>
+              <div className="flex bg-white border border-slate-200 rounded-xl p-0.5 shadow-xs shrink-0 self-end sm:self-auto">
+                {[
+                  { key: '7d', label: '7 Days' },
+                  { key: '30d', label: '30 Days' },
+                  { key: 'ytd', label: 'Year To Date' },
+                  { key: 'all', label: 'All Time' }
+                ].map((item) => (
+                  <button
+                    key={item.key}
+                    onClick={() => setAnalyticsTimeRange(item.key as any)}
+                    className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer ${
+                      analyticsTimeRange === item.key
+                        ? 'bg-purple-primary text-white shadow-xs font-bold'
+                        : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
               </div>
             </div>
 
-            <div className="border border-slate-100 rounded-[20px] p-4 shadow-xs bg-slate-50/20">
-              <h3 className="text-xs font-bold mb-4 uppercase tracking-widest text-text-dim">Recent Location Intensity</h3>
-              <div className="h-[200px]">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="bg-white border border-slate-100 rounded-[20px] p-5 shadow-xs">
+                <h3 className="text-xs font-bold mb-4 uppercase tracking-widest text-text-dim">Reports by Category</h3>
+                <div className="h-[200px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={categoryData}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 9, fontWeight: 700, fill: '#64748B' }} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 9, fontWeight: 700, fill: '#64748B' }} />
+                      <Tooltip contentStyle={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '0.5rem', fontSize: '11px' }} />
+                      <Bar dataKey="value" fill="#4F46E5" radius={[4, 4, 0, 0]} barSize={34} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              <div className="bg-white border border-slate-100 rounded-[20px] p-5 shadow-xs">
+                <h3 className="text-xs font-bold mb-4 uppercase tracking-widest text-text-dim">Recent Location Intensity</h3>
+                <div className="h-[200px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={locationData} layout="vertical">
+                      <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
+                      <XAxis type="number" axisLine={false} tickLine={false} tick={{ fontSize: 9, fontWeight: 700, fill: '#64748B' }} />
+                      <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 9, fontWeight: 700, fill: '#64748B' }} width={80} />
+                      <Tooltip contentStyle={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '0.5rem', fontSize: '11px' }} />
+                      <Bar dataKey="value" fill="#06B6D4" radius={[0, 4, 4, 0]} barSize={18} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+
+            {/* Dynamic Incident Trend Frequency Chart */}
+            <div className="bg-white border border-slate-100 rounded-[20px] p-5 shadow-xs">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-xs font-bold uppercase tracking-widest text-text-dim">
+                  {analyticsTimeRange === '7d' ? '7-Day' : analyticsTimeRange === '30d' ? '30-Day' : analyticsTimeRange === 'ytd' ? 'Year-to-Date' : 'All-Time'} Incident Trend Frequency
+                </h3>
+                <div className="flex gap-4 text-[9px] font-bold uppercase tracking-wider font-sans">
+                  <span className="flex items-center gap-1.5 text-rose-500">
+                    <span className="h-2 w-2 rounded-full bg-rose-500" />
+                    FGM Risk
+                  </span>
+                  <span className="flex items-center gap-1.5 text-blue-500">
+                    <span className="h-2 w-2 rounded-full bg-blue-500" />
+                    Flood Alerts
+                  </span>
+                </div>
+              </div>
+              <div className="h-[250px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={locationData} layout="vertical">
-                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
-                    <XAxis type="number" axisLine={false} tickLine={false} tick={{ fontSize: 9, fontWeight: 700, fill: '#64748B' }} />
-                    <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 9, fontWeight: 700, fill: '#64748B' }} width={80} />
-                    <Tooltip contentStyle={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '0.5rem', fontSize: '11px' }} />
-                    <Bar dataKey="value" fill="#06B6D4" radius={[0, 4, 4, 0]} barSize={18} />
-                  </BarChart>
+                  <AreaChart data={incidentTrendData}>
+                    <defs>
+                      <linearGradient id="colorFgm" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#F43F5E" stopOpacity={0.15}/>
+                        <stop offset="95%" stopColor="#F43F5E" stopOpacity={0}/>
+                      </linearGradient>
+                      <linearGradient id="colorFlood" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.15}/>
+                        <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                    <XAxis dataKey="formattedDate" axisLine={false} tickLine={false} tick={{ fontSize: 9, fontWeight: 700, fill: '#64748B' }} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 9, fontWeight: 700, fill: '#64748B' }} allowDecimals={false} />
+                    <Tooltip content={<CustomChartTooltip />} />
+                    <Area type="monotone" dataKey="fgmCount" stroke="#F43F5E" strokeWidth={2.5} fillOpacity={1} fill="url(#colorFgm)" name="FGM Risks" />
+                    <Area type="monotone" dataKey="floodCount" stroke="#3B82F6" strokeWidth={2.5} fillOpacity={1} fill="url(#colorFlood)" name="Flood Alerts" />
+                  </AreaChart>
                 </ResponsiveContainer>
               </div>
             </div>

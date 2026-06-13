@@ -1,9 +1,22 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Inter", sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+  
+  /* Fluid Typography Scale using CSS clamp() */
+  /* Calibrated for optimum phone (320px) vs PC/Web (1200px) layout rendering */
+  --font-size-xxs: clamp(0.625rem, calc(0.5568rem + 0.3409vw), 0.8125rem);  /* Nav label: 10px -> 13px */
+  --font-size-xs: clamp(0.625rem, calc(0.5795rem + 0.2273vw), 0.75rem);     /* Label/caps: 10px-11px -> 12px */
+  --font-size-sm: clamp(0.75rem, calc(0.7045rem + 0.2273vw), 0.875rem);     /* Body/desc small: 12px -> 14px */
+  --font-size-base: clamp(0.8125rem, calc(0.767rem + 0.2273vw), 0.9375rem); /* Body/desc base: 13px -> 15px */
+  --font-size-lg: clamp(0.875rem, calc(0.7841rem + 0.4545vw), 1.125rem);    /* Card title small: 14px -> 18px */
+  --font-size-xl: clamp(0.9375rem, calc(0.8239rem + 0.5682vw), 1.25rem);    /* Card title base: 15px -> 20px */
+  --font-size-2xl: clamp(1.375rem, calc(1.1193rem + 1.2784vw), 2rem);       /* Page title: 22px -> 32px */
+  --font-size-3xl: clamp(1.5rem, calc(1.2273rem + 1.3636vw), 2.25rem);      /* Page title hero: 24px -> 36px */
+  --font-size-4xl: clamp(1.75rem, calc(1.3409rem + 2.0455vw), 2.75rem);     /* Large display scale */
+  --font-size-5xl: clamp(2rem, calc(1.3864rem + 3.0682vw), 3.5rem);         /* Giant billboard scale */
   
   --color-purple-primary: #4F46E5;      /* Deep Royal Indigo */
   --color-purple-dark: #3F37C9;         /* Rich Royal Blue */
@@ -22,7 +35,7 @@ body {
 }
 
 h1, h2, h3, h4, h5, h6 {
-  @apply font-sans font-semibold tracking-tight text-slate-900;
+  @apply font-display font-semibold tracking-tight text-slate-900;
 }
 
 /* Custom Scrollbar */
@@ -94,4 +107,81 @@ h1, h2, h3, h4, h5, h6 {
 .leaflet-bar a {
   @apply !bg-white !text-slate-800 !border-slate-200 hover:!bg-slate-50 !transition-all;
 }
+
+@keyframes sos-breath {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.6);
+  }
+  50% {
+    transform: scale(1.06);
+    box-shadow: 0 0 0 16px rgba(225, 29, 72, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(225, 29, 72, 0);
+  }
+}
+
+.animate-sos-breath {
+  animation: sos-breath 2s infinite ease-in-out;
+}
+
+/* Premium micro-interactions transition scaling */
+button, 
+a, 
+.cursor-pointer, 
+[role="button"] {
+  transition: transform 0.12s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.12s ease, background-color 0.12s ease, border-color 0.12s ease;
+}
+
+/* Ensure scale shrinks slightly on press */
+button:active:not(:disabled), 
+a:active, 
+.cursor-pointer:active, 
+[role="button"]:active {
+  transform: scale(0.97) !important;
+}
+
+/* Dynamic Ripple Container */
+.ripple-container {
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+/* Custom premium Ripple Effect */
+.ripple-effect {
+  position: absolute;
+  border-radius: 50%;
+  background-color: currentColor;
+  opacity: 0.16;
+  transform: scale(0);
+  animation: ripple-animation 0.5s cubic-bezier(0.1, 0.8, 0.3, 1);
+  pointer-events: none;
+}
+
+@keyframes ripple-animation {
+  to {
+    transform: scale(3.5);
+    opacity: 0;
+  }
+}
+
+/* Refined, extremely subtle 1px border and soft shadows to prevent card visual clutter (every white card) */
+[class*="bg-white"][class*="border"] {
+  border-color: rgba(226, 232, 240, 0.45) !important;
+  box-shadow: 0 2px 14px -1px rgba(79, 70, 229, 0.025), 0 1px 4px -1px rgba(0, 0, 0, 0.015) !important;
+}
+
+/* Ensure all standard light gray border classes are extremely soft and refined across the entire layout */
+.border-slate-50, .border-slate-100, .border-slate-150, .border-slate-200, .border-slate-300, .border-slate-205, .border-slate-105 {
+  border-color: rgba(226, 232, 240, 0.45) !important;
+}
+
+/* Focus and hover enhancements for cards */
+[class*="bg-white"][class*="border"]:hover {
+  box-shadow: 0 4px 20px -1px rgba(79, 70, 229, 0.035), 0 2px 8px -1px rgba(0, 0, 0, 0.02) !important;
+}
+
+
 

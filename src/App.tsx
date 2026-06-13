@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './AuthContext';
+import { GraphicsProvider } from './GraphicsContext';
 import AppLayout from './components/AppLayout';
 import Home from './components/Home';
 import ReportForm from './components/ReportForm';
@@ -123,10 +124,12 @@ const MainApp: React.FC = () => {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <MainApp />
-      </Router>
-    </AuthProvider>
+    <GraphicsProvider>
+      <AuthProvider>
+        <Router>
+          <MainApp />
+        </Router>
+      </AuthProvider>
+    </GraphicsProvider>
   );
 }

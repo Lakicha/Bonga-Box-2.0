@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
+import { useGraphics } from '../GraphicsContext';
 import { 
   Home, 
   History, 
@@ -25,12 +26,15 @@ import {
   Volume2,
   VolumeX,
   Phone,
-  AlertCircle
+  AlertCircle,
+  Monitor,
+  Cpu
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { auth, signOut } from '../firebase';
+import { auth, signOut, db, collection, query, orderBy, limit, onSnapshot } from '../firebase';
 import Onboarding from './Onboarding';
 import Logo from './Logo';
+import { AlertTicker } from './AlertTicker';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -38,10 +42,26 @@ interface AppLayoutProps {
 
 const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const { user, profile } = useAuth();
+  const { 
+    graphicsMode, 
+    setGraphicsMode, 
+    toggleGraphicsMode, 
+    isLowEnd, 
+    autoDetected, 
+    contrastEnhanced, 
+    toggleContrast,
+    blurClass,
+    glowClass,
+    borderClass,
+    textMutedClass,
+    springConfig
+  } = useGraphics();
+
   const location = useLocation();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showGraphicsDropdown, setShowGraphicsDropdown] = useState(false);
   const [currentLanguage, setCurrentLanguage] = useState<'EN' | 'SW'>('EN');
   const [isSOSOpen, setIsSOSOpen] = useState(false);
   const [isSirenActive, setIsSirenActive] = useState(false);
@@ -170,6 +190,50 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     return () => window.removeEventListener('bonga_trigger_haptic', handleHapticEvent);
   }, []);
 
+  // Global premium micro-interactions: click ripple generator & subtle haptic feedback
+  useEffect(() => {
+    const handleGlobalClick = (e: MouseEvent) => {
+      const target = (e.target as HTMLElement).closest('button, a, .cursor-pointer, [role="button"]') as HTMLElement | null;
+      if (!target) return;
+
+      // 1. Subtle haptic feedback whenever tapping any button or interactive element
+      if ('vibrate' in navigator) {
+        try {
+          navigator.vibrate(10);
+        } catch (_) {}
+      }
+
+      // 2. Ripple generation
+      // Enforce relative positioning & hidden overflow for beautiful ripples
+      target.classList.add('ripple-container');
+
+      const rect = target.getBoundingClientRect();
+      const size = Math.max(rect.width, rect.height);
+      const x = e.clientX - rect.left - size / 2;
+      const y = e.clientY - rect.top - size / 2;
+
+      const ripple = document.createElement('span');
+      ripple.className = 'ripple-effect';
+      ripple.style.width = `${size}px`;
+      ripple.style.height = `${size}px`;
+      ripple.style.left = `${x}px`;
+      ripple.style.top = `${y}px`;
+
+      // Prepend or append to render underneath child items
+      target.appendChild(ripple);
+
+      // Clean up after animation finishes (500ms)
+      setTimeout(() => {
+        ripple.remove();
+      }, 500);
+    };
+
+    document.addEventListener('mousedown', handleGlobalClick);
+    return () => {
+      document.removeEventListener('mousedown', handleGlobalClick);
+    };
+  }, []);
+
   // Premium hotkey listener: Shift + S for emergency panel
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -188,6 +252,135 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
+
+  // Browser-native background notifications query subscriptions
+  useEffect(() => {
+    // Only subscribe if the user is logged in
+    if (!user) return;
+
+    // Fast check for notification support
+    if (typeof window === 'undefined' || !('Notification' in window)) return;
+
+    // Use page mount/boot-up time to distinguish existing database records from newly dispatched alerts
+    const appLoadTime = Date.now();
+
+    // 1. Subscription to "reports" collection
+    const qReports = query(collection(db, 'reports'), orderBy('timestamp', 'desc'), limit(15));
+    const unsubscribeReports = onSnapshot(qReports, (snapshot) => {
+      // Look at document changes rather than whole collection to pinpoint freshly arrived elements
+      snapshot.docChanges().forEach((change) => {
+        if (change.type === 'added') {
+          const data = change.doc.data();
+          if (!data) return;
+
+          // Enforce local check for active subscription configs
+          const isNotificationEnabled = localStorage.getItem('bonga_notification_enabled') === 'true';
+          const isPermissionGranted = Notification.permission === 'granted';
+          if (!isNotificationEnabled || !isPermissionGranted) return;
+
+          // Check if it is a high-priority flood or protection (FGM) category
+          const isHighPriorityType = data.category === 'FGM Risk' || data.category === 'Flood Alert' || data.category === 'Emergency';
+          if (!isHighPriorityType) return;
+
+          // Extract standard date structure
+          const docTime = data.timestamp?.toDate ? data.timestamp.toDate().getTime() : (data.timestamp ? new Date(data.timestamp).getTime() : 0);
+          
+          // Only push alert if the report was recorded AFTER this current app tab loaded
+          if (docTime && docTime > appLoadTime - 8000) {
+            // Determine if the report location matches the user's filtered region / "their area"
+            const userArea = localStorage.getItem('bonga_notification_area') || 'All';
+            const areaNormalized = userArea.trim().toLowerCase();
+            const reportLocation = (data.location || '').trim().toLowerCase();
+
+            const isMatchingArea = 
+              areaNormalized === 'all' || 
+              areaNormalized === '' || 
+              reportLocation.includes(areaNormalized) || 
+              areaNormalized.includes(reportLocation);
+
+            if (isMatchingArea) {
+              const categoryTitle = data.category === 'FGM Risk' ? '🚨 PROTECTION REPORT' : '⚠️ FLOOD DISPATCH';
+              try {
+                new Notification(`Bonga Safeguard: ${categoryTitle}`, {
+                  body: `Inside ${data.location || 'Your Area'}: ${data.description || 'New high-priority incident raised.'}`,
+                  icon: '/icon.png',
+                  silent: false
+                });
+                
+                // Trigger audible feedback
+                if (typeof navigator !== 'undefined' && navigator.vibrate) {
+                  navigator.vibrate([100, 50, 100]);
+                }
+              } catch (err) {
+                console.error('Error triggering push notification:', err);
+              }
+            }
+          }
+        }
+      });
+    }, (error) => {
+      console.error('Safeguard notifications listener error:', error);
+    });
+
+    // 2. Subscription to "alerts" collection
+    const qAlerts = query(collection(db, 'alerts'), orderBy('timestamp', 'desc'), limit(15));
+    const unsubscribeAlerts = onSnapshot(qAlerts, (snapshot) => {
+      snapshot.docChanges().forEach((change) => {
+        if (change.type === 'added') {
+          const data = change.doc.data();
+          if (!data) return;
+
+          const isNotificationEnabled = localStorage.getItem('bonga_notification_enabled') === 'true';
+          const isPermissionGranted = Notification.permission === 'granted';
+          if (!isNotificationEnabled || !isPermissionGranted) return;
+
+          // Severity must be High or Critical for emergency push, and type matches flood or protection
+          const isHighSeverity = data.severity === 'High' || data.severity === 'Critical';
+          const lowercaseType = (data.type || '').toLowerCase();
+          const isRelevantIssue = lowercaseType.includes('flood') || lowercaseType.includes('protection') || lowercaseType.includes('fgm') || lowercaseType.includes('emergency');
+
+          if (!isHighSeverity || !isRelevantIssue) return;
+
+          const docTime = data.timestamp?.toDate ? data.timestamp.toDate().getTime() : (data.timestamp ? new Date(data.timestamp).getTime() : 0);
+          
+          if (docTime && docTime > appLoadTime - 8000) {
+            const userArea = localStorage.getItem('bonga_notification_area') || 'All';
+            const areaNormalized = userArea.trim().toLowerCase();
+            const alertLocation = (data.location || '').trim().toLowerCase();
+
+            const isMatchingArea = 
+              areaNormalized === 'all' || 
+              areaNormalized === '' || 
+              alertLocation.includes(areaNormalized) || 
+              areaNormalized.includes(alertLocation);
+
+            if (isMatchingArea) {
+              try {
+                new Notification(`Bonga Alert: ${data.severity.toUpperCase()} SEVERITY ALERT`, {
+                  body: `Area: ${data.location || 'Your Region'}\nIncident: ${data.message || 'New high-priority alert received.'}`,
+                  icon: '/icon.png',
+                  silent: false
+                });
+
+                if (typeof navigator !== 'undefined' && navigator.vibrate) {
+                  navigator.vibrate([200, 100, 200]);
+                }
+              } catch (err) {
+                console.error('Error triggering push notification:', err);
+              }
+            }
+          }
+        }
+      });
+    }, (error) => {
+      console.error('Safeguard emergency alerts listener error:', error);
+    });
+
+    return () => {
+      unsubscribeReports();
+      unsubscribeAlerts();
+    };
+  }, [user]);
 
   // Check if current path is an admin / operator full-screen dashboard
   const isOperatorDashboard = location.pathname.includes('-dashboard');
@@ -250,13 +443,17 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   };
 
   return (
-    <div className="bg-bg-dark flex flex-col font-sans text-slate-800 min-h-screen relative overflow-x-hidden">
-      {/* Dynamic global ambient blur graphics */}
-      <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-purple-100/15 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-indigo-50/20 rounded-full blur-[140px] pointer-events-none" />
+    <div className={`bg-bg-dark flex flex-col font-sans transition-colors duration-250 min-h-screen relative overflow-x-hidden ${contrastEnhanced ? 'text-slate-900 bg-slate-100' : 'text-slate-800 bg-[#F8FAFC]'}`}>
+      {/* Dynamic global ambient blur graphics - Disabled on low-end screens to prevent CPU rendering passes */}
+      {!isLowEnd && (
+        <>
+          <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-purple-100/15 rounded-full blur-[120px] pointer-events-none" />
+          <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-indigo-50/20 rounded-full blur-[140px] pointer-events-none" />
+        </>
+      )}
 
       {/* Top Global Responsive Header & Navbar */}
-      <header className="sticky top-0 bg-white/90 backdrop-blur-md border-b border-slate-100 z-50 select-none">
+      <header className={`sticky top-0 z-50 transition-all duration-200 select-none ${blurClass('bg-white border-b border-slate-205 shadow-sm')} ${borderClass('light')}`}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           {/* Logo Brand Brandmark */}
           <Link to="/" className="flex items-center gap-2 group">
@@ -324,7 +521,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               }}
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-red-50 hover:bg-red-100 border border-red-200/50 rounded-xl text-red-650 font-medium text-xs relative overflow-hidden transition-all shadow-xs cursor-pointer select-none"
+              className="flex items-center gap-1 sm:gap-1.5 px-2 md:px-3 py-1 md:py-1.5 bg-red-50 hover:bg-red-100 border border-red-200/50 rounded-xl text-red-650 font-medium text-[10px] sm:text-xs relative overflow-hidden transition-all shadow-xs cursor-pointer select-none"
               title="Urgent emergency SOS panel"
             >
               <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-ping shrink-0" />
@@ -354,7 +551,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                   >
                     <div className="pb-2 border-b border-slate-100 flex items-center justify-between">
                       <span className="text-xs font-semibold text-slate-900">Active safeguards</span>
-                      <span className="text-[10px] px-1.5 py-0.5 bg-indigo-50 text-purple-primary font-medium rounded">Live status</span>
+                      <span className="text-xxs px-1.5 py-0.5 bg-indigo-50 text-purple-primary font-medium rounded">Live status</span>
                     </div>
                     <div className="space-y-2 max-h-[160px] overflow-y-auto scrollbar-none">
                       <div className="p-2 bg-slate-50/50 rounded-lg text-xs font-normal text-slate-700 leading-relaxed border border-slate-100 flex items-start gap-2">
@@ -372,7 +569,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                     </div>
                     <button 
                       onClick={() => setShowNotifications(false)}
-                      className="w-full text-center text-[10px] text-purple-primary font-medium pt-1.5 border-t border-slate-100 hover:text-purple-dark text-slate-400"
+                      className="w-full text-center text-xxs text-purple-primary font-medium pt-1.5 border-t border-slate-100 hover:text-purple-dark text-slate-400"
                     >
                       Dismiss
                     </button>
@@ -380,6 +577,8 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                 )}
               </AnimatePresence>
             </div>
+
+
 
             {/* 👤 Profile with User Avatar */}
             <Link 
@@ -488,7 +687,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                     >
                       <Globe size={14} className="text-blue-500" />
                       <span>Language: {currentLanguage === 'EN' ? 'English (EN)' : 'Kiswahili (SW)'}</span>
-                      <span className="text-[10px] font-medium bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded ml-auto">Swap</span>
+                      <span className="text-xxs font-medium bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded ml-auto">Swap</span>
                     </button>
 
                     {/* Interactive Simulated Security Level Indicator */}
@@ -496,11 +695,40 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                       onClick={() => {
                         alert("Safeguards configuration: Multi-hop encryption routing is enabled by default to protect children coordinates.");
                       }}
-                      className="w-full flex items-center gap-2.5 p-2 rounded-xl hover:bg-slate-50 text-xs font-medium text-slate-700 transition-colors text-left"
+                      className="w-full flex items-center gap-2.5 p-2 rounded-xl hover:bg-slate-50 text-xs font-medium text-slate-700 transition-colors text-left font-sans"
                     >
                       <Settings size={14} className="text-slate-500" />
                       <span>Box settings</span>
-                      <span className="text-[9px] font-medium bg-emerald-50 text-emerald-650 px-1.5 py-0.5 rounded ml-auto">Secure</span>
+                      <span className="text-xxs font-medium bg-emerald-50 text-emerald-650 px-1.5 py-0.5 rounded ml-auto">Secure</span>
+                    </button>
+
+                    {/* Visual Performance/Display Adjuster in Slide Drawer */}
+                    <button 
+                      onClick={() => {
+                        toggleGraphicsMode();
+                        triggerClickHaptic();
+                      }}
+                      className="w-full flex items-center gap-2.5 p-2 rounded-xl hover:bg-slate-50 text-xs font-medium text-slate-700 transition-colors text-left cursor-pointer font-sans"
+                    >
+                      <Monitor size={14} className="text-purple-primary" />
+                      <span>Graphics: {graphicsMode === 'high-end' ? 'High Quality' : 'Performance'}</span>
+                      <span className={`text-xxs font-semibold px-1.5 py-0.5 rounded ml-auto ${isLowEnd ? 'bg-indigo-50 text-purple-primary border border-indigo-200' : 'bg-slate-50 text-slate-500'}`}>
+                        {isLowEnd ? 'Performance' : 'Edit'}
+                      </span>
+                    </button>
+
+                    <button 
+                      onClick={() => {
+                        toggleContrast();
+                        triggerClickHaptic();
+                      }}
+                      className="w-full flex items-center gap-2.5 p-2 rounded-xl hover:bg-slate-50 text-xs font-medium text-slate-700 transition-colors text-left cursor-pointer font-sans"
+                    >
+                      <Cpu size={14} className="text-emerald-500" />
+                      <span>High Contrast Mode</span>
+                      <span className={`text-xxs font-semibold px-1.5 py-0.5 rounded ml-auto ${contrastEnhanced ? 'bg-emerald-50 text-emerald-750 border border-emerald-200' : 'bg-slate-50 text-slate-500'}`}>
+                        {contrastEnhanced ? 'Active' : 'Off'}
+                      </span>
                     </button>
                   </div>
                 </div>
@@ -585,6 +813,9 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
 
       {/* Main Spacious Content Body Container */}
       <main className="flex-1 min-h-0 overflow-y-auto w-full max-w-4xl mx-auto px-4 sm:px-6 pt-4 pb-16 md:pb-6 relative z-10">
+        {(location.pathname.includes('dashboard') || location.pathname === '/alerts') && (
+          <AlertTicker />
+        )}
         {children}
       </main>
 
@@ -640,47 +871,6 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           <span className="text-[10px] font-medium">Profile</span>
         </Link>
       </div>
-
-      {/* Real-time Floating SOS Panic Button (Stylized integrated Capsule Pill) */}
-      <motion.button
-        id="floating-sos-btn"
-        onClick={() => {
-          triggerHaptic('warning');
-          setIsSOSOpen(true);
-        }}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        animate={{
-          scale: [1, 1.02, 1],
-          boxShadow: [
-            "0 0 0 0 rgba(220, 38, 38, 0.45), 0 4px 14px rgba(220, 38, 38, 0.2)",
-            "0 0 0 12px rgba(220, 38, 38, 0.15), 0 4px 14px rgba(220, 38, 38, 0.2)",
-            "0 0 0 24px rgba(220, 38, 38, 0), 0 4px 14px rgba(220, 38, 38, 0.2)"
-          ]
-        }}
-        transition={{
-          scale: {
-            repeat: Infinity,
-            repeatType: "reverse",
-            duration: 2.0,
-            ease: "easeInOut"
-          },
-          boxShadow: {
-            repeat: Infinity,
-            repeatType: "loop",
-            duration: 2.4,
-            ease: "easeInOut"
-          }
-        }}
-        className="fixed bottom-18 right-4 md:bottom-6 md:right-6 z-45 px-4 h-11 bg-red-600 hover:bg-red-700 text-white rounded-full flex items-center justify-center gap-1.8 shadow-md hover:shadow-lg cursor-pointer select-none transition-shadow border border-red-500/35 overflow-hidden font-semibold text-xs tracking-wide"
-        title="Emergency panic SOS panel"
-      >
-        <span className="w-1.5 h-1.5 rounded-full bg-rose-200 animate-pulse shrink-0" />
-        <AlertCircle size={14} className="text-white relative z-10" />
-        <span className="text-xs font-semibold leading-none relative z-10">
-          Panic SOS
-        </span>
-      </motion.button>
 
       {/* SOS Emergency Dashboard Dialog */}
       <AnimatePresence>
