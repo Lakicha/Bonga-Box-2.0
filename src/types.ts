@@ -1,6 +1,20 @@
 export interface Report {
   id?: string;
-  category: 'FGM Risk' | 'Flood Alert' | 'Emergency' | 'Other';
+  category: 
+    | 'FGM Risk' 
+    | 'Flood Alert' 
+    | 'Emergency' 
+    | 'Other'
+    | 'Gender-Based Violence (GBV)'
+    | 'Child Protection'
+    | 'Mental Health'
+    | 'Legal Aid'
+    | 'Health'
+    | 'Education'
+    | 'Livelihood / Economic Hardship'
+    | 'Substance Abuse'
+    | 'Housing / Shelter'
+    | 'General Inquiry';
   location: string;
   description: string;
   photoURL?: string;

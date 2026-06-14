@@ -14,6 +14,7 @@ import {
   Menu, 
   X,
   HeartHandshake,
+  Search,
   FileText,
   AlertTriangle,
   Landmark,
@@ -61,6 +62,38 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const [commandSearch, setCommandSearch] = useState('');
+
+  const rawCommands = [
+    { label: 'Secure Report Portal', desc: 'File a discrete case under our encrypted support stream.', path: '/report', keywords: 'report abuse gbv fgm child support file', group: 'Actions' },
+    { label: 'Rural Hydrological Portal', desc: 'Submit and view flood warnings and bridge damage alerts.', path: '/alerts', keywords: 'flood bridge water rain hazard', group: 'Actions' },
+    { label: 'Crisis Resource Guide', desc: 'Consult regional NGO phone sheets, legal guides, and safe house rules.', path: '/resources', keywords: 'resources shelters numbers guidance helper', group: 'Directory' },
+    { label: 'Receipt and Intake History', desc: 'Verify submission tracking hashes and review resolution status.', path: '/history', keywords: 'case codes audit history receipt tracking', group: 'User Profile' },
+    { label: 'Help and Helpline dialers', desc: 'Connect with county helpline representatives or medical facilities.', path: '/support', keywords: 'phone call advisor chat support', group: 'Sensory Help' },
+    { label: 'Donate to isiolo protection centers', desc: 'Contribute secure resources to support safe shelter expansions.', path: '/donate', keywords: 'donate money feed resource care', group: 'Support' },
+    { label: 'Offline cellular safety suite', desc: 'Activate panic buttons, SMS templates, and sensory alarms.', path: '/safety', keywords: 'safety cell panic sirens offline ussd', group: 'Sensory Help' },
+    { label: 'My Profile Desk', desc: 'Update support badges and configure localized area warning settings.', path: '/profile', keywords: 'account sign avatar county preferences', group: 'User Profile' },
+  ];
+
+  if (profile?.role === 'Admin') {
+    rawCommands.push({ label: 'System Master Dashboard', desc: 'Oversee and audit platform-wide case indicators.', path: '/admin-dashboard', keywords: 'admin kpi user config metrics logs', group: 'Role Access' });
+  }
+  if (profile?.role === 'Protection Officer' || profile?.role === 'Admin') {
+    rawCommands.push({ label: 'Protection Cases Desk', desc: 'Review, triage, and execute care responses.', path: '/protection-dashboard', keywords: 'abuse trauma case follow rescue list', group: 'Role Access' });
+  }
+  if (profile?.role === 'Disaster Management Officer' || profile?.role === 'Admin') {
+    rawCommands.push({ label: 'Disaster Coordination Desk', desc: 'Monitor rising rivers, blockages, and trigger regional SOS bulletins.', path: '/disaster-dashboard', keywords: 'river telemetry emergency map high ground', group: 'Role Access' });
+  }
+  if (['Mentor/Teacher', 'Mentor', 'Teacher', 'Admin'].includes(profile?.role || '')) {
+    rawCommands.push({ label: 'School Mentor Coordinator', desc: 'Track safe-school attendance metrics and local dormitory spaces.', path: '/school-dashboard', keywords: 'school girls classroom dorm checkin', group: 'Role Access' });
+  }
+
+  const filteredCommands = rawCommands.filter(cmd => 
+    cmd.label.toLowerCase().includes(commandSearch.toLowerCase()) || 
+    cmd.desc.toLowerCase().includes(commandSearch.toLowerCase()) || 
+    cmd.keywords.toLowerCase().includes(commandSearch.toLowerCase())
+  );
   const [showGraphicsDropdown, setShowGraphicsDropdown] = useState(false);
   const [currentLanguage, setCurrentLanguage] = useState<'EN' | 'SW'>('EN');
   const [isSOSOpen, setIsSOSOpen] = useState(false);
@@ -247,6 +280,12 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         e.preventDefault();
         triggerClickHaptic();
         setIsSOSOpen(true);
+      }
+      if ((e.ctrlKey || e.metaKey) && keyUpper === 'K') {
+        e.preventDefault();
+        triggerClickHaptic();
+        setIsCommandPaletteOpen(prev => !prev);
+        setCommandSearch('');
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -528,6 +567,19 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               <span>Siren SOS</span>
             </motion.button>
             
+            {/* 🔍 Global Command Palette Shortcut */}
+            <button
+              onClick={() => {
+                triggerClickHaptic();
+                setIsCommandPaletteOpen(true);
+                setCommandSearch('');
+              }}
+              className="w-8 h-8 hover:bg-slate-100 rounded-lg flex items-center justify-center text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
+              title="Search and Navigation Commands (Ctrl+K)"
+            >
+              <Search size={16} />
+            </button>
+
             {/* 🔔 Notifications Button and Simulator */}
             <div className="relative">
               <button 
@@ -1018,6 +1070,104 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                   All transmissions are metadata-stripped. If you are in immediate physical danger, alert those around you and head to the nearest high-elevation safe house.
                 </div>
               </motion.div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      <Onboarding />
+
+      {/* 🔍 COMPREHENSIVE COMMAND PALETTE SEARCH ENGINE */}
+      <AnimatePresence>
+        {isCommandPaletteOpen && (
+          <>
+            {/* Backdrop Blur overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsCommandPaletteOpen(false)}
+              className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[999] pointer-events-auto"
+            />
+
+            {/* Floating Palette Window */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96, y: -20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: -20 }}
+              transition={{ duration: 0.15, ease: 'easeOut' }}
+              className="fixed inset-x-4 top-[10%] max-w-lg mx-auto bg-white border border-slate-200 rounded-3xl shadow-2xl z-[1000] overflow-hidden flex flex-col font-sans pointer-events-auto max-h-[480px]"
+            >
+              <div className="p-4 border-b border-slate-150 flex items-center gap-3">
+                <Search size={18} className="text-purple-primary shrink-0 animate-pulse" />
+                <input
+                  autoFocus
+                  type="text"
+                  placeholder="Type an actions keyword (e.g. 'rescue', 'alert', 'school' or 'USSD')..."
+                  value={commandSearch}
+                  onChange={(e) => setCommandSearch(e.target.value)}
+                  className="w-full bg-transparent text-xs font-semibold text-slate-900 outline-none placeholder:text-slate-400"
+                />
+                <kbd className="hidden sm:inline-flex h-5 select-none items-center gap-0.5 rounded border border-slate-155 bg-slate-50 px-1.5 font-mono text-[9px] font-bold text-slate-400 shadow-3xs shrink-0">
+                  ESC
+                </kbd>
+                <button
+                  onClick={() => setIsCommandPaletteOpen(false)}
+                  className="p-1 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-700 cursor-pointer"
+                >
+                  <X size={15} />
+                </button>
+              </div>
+
+              {/* Scrolling results container */}
+              <div className="flex-1 overflow-y-auto p-2 space-y-2">
+                {filteredCommands.length > 0 ? (
+                  <div className="space-y-1">
+                    {/* Render grouped items */}
+                    {Array.from(new Set(filteredCommands.map(c => c.group))).map(groupName => (
+                      <div key={groupName} className="space-y-1">
+                        <span className="text-[9px] font-black uppercase tracking-wider text-slate-400 pl-3.5 pt-1.5 block">
+                          {groupName}
+                        </span>
+                        {filteredCommands.filter(c => c.group === groupName).map((cmd) => (
+                          <button
+                            key={cmd.label}
+                            onClick={() => {
+                              triggerClickHaptic();
+                              setIsCommandPaletteOpen(false);
+                              navigate(cmd.path);
+                            }}
+                            className="w-full p-2.5 rounded-2xl hover:bg-indigo-50/30 text-left flex items-start gap-3 transition-all border border-transparent hover:border-indigo-100/40 cursor-pointer group"
+                          >
+                            <div className="w-8 h-8 rounded-xl bg-slate-50 text-purple-primary flex items-center justify-center shrink-0 border border-slate-100 group-hover:bg-indigo-50 transition-colors text-xs font-semibold">
+                              📍
+                            </div>
+                            <div className="space-y-0.5">
+                              <span className="text-xs font-bold text-slate-800 block group-hover:text-purple-primary transition-colors">
+                                {cmd.label}
+                              </span>
+                              <span className="text-[10px] text-slate-500 font-medium block leading-snug">
+                                {cmd.desc}
+                              </span>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-8 text-center text-slate-400">
+                    <p className="text-xs font-bold uppercase tracking-wider">No instructions found</p>
+                    <p className="text-[10px] mt-1 text-slate-500 font-medium">Try typing a simpler navigation alias like support, report or badges.</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Palette footer bar */}
+              <div className="bg-slate-50 border-t border-slate-150 py-2 px-4 flex justify-between items-center text-[10px] text-slate-400 font-medium">
+                <span>Use keyboard ESC to close this panel.</span>
+                <span className="font-semibold text-purple-primary">Ctrl + K / Cmd + K</span>
+              </div>
             </motion.div>
           </>
         )}

@@ -53,21 +53,27 @@ service cloud.firestore {
     function isValidReport(data) {
       return data.keys().hasAll(['category', 'location', 'description', 'status']) &&
              data.keys().size() <= 15 &&
-             data.category in ['FGM Risk', 'Flood Alert', 'Emergency', 'Other'] &&
+             data.category in [
+               'FGM Risk', 'Flood Alert', 'Emergency', 'Other',
+               'Gender-Based Violence (GBV)', 'Child Protection', 'Mental Health',
+               'Legal Aid', 'Health', 'Education', 'Livelihood / Economic Hardship',
+               'Substance Abuse', 'Housing / Shelter', 'General Inquiry'
+             ] &&
              data.status in ['Pending', 'In Progress', 'Resolved'] &&
              data.description is string &&
              data.description.size() <= 5000 &&
              data.location is string &&
              data.location.size() <= 1000 &&
-             (!('timestamp' in data) || (data.timestamp is timestamp || data.timestamp == null)) &&
+             (!('timestamp' in data) || (data.timestamp is timestamp || data.timestamp is string || data.timestamp == null)) &&
              (!('photoURL' in data) || (data.photoURL is string && data.photoURL.size() <= 1024)) &&
              (!('voiceNoteURL' in data) || (data.voiceNoteURL is string && data.voiceNoteURL.size() <= 1024)) &&
              (!('isAnonymous' in data) || data.isAnonymous is bool) &&
              (!('authorUid' in data) || data.authorUid == null || (data.authorUid is string && data.authorUid.size() <= 128)) &&
-             (!('resolvedAt' in data) || (data.resolvedAt is timestamp || data.resolvedAt == null)) &&
+             (!('resolvedAt' in data) || (data.resolvedAt is timestamp || data.resolvedAt is string || data.resolvedAt == null)) &&
              (!('assignedOfficer' in data) || (data.assignedOfficer is string && data.assignedOfficer.size() <= 128)) &&
              (!('schoolId' in data) || (data.schoolId is string && data.schoolId.size() <= 128)) &&
-             (!('numberOfGirls' in data) || (data.numberOfGirls is int || data.numberOfGirls is number));
+             (!('numberOfGirls' in data) || (data.numberOfGirls is int || data.numberOfGirls is number)) &&
+             (!('aiAnalysis' in data) || data.aiAnalysis is map);
     }
 
     function isValidAlert(data) {
