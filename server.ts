@@ -3,10 +3,122 @@ import path from 'path';
 import fs from 'fs';
 import { createServer as createViteServer } from 'vite';
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { getFirestore, collection, addDoc, serverTimestamp, doc, getDoc, updateDoc } from 'firebase/firestore';
+import { GoogleGenAI } from '@google/genai';
 import Stripe from 'stripe';
 
 let stripeClient: Stripe | null = null;
+let geminiClient: GoogleGenAI | null = null;
+
+function getGeminiClient(): GoogleGenAI | null {
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) {
+    console.warn("GEMINI_API_KEY environment variable is not defined. Booting simulated analysis mode.");
+    return null;
+  }
+  if (!geminiClient) {
+    geminiClient = new GoogleGenAI({
+      apiKey: key,
+      httpOptions: {
+        headers: {
+          'User-Agent': 'aistudio-build',
+        }
+      }
+    });
+  }
+  return geminiClient;
+}
+
+function simulateAnalysis(description: string) {
+  const text = (description || '').toLowerCase();
+  let category = 'General Inquiry';
+  let subcategory = 'General Support';
+  let risk_level = 'LOW';
+  let urgency = 'ROUTINE';
+  let summary = 'Anonymous user inquiry regarding general community assistance.';
+  let key_issues = ['general support'];
+  let recommended_actions = ['assess safety coordinates', 'initiate secondary wellness check'];
+  let referral_type = ['County Social Welfare Offices'];
+  let sentiment = 'calm';
+  let escalation_required = false;
+
+  if (text.includes('fgm') || text.includes('cut') || text.includes('marriage') || text.includes('circumcis') || text.includes('girl')) {
+    category = 'Child Protection';
+    subcategory = 'FGM / Child Marriage Protection';
+    risk_level = 'CRITICAL';
+    urgency = 'IMMEDIATE';
+    summary = `Child protection emergency reported: "${description}"`;
+    key_issues = ['female genital mutilation', 'child protection', 'forced marriage', 'vulnerable minor alert'];
+    recommended_actions = [
+      'Immediate rescue coordinator dispatch',
+      'Deploy localized school protection liaison officer',
+      'Notify nearest safehouse center in Isiolo Subcounty'
+    ];
+    referral_type = ['child protection centers', 'women shelters', 'police gender desk'];
+    sentiment = 'fearful';
+    escalation_required = true;
+  } else if (text.includes('flood') || text.includes('water') || text.includes('overflow') || text.includes('river') || text.includes('rain')) {
+    category = 'Health';
+    subcategory = 'Disaster Management / Hydrological Risk';
+    risk_level = 'HIGH';
+    urgency = 'URGENT';
+    summary = `Severe hydrological thread reported: "${description}"`;
+    key_issues = ['hydrological alert', 'surface water flood hazard', 'immediate evacuation requirement'];
+    recommended_actions = [
+      'Dispatch volunteer disaster monitoring networks',
+      'Confirm real-time local surface water level spikes',
+      'Sound community safety and shelter evacuation advisories'
+    ];
+    referral_type = ['emergency response teams', 'local hospitals/clinics', 'county disaster management desk'];
+    sentiment = 'anxious';
+    escalation_required = false;
+  } else if (text.includes('beat') || text.includes('viol') || text.includes('abus') || text.includes('husband') || text.includes('wife') || text.includes('slap')) {
+    category = 'Gender-Based Violence (GBV)';
+    subcategory = 'Domestic Violence Intervention';
+    risk_level = 'CRITICAL';
+    urgency = 'IMMEDIATE';
+    summary = `Physical domestic abuse report detected: "${description}"`;
+    key_issues = ['physical abuse', 'domestic violence threat', 'immediate safe residence issue'];
+    recommended_actions = [
+      'Coordinate secure physical evacuation of reporter',
+      'Alert emergency protection networks in Isiolo',
+      'Direct user to active nearby mental health safehouse'
+    ];
+    referral_type = ['GBV center support', 'safehouse/emergency shelter', 'police gender desk'];
+    sentiment = 'distressed';
+    escalation_required = true;
+  } else if (text.includes('sad') || text.includes('depress') || text.includes('kill') || text.includes('die') || text.includes('hurt') || text.includes('mental')) {
+    category = 'Mental Health';
+    subcategory = 'Crisis Stabilization counseling';
+    risk_level = 'HIGH';
+    urgency = 'URGENT';
+    summary = `Critical mental health and trauma distress: "${description}"`;
+    key_issues = ['severe distress', 'mental health crisis', 'needs trauma processing support'];
+    recommended_actions = [
+      'Dispatch volunteer community counselor',
+      'Arrange safe online/hotline counseling session',
+      'Conduct regular welfare checks'
+    ];
+    referral_type = ['counselors', 'professional psychologists', 'safeline hotlines'];
+    sentiment = 'hopeless';
+    escalation_required = false;
+  }
+
+  return {
+    category,
+    subcategory,
+    risk_level,
+    urgency,
+    summary,
+    key_issues,
+    recommended_actions,
+    referral_type,
+    sentiment,
+    location_hint: '',
+    confidence_score: 0.88,
+    escalation_required
+  };
+}
 
 function getStripeInstance(): Stripe | null {
   const key = process.env.STRIPE_SECRET_KEY;
@@ -108,6 +220,142 @@ async function startServer() {
   // Health endpoint
   app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', service: 'Bonga Box SMS & USSD Service' });
+  });
+
+  // Analyze report endpoint using Bonga Box AI structure
+  app.post('/api/reports/analyze', async (req, res) => {
+    const { reportId, description } = req.body;
+    if (!description && !reportId) {
+      return res.status(400).json({ error: 'Either reportId or description is required for research analysis' });
+    }
+
+    let textContent = description || '';
+    let targetReportRef: any = null;
+
+    if (reportId) {
+      try {
+        const reportSnap = await getDoc(doc(db, 'reports', reportId));
+        if (reportSnap.exists()) {
+          const data = reportSnap.data();
+          textContent = data.description || textContent;
+          targetReportRef = doc(db, 'reports', reportId);
+        }
+      } catch (fbErr) {
+        console.error('Failed to load report from Firestore for analysis:', fbErr);
+      }
+    }
+
+    // Try to run real Gemini AI analysis using the user's master prompt context
+    const ai = getGeminiClient();
+    if (ai) {
+      try {
+        const systemInstruction = `ROLE
+You are the Bonga Box AI Intelligence Engine, a backend AI system powering an anonymous social support, reporting, and referral platform used by NGOs, county governments, schools, and humanitarian organizations.
+
+You convert anonymous messages into structured, actionable case intelligence.
+You do NOT chat. You do NOT provide general advice. You ONLY analyze and structure reports.
+
+🎯 CORE OBJECTIVE
+For every input message:
+1. Understand the issue
+2. Classify category
+3. Assess risk level
+4. Determine urgency
+5. Summarize case
+6. Extract key issues
+7. Recommend actions
+8. Suggest referral types
+9. Detect sentiment
+10. Output structured JSON ONLY
+
+🚨 STRICT OUTPUT RULE
+Return ONLY valid JSON.
+NO explanations.
+NO markdown.
+NO extra text.
+
+📦 OUTPUT SCHEMA
+{
+  "category": "",
+  "subcategory": "",
+  "risk_level": "LOW|MEDIUM|HIGH|CRITICAL",
+  "urgency": "ROUTINE|SOON|URGENT|IMMEDIATE",
+  "summary": "",
+  "key_issues": [],
+  "recommended_actions": [],
+  "referral_type": [],
+  "sentiment": "",
+  "location_hint": "",
+  "confidence_score": 0.0,
+  "escalation_required": false
+}
+
+📂 ALLOWED CATEGORIES ONLY
+Gender-Based Violence (GBV)
+Child Protection
+Mental Health
+Legal Aid
+Health
+Education
+Livelihood / Economic Hardship
+Substance Abuse
+Housing / Shelter
+General Inquiry
+
+⚠️ RISK LEVEL RULES
+LOW → no immediate danger
+MEDIUM → needs support or follow-up
+HIGH → serious distress or abuse
+CRITICAL → immediate danger or life risk
+
+⏱ URGENCY RULES
+ROUTINE → normal
+SOON → needs follow-up
+URGENT → same-day action
+IMMEDIATE → emergency response required
+
+🔴 ESCALATION RULES
+If CRITICAL risk is detected:
+escalation_required = true
+urgency MUST be "IMMEDIATE"
+
+Never ignore high-risk signals. Be conservative: when unsure → escalate risk higher.`;
+
+        const response = await ai.models.generateContent({
+          model: 'gemini-3.5-flash',
+          contents: textContent,
+          config: {
+            systemInstruction: systemInstruction,
+            responseMimeType: 'application/json',
+            temperature: 0.1,
+          }
+        });
+
+        const rawText = response.text?.trim() || '{}';
+        let cleanJsonText = rawText;
+        if (cleanJsonText.startsWith('```json')) {
+          cleanJsonText = cleanJsonText.slice(7);
+        }
+        if (cleanJsonText.startsWith('```')) {
+          cleanJsonText = cleanJsonText.slice(3);
+        }
+        if (cleanJsonText.endsWith('```')) {
+          cleanJsonText = cleanJsonText.slice(0, -3);
+        }
+        cleanJsonText = cleanJsonText.trim();
+
+        const analysis = JSON.parse(cleanJsonText);
+
+        return res.json({ success: true, analysis });
+      } catch (geminiError: any) {
+        console.error('Gemini real-time analysis error, falling back to secure simulated engine:', geminiError);
+        const analysis = simulateAnalysis(textContent);
+        return res.json({ success: true, analysis, simulated: true, error: geminiError.message });
+      }
+    } else {
+      const analysis = simulateAnalysis(textContent);
+      return res.json({ success: true, analysis, simulated: true });
+    }
   });
 
   // Process Mock Stripe Card Donation (Server-side simulation)

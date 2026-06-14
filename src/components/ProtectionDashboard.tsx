@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import Logo from './Logo';
 import { SecureEvidenceViewer } from './SecureEvidenceViewer';
 import { SkeletonDashboardScreen } from './SkeletonLoader';
+import { BongaBoxAIIntelligence } from './BongaBoxAIIntelligence';
 
 import L from 'leaflet';
 import { MapContainer, TileLayer, Popup, Marker } from 'react-leaflet';
@@ -187,6 +188,39 @@ const ProtectionDashboard: React.FC = () => {
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [analyticsTimeRange, setAnalyticsTimeRange] = useState<'7d' | '30d' | 'ytd' | 'all'>('30d');
+  const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
+
+  // Synchronize selectedReport with updated database list to reflect live AI writes instantly
+  const activeReport = useMemo(() => {
+    if (!selectedReport) return null;
+    return reports.find(r => r.id === selectedReport.id) || selectedReport;
+  }, [reports, selectedReport]);
+
+  const handleTriggerAIAnalysis = async (reportId: string, description: string) => {
+    setIsAnalyzing(true);
+    try {
+      const res = await fetch('/api/reports/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reportId, description })
+      });
+      const parsed = await res.json();
+      if (parsed.success && parsed.analysis) {
+        const reportRef = doc(db, 'reports', reportId);
+        await updateDoc(reportRef, { aiAnalysis: parsed.analysis });
+      } else {
+        alert(parsed.error || 'Failed to complete AI Case analysis.');
+      }
+    } catch (e: any) {
+      try {
+        handleFirestoreError(e, OperationType.UPDATE, `reports/${reportId}`);
+      } catch (logErr) {
+        alert(e.message || 'Error executing AI model analysis.');
+      }
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
 
   // Export states
   const [isExportOpen, setIsExportOpen] = useState<boolean>(false);
@@ -854,9 +888,9 @@ const ProtectionDashboard: React.FC = () => {
             {/* Selected Case Preview Sidebar - 5 cols */}
             <div className="lg:col-span-5" id="details-section">
               <AnimatePresence mode="wait">
-                {selectedReport ? (
+                {activeReport ? (
                   <motion.div
-                    key={selectedReport.id}
+                    key={activeReport.id}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
@@ -865,56 +899,63 @@ const ProtectionDashboard: React.FC = () => {
                     <div className="flex justify-between items-center border-b border-slate-100 pb-2 font-sans">
                       <h3 className="text-sm font-semibold text-slate-800">Case Overview</h3>
                       <span className={`px-2 py-0.5 rounded-full text-xxs font-semibold ${
-                        selectedReport.status === 'Pending' ? 'bg-yellow-50 text-yellow-600 border border-yellow-250/50' :
-                        selectedReport.status === 'In Progress' ? 'bg-purple-50 text-purple-primary border border-purple-200/50' : 'bg-green-50 text-green-600 border border-green-250/50'
+                        activeReport.status === 'Pending' ? 'bg-yellow-50 text-yellow-600 border border-yellow-250/50' :
+                        activeReport.status === 'In Progress' ? 'bg-purple-50 text-purple-primary border border-purple-200/50' : 'bg-green-50 text-green-600 border border-green-250/50'
                       }`}>
-                        {selectedReport.status}
+                        {activeReport.status}
                       </span>
                     </div>
 
                     <div className="space-y-3 font-sans">
                       <div>
                         <span className="text-xxs font-medium text-slate-400 block">Location</span>
-                        <p className="font-semibold text-xs text-slate-900">{selectedReport.location}</p>
+                        <p className="font-semibold text-xs text-slate-900">{activeReport.location}</p>
                       </div>
                       <div>
                         <span className="text-xxs font-medium text-slate-400 block">Time submitted</span>
                         <p className="text-xxs text-slate-500">
-                          {selectedReport.timestamp?.toDate ? new Date(selectedReport.timestamp.toDate()).toLocaleString() : 'Just now'}
+                          {activeReport.timestamp?.toDate ? new Date(activeReport.timestamp.toDate()).toLocaleString() : 'Just now'}
                         </p>
                       </div>
                       <div>
                         <span className="text-xxs font-medium text-slate-400 block">Incident description</span>
                         <p className="text-xs text-slate-600 leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-100 max-h-[140px] overflow-y-auto">
-                          {selectedReport.description}
+                          {activeReport.description}
                         </p>
                       </div>
 
-                      {selectedReport.photoURL && (
+                      {activeReport.photoURL && (
                         <div className="space-y-1">
                           <span className="text-xxs font-medium text-slate-400 block">Confidential evidence file</span>
                           <SecureEvidenceViewer 
-                            photoURL={selectedReport.photoURL} 
-                            category={selectedReport.category}
-                            caseId={selectedReport.id}
+                            photoURL={activeReport.photoURL} 
+                            category={activeReport.category}
+                            caseId={activeReport.id}
                           />
                         </div>
                       )}
 
-                      {selectedReport.voiceNoteURL && (
+                      {activeReport.voiceNoteURL && (
                         <div>
                           <span className="text-xxs font-medium text-slate-400 block mb-1">Attached voice note</span>
-                          <audio src={selectedReport.voiceNoteURL} controls className="w-full h-8 bg-slate-50 border border-slate-250/10 rounded-lg px-1 text-slate-800" />
+                          <audio src={activeReport.voiceNoteURL} controls className="w-full h-8 bg-slate-50 border border-slate-250/10 rounded-lg px-1 text-slate-800" />
                         </div>
                       )}
+
+                      {/* Bonga Box AI Case Intelligence integration */}
+                      <BongaBoxAIIntelligence 
+                        report={activeReport} 
+                        isAnalyzing={isAnalyzing} 
+                        onAnalyze={() => handleTriggerAIAnalysis(activeReport.id!, activeReport.description)} 
+                      />
                     </div>
 
                     {/* Status Update Dropdown */}
                     <div className="pt-3 border-t border-slate-100 space-y-1.5 font-sans">
                       <label className="text-xxs font-medium text-slate-400 block">Update Case Action</label>
                       <select
-                        value={selectedReport.status}
-                        onChange={(e) => updateStatus(selectedReport.id!, e.target.value as Report['status'])}
+                        value={activeReport.status}
+                        onChange={(e) => updateStatus(activeReport.id!, e.target.value as Report['status'])}
                         className="w-full bg-slate-50 border border-slate-105 rounded-xl py-2 px-3 text-xs font-semibold text-[#4F46E5] focus:outline-none focus:border-purple-primary transition-all cursor-pointer"
                       >
                         <option value="Pending">Pending Action</option>

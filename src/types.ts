@@ -12,6 +12,20 @@ export interface Report {
   authorUid?: string | null;
   isAnonymous?: boolean;
   resolvedAt?: any;
+  aiAnalysis?: {
+    category: string;
+    subcategory: string;
+    risk_level: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+    urgency: 'ROUTINE' | 'SOON' | 'URGENT' | 'IMMEDIATE';
+    summary: string;
+    key_issues: string[];
+    recommended_actions: string[];
+    referral_type: string[];
+    sentiment: string;
+    location_hint?: string;
+    confidence_score?: number;
+    escalation_required?: boolean;
+  };
 }
 
 export interface Alert {

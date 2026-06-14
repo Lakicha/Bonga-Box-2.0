@@ -11,6 +11,7 @@ import Logo from './Logo';
 import { DEFAULT_SENSORS } from '../config/telemetryConfig';
 import { SecureEvidenceViewer } from './SecureEvidenceViewer';
 import { SkeletonDashboardScreen } from './SkeletonLoader';
+import { BongaBoxAIIntelligence } from './BongaBoxAIIntelligence';
 
 // Leaflet components
 import L from 'leaflet';
@@ -110,6 +111,39 @@ const DisasterDashboard: React.FC = () => {
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
   const [reportsLoading, setReportsLoading] = useState<boolean>(true);
   const [alertsLoading, setAlertsLoading] = useState<boolean>(true);
+  const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
+
+  // Synchronize selectedReport with updated database list to reflect live AI writes instantly
+  const activeReport = useMemo(() => {
+    if (!selectedReport) return null;
+    return reports.find(r => r.id === selectedReport.id) || selectedReport;
+  }, [reports, selectedReport]);
+
+  const handleTriggerAIAnalysis = async (reportId: string, description: string) => {
+    setIsAnalyzing(true);
+    try {
+      const res = await fetch('/api/reports/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reportId, description })
+      });
+      const parsed = await res.json();
+      if (parsed.success && parsed.analysis) {
+        const reportRef = doc(db, 'reports', reportId);
+        await updateDoc(reportRef, { aiAnalysis: parsed.analysis });
+      } else {
+        alert(parsed.error || 'Failed to complete AI Case analysis.');
+      }
+    } catch (e: any) {
+      try {
+        handleFirestoreError(e, OperationType.UPDATE, `reports/${reportId}`);
+      } catch (logErr) {
+        alert(e.message || 'Error executing AI model analysis.');
+      }
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
 
   // Alert form parameters
   const [alertType, setAlertType] = useState<string>('Flood Alert');
@@ -723,7 +757,7 @@ const DisasterDashboard: React.FC = () => {
 
       {/* DETAILED ACTION MODAL DRAWER OVERLAY */}
       <AnimatePresence>
-        {selectedReport && (
+        {activeReport && (
           <div className="fixed inset-0 z-50 flex items-center justify-end p-4 bg-slate-900/40 backdrop-blur-xs">
             <motion.div
               initial={{ x: '100%' }}
@@ -740,60 +774,67 @@ const DisasterDashboard: React.FC = () => {
                 <div className="space-y-3.5">
                   <div className="flex items-center gap-2">
                     <span className="px-2.5 py-0.5 bg-amber-50 text-amber-600 border border-amber-200/50 rounded-full text-[8px] font-bold uppercase tracking-widest">
-                      {selectedReport.category}
+                      {activeReport.category}
                     </span>
                     <span className={`px-2.5 py-0.5 rounded-full text-[8px] font-bold uppercase tracking-widest border ${
-                      selectedReport.status === 'Pending' ? 'bg-amber-55 text-amber-600 border-amber-200/50 bg-amber-50' :
-                      selectedReport.status === 'In Progress' ? 'bg-purple-100 text-purple-primary border-purple-200/50' : 'bg-green-50 text-green-600 border-green-200/50'
+                      activeReport.status === 'Pending' ? 'bg-amber-55 text-amber-600 border-amber-200/50 bg-amber-50' :
+                      activeReport.status === 'In Progress' ? 'bg-purple-100 text-purple-primary border-purple-200/50' : 'bg-green-50 text-green-600 border-green-200/50'
                     }`}>
-                      {selectedReport.status}
+                      {activeReport.status}
                     </span>
                   </div>
 
                   <div>
                     <span className="text-[8px] font-bold text-text-dim uppercase tracking-widest block mb-0.5">Incident Region Mapping</span>
-                    <p className="text-sm font-extrabold text-slate-900">{selectedReport.location}</p>
+                    <p className="text-sm font-extrabold text-slate-900">{activeReport.location}</p>
                   </div>
 
                   <div>
                     <span className="text-[8px] font-bold text-text-dim uppercase tracking-widest block mb-0.5">Timestamp Captured</span>
                     <p className="text-[11px] text-text-dim font-medium">
-                      {selectedReport.timestamp?.toDate ? new Date(selectedReport.timestamp.toDate()).toLocaleString() : 'Just now'}
+                      {activeReport.timestamp?.toDate ? new Date(activeReport.timestamp.toDate()).toLocaleString() : 'Just now'}
                     </p>
                   </div>
 
                   <div>
                     <span className="text-[8px] font-bold text-text-dim uppercase tracking-widest block mb-0.5">Narrative & Citizen Testimonial</span>
                     <p className="text-xs text-text-dim leading-relaxed bg-slate-50 p-3.5 rounded-[20px] border border-slate-100 shadow-xs italic font-semibold">
-                      "{selectedReport.description}"
+                      "{activeReport.description}"
                     </p>
                   </div>
 
-                  {selectedReport.photoURL && (
+                  {activeReport.photoURL && (
                     <div className="space-y-1">
                       <span className="text-[8px] font-bold text-text-dim uppercase tracking-widest block">Confidential Evidence File</span>
                       <SecureEvidenceViewer 
-                        photoURL={selectedReport.photoURL} 
-                        category={selectedReport.category}
-                        caseId={selectedReport.id}
+                        photoURL={activeReport.photoURL} 
+                        category={activeReport.category}
+                        caseId={activeReport.id}
                       />
                     </div>
                   )}
 
-                  {selectedReport.voiceNoteURL && (
+                  {activeReport.voiceNoteURL && (
                     <div>
                       <span className="text-[8px] font-bold text-text-dim uppercase tracking-widest block mb-1.5">Citizen Voice Recording</span>
-                      <audio src={selectedReport.voiceNoteURL} controls className="w-full bg-slate-50 border border-slate-200 rounded-xl block h-9" />
+                      <audio src={activeReport.voiceNoteURL} controls className="w-full bg-slate-50 border border-slate-200 rounded-xl block h-9" />
                     </div>
                   )}
+
+                  {/* Bonga Box AI Case Intelligence integration */}
+                  <BongaBoxAIIntelligence 
+                    report={activeReport} 
+                    isAnalyzing={isAnalyzing} 
+                    onAnalyze={() => handleTriggerAIAnalysis(activeReport.id!, activeReport.description)} 
+                  />
                 </div>
               </div>
 
               <div className="pt-4 border-t border-slate-100 space-y-2">
                 <span className="text-[8px] font-extrabold text-text-dim uppercase tracking-widest block">Update Dispatch Level</span>
                 <select
-                  value={selectedReport.status}
-                  onChange={(e) => updateStatus(selectedReport.id!, e.target.value as Report['status'])}
+                  value={activeReport.status}
+                  onChange={(e) => updateStatus(activeReport.id!, e.target.value as Report['status'])}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-bold text-purple-primary focus:outline-none focus:border-purple-primary transition-all cursor-pointer"
                 >
                   <option value="Pending">Remains Pending Incident</option>
