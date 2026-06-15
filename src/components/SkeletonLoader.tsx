@@ -82,6 +82,62 @@ export const SkeletonUserListItem: React.FC = () => (
   </tr>
 );
 
+export interface SkeletonCardProps {
+  variant?: 'quick-action' | 'activity-item';
+  className?: string;
+}
+
+export const SkeletonCard: React.FC<SkeletonCardProps> = ({ variant = 'quick-action', className = '' }) => {
+  if (variant === 'activity-item') {
+    return (
+      <div className={`flex items-start gap-4 relative group ${className}`}>
+        {/* Left icon circle */}
+        <div className="w-8 h-8 rounded-full bg-slate-100/90 flex items-center justify-center shrink-0 mt-0.5 animate-pulse">
+          <div className="w-4 h-4 rounded-full bg-slate-200/80" />
+        </div>
+        
+        {/* Post content */}
+        <div className="space-y-1.5 flex-1 pr-6 animate-pulse">
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="h-3 w-36 bg-slate-200 rounded" />
+            <div className="h-4 w-12 bg-slate-100 rounded-full" />
+          </div>
+          <div className="space-y-1.5">
+            <div className="h-2.5 w-full bg-slate-100 rounded" />
+            <div className="h-2.5 w-2/3 bg-slate-100/80 rounded" />
+          </div>
+          <div className="h-2 w-24 bg-slate-100/60 rounded" />
+        </div>
+      </div>
+    );
+  }
+
+  // default 'quick-action' matching the 2x2 grid layout
+  return (
+    <div className={`bg-white border border-slate-200 p-4.5 rounded-[20px] shadow-sm relative overflow-hidden flex flex-col justify-between h-32 select-none animate-pulse ${className}`}>
+      {/* Decorative background round bubble in corner */}
+      <div className="absolute top-0 right-0 w-16 h-16 bg-slate-50/60 rounded-full -mr-6 -mt-6" />
+      
+      {/* Left indicator icon */}
+      <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center mb-2 shrink-0">
+        <div className="w-4 h-4 rounded-full bg-slate-200/80" />
+      </div>
+      
+      {/* Details column */}
+      <div className="space-y-2 z-10">
+        <div className="flex items-center justify-between">
+          <div className="h-3.5 w-24 bg-slate-200/90 rounded" />
+          <div className="h-3 w-3 bg-slate-200/60 rounded" />
+        </div>
+        <div className="space-y-1.5">
+          <div className="h-2.5 w-5/6 bg-slate-100 rounded" />
+          <div className="h-2.5 w-1/2 bg-slate-100/80 rounded" />
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export const SkeletonDashboardScreen: React.FC<{ listCount?: number; showStats?: boolean }> = ({
   listCount = 3,
   showStats = true

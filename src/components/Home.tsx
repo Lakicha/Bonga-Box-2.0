@@ -33,6 +33,7 @@ import {
   Bell
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { SkeletonCard } from './SkeletonLoader';
 
 const Home: React.FC = () => {
   const { user } = useAuth();
@@ -92,6 +93,96 @@ const Home: React.FC = () => {
 
   // Local anonymous report logs tracking
   const [anonymousReportIds, setAnonymousReportIds] = useState<string[]>([]);
+
+  // Quick Actions hold/long-press state and timers
+  const [longPressedCardId, setLongPressedCardId] = useState<string | null>(null);
+  const quickActionHoldTimer = useRef<NodeJS.Timeout | null>(null);
+  const quickActionIsHoldActive = useRef<boolean>(false);
+
+  const handleQuickActionStart = (id: string) => {
+    quickActionIsHoldActive.current = false;
+    if (quickActionHoldTimer.current) {
+      clearTimeout(quickActionHoldTimer.current);
+    }
+    quickActionHoldTimer.current = setTimeout(() => {
+      quickActionIsHoldActive.current = true;
+      setLongPressedCardId(id);
+      triggerHaptic('success');
+    }, 450);
+  };
+
+  const handleQuickActionEnd = (id: string, defaultAction: () => void) => {
+    if (quickActionHoldTimer.current) {
+      clearTimeout(quickActionHoldTimer.current);
+      quickActionHoldTimer.current = null;
+    }
+    const hadHoldActive = quickActionIsHoldActive.current;
+    setLongPressedCardId(null);
+    quickActionIsHoldActive.current = false;
+    if (!hadHoldActive) {
+      defaultAction();
+    }
+  };
+
+  const handleQuickActionCancel = () => {
+    if (quickActionHoldTimer.current) {
+      clearTimeout(quickActionHoldTimer.current);
+      quickActionHoldTimer.current = null;
+    }
+    setLongPressedCardId(null);
+    quickActionIsHoldActive.current = false;
+  };
+
+  // Verified support contacts & sanctuaries
+  const initialSupportLinks = [
+    { id: '1', name: 'Isiolo Crisis Support Node', status: 'Ready & Active' },
+    { id: '2', name: 'Red Cross Response Lead', status: 'Available' }
+  ];
+  
+  const initialSanctuaries = [
+    { id: '1', name: 'Merti Sanctuary Zone', spaces: 12, distance: '1.2km' },
+    { id: '2', name: 'Isiolo High Safe Center', spaces: 24, distance: '4.5km' }
+  ];
+
+  const initialRecentUpdates = [
+    {
+      id: '1',
+      title: 'Merti Sanctuary stock verified',
+      badge: 'Verified',
+      type: 'verified',
+      description: 'Emergency food stores, hygiene, and medical supply packs checked and fully updated. Ready for immediate intake.',
+      time: 'Just now',
+      author: 'Safety coordinator',
+      bgClass: 'bg-teal-50 text-teal-600',
+      icon: 'check'
+    },
+    {
+      id: '2',
+      title: 'Regional river level safe',
+      badge: 'Normal',
+      type: 'normal',
+      description: "River Ewaso Ng'iro flood sensors indicating steady flows, comfortably below emergency warnings.",
+      time: '15m ago',
+      author: 'Hydro-Sensor Net',
+      bgClass: 'bg-emerald-50 text-emerald-600',
+      icon: 'info'
+    },
+    {
+      id: '3',
+      title: 'Local transmitter sync confirmed',
+      badge: 'Backup Ready',
+      type: 'backup',
+      description: 'Secondary low-frequency analog radio meshes established. Active and ready to route SMS messages if primary grid falls.',
+      time: '1h ago',
+      author: 'County Telecom Node',
+      bgClass: 'bg-amber-50 text-amber-600',
+      icon: 'radio'
+    }
+  ];
+
+  const [supportLinks, setSupportLinks] = useState(initialSupportLinks);
+  const [sanctuaries, setSanctuaries] = useState(initialSanctuaries);
+  const [recentUpdates, setRecentUpdates] = useState(initialRecentUpdates);
 
   // Simulation Notifications
   const [incomingNotifications, setIncomingNotifications] = useState<Array<{ id: string; sender: string; text: string }>>([]);
@@ -488,15 +579,70 @@ const Home: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="space-y-6 animate-pulse"
+            className="space-y-6 text-left"
           >
-            <div className="h-10 bg-slate-100 rounded-[20px] w-full" />
-            <div className="h-44 bg-slate-100 rounded-[20px] w-full" />
+            {/* Hero Banner Shimmer */}
+            <div className="h-[35vh] bg-slate-50 border border-slate-150 rounded-[24px] flex flex-col justify-between p-6 animate-pulse relative overflow-hidden">
+              <div className="space-y-2.5">
+                <div className="h-8 bg-slate-200/90 rounded w-1/3" />
+                <div className="h-4 bg-slate-100 rounded w-1/2" />
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                <div className="h-10 bg-slate-200/60 rounded-[14px] flex-1" />
+                <div className="h-10 bg-slate-200/60 rounded-[14px] flex-1" />
+                <div className="h-10 bg-slate-200/60 rounded-[14px] flex-1" />
+              </div>
+            </div>
+
+            {/* Grid & Protection Dashboard section */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2">
+              {/* Left Side: 2x2 Quick Actions */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="h-4 bg-slate-205 rounded w-32 animate-pulse" />
+                  <div className="h-3 bg-slate-151 rounded w-44 animate-pulse" />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <SkeletonCard variant="quick-action" />
+                  <SkeletonCard variant="quick-action" />
+                  <SkeletonCard variant="quick-action" />
+                  <SkeletonCard variant="quick-action" />
+                </div>
+              </div>
+
+              {/* Right Side: Protection Desk */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="h-4 bg-slate-205 rounded w-36 animate-pulse" />
+                </div>
+                <div className="bg-white border border-slate-200 rounded-[20px] p-5 space-y-4 animate-pulse">
+                  <div className="space-y-2">
+                    <div className="h-3.5 bg-slate-200 rounded w-1/2" />
+                    <div className="h-16 bg-slate-50 rounded-xl" />
+                  </div>
+                  <div className="h-px bg-slate-100" />
+                  <div className="space-y-3">
+                    <div className="h-3 bg-slate-200 rounded w-1/3" />
+                    <div className="space-y-2">
+                      <div className="h-3 bg-slate-100 rounded w-full" />
+                      <div className="h-3 bg-slate-100 rounded w-5/6" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Recent Safety Updates Section */}
             <div className="space-y-3">
-              <div className="h-4 bg-slate-100 rounded w-1/4" />
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="h-28 bg-slate-100 rounded-[20px]" />
-                <div className="h-28 bg-slate-100 rounded-[20px]" />
+              <div className="flex items-center justify-between">
+                <div className="h-4 bg-slate-205 rounded w-36 animate-pulse" />
+              </div>
+              <div className="bg-white border border-slate-200 rounded-[20px] p-5 space-y-4">
+                <SkeletonCard variant="activity-item" />
+                <div className="h-px bg-slate-100" />
+                <SkeletonCard variant="activity-item" />
+                <div className="h-px bg-slate-100" />
+                <SkeletonCard variant="activity-item" />
               </div>
             </div>
           </motion.div>
@@ -508,157 +654,66 @@ const Home: React.FC = () => {
             animate={{ opacity: 1 }}
             className="space-y-6"
           >
-            {/* 2. CONSOLIDATED TRUST STATUS ROW */}
-            <div className="bg-slate-50/50 border border-slate-200/60 rounded-[20px] p-3.5 flex flex-wrap items-center justify-between gap-4 text-slate-600 shadow-sm">
+            {/* 3. BEAUTIFUL HERO SECTION (35% screen height, Speak. Alert. Protect.) */}
+            <div className="h-[35vh] flex flex-col justify-between items-center bg-gradient-to-br from-indigo-50/40 via-white to-emerald-50/30 border border-slate-200/80 rounded-[24px] p-5 sm:p-6 text-center relative overflow-hidden shadow-sm" id="hero-section">
+              {/* Soft modern glow accents */}
+              <div className="absolute top-0 left-1/4 w-72 h-72 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute bottom-0 right-1/4 w-72 h-72 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
               
-              {/* Pillar 1: Safety status checking (Am I safe?) */}
-              <div className="flex items-center gap-2">
-                <div className="w-5 h-5 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                  <ShieldCheck size={14} />
-                </div>
-                <div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-xs font-semibold text-slate-900">Protected</span>
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  </div>
-                  <p className="text-[10px] text-slate-400">Guarding network live</p>
-                </div>
+              <div className="flex-1 flex flex-col items-center justify-center max-w-2xl space-y-1.5 z-10">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight font-sans leading-tight">
+                  Speak. Alert. Protect.
+                </h1>
+                <p className="text-xs sm:text-sm md:text-base text-slate-500 font-normal leading-relaxed max-w-lg">
+                  Anonymous reporting and community protection for Isiolo County.
+                </p>
               </div>
 
-              {/* Divider */}
-              <div className="hidden md:block h-6 w-px bg-slate-200" />
-
-              {/* Pillar 2: Connectivity switcher (Connected indicator) */}
-              <button
-                onClick={() => {
-                  setIsOnline(!isOnline);
-                  triggerHaptic('success');
-                }}
-                className={`flex items-center gap-2 hover:bg-slate-100 px-2.5 py-1 rounded-xl transition-all cursor-pointer text-left focus:outline-none`}
-                title="Click to toggle offline mode test"
-              >
-                <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${
-                  isOnline ? 'bg-indigo-50 text-[#4F46E5]' : 'bg-amber-50 text-amber-600'
-                }`}>
-                  {isOnline ? <Signal size={12} /> : <WifiOff size={11} />}
-                </div>
-                <div>
-                  <span className="text-xs font-semibold text-slate-900 block leading-tight">
-                    {isOnline ? 'Connected' : 'Offline Mode'}
-                  </span>
-                  <p className="text-[10px] text-indigo-600 hover:underline">
-                    {isOnline ? 'Active satellite relay' : 'Tap to restore network'}
-                  </p>
-                </div>
-              </button>
-
-              {/* Divider */}
-              <div className="hidden md:block h-6 w-px bg-slate-200" />
-
-              {/* Pillar 3: Last Synchronization logs */}
-              <div className="flex items-center gap-3">
-                <div className="text-right hidden sm:block">
-                  <div className="text-xs font-semibold text-slate-900">Last Synced</div>
-                  <p className="text-[10px] text-slate-400">Today, {lastCheckTime}</p>
-                </div>
+              {/* Exact three primary CTAs only using flexbox */}
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5 w-full max-w-2xl pt-1.5 pb-2.5 z-10">
                 <button
-                  onClick={handleRunCheck}
-                  disabled={isScanning}
-                  className="p-2 hover:bg-slate-100 border border-slate-200 hover:border-slate-300 rounded-xl text-slate-600 transition-all flex items-center gap-1.5 focus:outline-none disabled:opacity-40 cursor-pointer text-xs font-semibold"
-                  title="Run diagnostics sync"
+                  onClick={() => {
+                    navigate('/report');
+                    triggerHaptic('light');
+                  }}
+                  className="px-4 py-2.5 bg-[#4F46E5] hover:bg-[#4338CA] text-white text-xs sm:text-sm font-semibold rounded-[14px] transition-all flex items-center justify-center gap-1.5 shadow-sm border border-indigo-700 active:scale-[0.98] cursor-pointer w-full sm:flex-1"
                 >
-                  <RefreshCw size={13} className={isScanning ? 'animate-spin text-[#4F46E5]' : ''} />
-                  <span>{isScanning ? 'Checking' : 'Sync Diagnostics'}</span>
+                  <ShieldCheck size={15} />
+                  <span>Report Safely</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setIsUSSDOpen(true);
+                    triggerHaptic('light');
+                  }}
+                  className="px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white text-xs sm:text-sm font-semibold rounded-[14px] transition-all flex items-center justify-center gap-1.5 shadow-sm border border-rose-700 active:scale-[0.98] cursor-pointer w-full sm:flex-1"
+                >
+                  <ShieldAlert size={15} />
+                  <span>Emergency SOS</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    navigate('/support');
+                    triggerHaptic('light');
+                  }}
+                  className="px-4 py-2.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-800 text-xs sm:text-sm font-semibold rounded-[14px] transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-[0.98] cursor-pointer w-full sm:flex-1"
+                >
+                  <HeartHandshake size={15} className="text-[#4F46E5]" />
+                  <span>Get Support</span>
                 </button>
               </div>
-            </div>
 
-            {/* Scanning Diagnostics notification bar */}
-            <AnimatePresence>
-              {isScanning && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="bg-indigo-50/40 border border-indigo-100 rounded-[20px] p-4 text-left overflow-hidden"
-                >
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="w-2 h-2 rounded-full bg-[#4F46E5] animate-ping" />
-                    <span className="text-xs font-semibold text-[#4F46E5]">Active security check ongoing</span>
-                  </div>
-                  <p className="text-xs text-slate-600 leading-normal font-sans">
-                    {[
-                      'Establishing connections with district transmitters...',
-                      'Mapping safest local emergency response lines...',
-                      'Evaluating active river sensor channels...',
-                      'Check complete. Your protection routes are safe.'
-                    ][scanStep]}
-                  </p>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* 3. REASSURING COMPASSIONATE HERO SECTION */}
-            <div className="bg-gradient-to-br from-indigo-50/30 to-emerald-50/20 border border-slate-200 rounded-[20px] p-6 text-left relative overflow-hidden shadow-sm">
-              {/* Soft background glow circles */}
-              <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/5 rounded-full -mr-16 -mt-16 blur-2xl pointer-events-none" />
-              <div className="absolute bottom-0 right-1/4 w-36 h-36 bg-indigo-500/5 rounded-full -mb-12 blur-2xl pointer-events-none" />
-              
-              <div className="max-w-2xl relative z-10 space-y-4">
-                <div className="flex items-center gap-2">
-                  <div className="px-2.5 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-semibold rounded-full flex items-center gap-1">
-                    <span className="w-1 h-1 bg-emerald-550 rounded-full animate-pulse" />
-                    <span>Active Protection Status</span>
-                  </div>
-                  {user && (
-                    <span className="text-xs text-slate-500 font-medium">Hello, {displayName}</span>
-                  )}
-                </div>
-
-                <div className="space-y-1.5">
-                  <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-                    You are protected
-                  </h1>
-                  <p className="text-sm text-slate-500 leading-relaxed font-normal">
-                    Your local crisis assistance and protection networks are fully operational. Bonga safeguarding units are online, monitoring flood forecasts, and standing by for responses nearby.
-                  </p>
-                </div>
-
-                {/* Highly tap-responsive Hero Primary Actions */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1.5">
-                  <button
-                    onClick={() => {
-                      navigate('/report');
-                      triggerHaptic('light');
-                    }}
-                    className="px-4 py-2.5 bg-[#4F46E5] hover:bg-[#4338CA] active:scale-95 text-white text-xs font-semibold rounded-[20px] transition-all flex items-center justify-between shadow-sm border border-indigo-700 pointer-events-auto cursor-pointer"
-                  >
-                    <span>Report safely</span>
-                    <ArrowRight size={13} />
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      setIsUSSDOpen(true);
-                      triggerHaptic('light');
-                    }}
-                    className="px-4 py-2.5 bg-white hover:bg-slate-50 border border-slate-200 active:scale-95 text-slate-800 text-xs font-semibold rounded-[20px] transition-all flex items-center justify-between shadow-sm pointer-events-auto cursor-pointer"
-                  >
-                    <span>Emergency SOS</span>
-                    <ShieldAlert size={13} className="text-rose-500" />
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      navigate('/support');
-                      triggerHaptic('light');
-                    }}
-                    className="px-4 py-2.5 bg-white hover:bg-slate-50 border border-slate-200 active:scale-95 text-slate-00 text-xs font-semibold rounded-[20px] transition-all flex items-center justify-between shadow-sm pointer-events-auto cursor-pointer"
-                  >
-                    <span>Get support</span>
-                    <HeartHandshake size={13} className="text-[#4F46E5]" />
-                  </button>
-                </div>
+              {/* Compact trust row using flexbox */}
+              <div className="w-full border-t border-slate-100 pt-3 flex items-center justify-center gap-2 sm:gap-3 text-[10px] sm:text-xs font-semibold text-slate-400 tracking-wider font-sans uppercase z-10">
+                <span>Protected</span>
+                <span className="text-slate-300">•</span>
+                <span>Anonymous</span>
+                <span className="text-slate-300">•</span>
+                <span>Encrypted</span>
+                <span className="text-slate-300">•</span>
+                <span>Verified</span>
               </div>
             </div>
 
@@ -714,20 +769,33 @@ const Home: React.FC = () => {
                   <h2 className="text-sm font-semibold text-slate-800">
                     Quick Action Hub
                   </h2>
-                  <span className="text-[10px] text-slate-400">What can I do right now?</span>
+                  <span className="text-[10px] text-slate-400 font-medium">What can I do right now? • Hold for info</span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* Action 1: Report Safely */}
                   <motion.div
-                    onClick={() => {
-                      navigate('/report');
-                      triggerHaptic('light');
+                    onTouchStart={() => handleQuickActionStart('report')}
+                    onTouchEnd={(e) => {
+                      e.preventDefault();
+                      handleQuickActionEnd('report', () => {
+                        navigate('/report');
+                        triggerHaptic('light');
+                      });
                     }}
+                    onMouseDown={() => handleQuickActionStart('report')}
+                    onMouseUp={() => {
+                      handleQuickActionEnd('report', () => {
+                        navigate('/report');
+                        triggerHaptic('light');
+                      });
+                    }}
+                    onMouseLeave={handleQuickActionCancel}
+                    onTouchCancel={handleQuickActionCancel}
                     whileHover={hoverAnimation}
                     whileTap={tapAnimation}
                     transition={transitionConfig}
-                    className="bg-white border border-slate-200 hover:border-indigo-200 p-4.5 rounded-[20px] cursor-pointer shadow-sm relative overflow-hidden flex flex-col justify-between h-32 group"
+                    className="bg-white border border-slate-200 hover:border-indigo-200 p-4.5 rounded-[20px] cursor-pointer shadow-sm relative overflow-hidden flex flex-col justify-between h-32 group select-none"
                   >
                     <div className="absolute top-0 right-0 w-16 h-16 bg-slate-50 rounded-full -mr-6 -mt-6 group-hover:scale-110 transition-transform" />
                     <div className="w-8 h-8 rounded-full bg-indigo-50 text-[#4F46E5] flex items-center justify-center mb-2 shrink-0">
@@ -742,18 +810,52 @@ const Home: React.FC = () => {
                         Submit secure, self-cleaning anonymous records.
                       </p>
                     </div>
+
+                    <AnimatePresence>
+                      {longPressedCardId === 'report' && (
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.96 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.96 }}
+                          className="absolute inset-0 bg-slate-900/95 text-white p-4 flex flex-col justify-between z-20 rounded-[20px] text-left pointer-events-none"
+                        >
+                          <div className="space-y-1">
+                            <span className="text-[10px] font-bold text-indigo-400 tracking-wider uppercase font-sans flex items-center gap-1.5">
+                              <ShieldCheck size={12} /> Secure Protocol
+                            </span>
+                            <p className="text-[11px] text-slate-200 leading-normal font-sans pt-1">
+                              Creates an encrypted, self-cleaning report that goes directly to regional security without revealing your identity.
+                            </p>
+                          </div>
+                          <span className="text-[9px] text-indigo-300 font-sans italic">Release to dismiss</span>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </motion.div>
 
                   {/* Action 2: Talk to a Counselor */}
                   <motion.div
-                    onClick={() => {
-                      navigate('/support');
-                      triggerHaptic('light');
+                    onTouchStart={() => handleQuickActionStart('support')}
+                    onTouchEnd={(e) => {
+                      e.preventDefault();
+                      handleQuickActionEnd('support', () => {
+                        navigate('/support');
+                        triggerHaptic('light');
+                      });
                     }}
+                    onMouseDown={() => handleQuickActionStart('support')}
+                    onMouseUp={() => {
+                      handleQuickActionEnd('support', () => {
+                        navigate('/support');
+                        triggerHaptic('light');
+                      });
+                    }}
+                    onMouseLeave={handleQuickActionCancel}
+                    onTouchCancel={handleQuickActionCancel}
                     whileHover={hoverAnimation}
                     whileTap={tapAnimation}
                     transition={transitionConfig}
-                    className="bg-white border border-slate-200 hover:border-indigo-200 p-4.5 rounded-[20px] cursor-pointer shadow-sm relative overflow-hidden flex flex-col justify-between h-32 group"
+                    className="bg-white border border-slate-200 hover:border-indigo-200 p-4.5 rounded-[20px] cursor-pointer shadow-sm relative overflow-hidden flex flex-col justify-between h-32 group select-none"
                   >
                     <div className="absolute top-0 right-0 w-16 h-16 bg-slate-50 rounded-full -mr-6 -mt-6 group-hover:scale-110 transition-transform" />
                     <div className="w-8 h-8 rounded-full bg-[#E5E7EB] text-[#4F46E5] flex items-center justify-center mb-2 shrink-0">
@@ -768,18 +870,52 @@ const Home: React.FC = () => {
                         Confidential, private message link with district workers.
                       </p>
                     </div>
+
+                    <AnimatePresence>
+                      {longPressedCardId === 'support' && (
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.96 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.96 }}
+                          className="absolute inset-0 bg-slate-900/95 text-white p-4 flex flex-col justify-between z-20 rounded-[20px] text-left pointer-events-none"
+                        >
+                          <div className="space-y-1">
+                            <span className="text-[10px] font-bold text-indigo-400 tracking-wider uppercase font-sans flex items-center gap-1.5">
+                              <MessageSquare size={12} /> Confidential Support
+                            </span>
+                            <p className="text-[11px] text-slate-200 leading-normal font-sans pt-1">
+                              Opens a live, confidential chat or call connection with certified clinical and legal support responders in Isiolo.
+                            </p>
+                          </div>
+                          <span className="text-[9px] text-indigo-300 font-sans italic">Release to dismiss</span>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </motion.div>
 
                   {/* Action 3: Find Safe Services */}
                   <motion.div
-                    onClick={() => {
-                      navigate('/resources');
-                      triggerHaptic('light');
+                    onTouchStart={() => handleQuickActionStart('resources')}
+                    onTouchEnd={(e) => {
+                      e.preventDefault();
+                      handleQuickActionEnd('resources', () => {
+                        navigate('/resources');
+                        triggerHaptic('light');
+                      });
                     }}
+                    onMouseDown={() => handleQuickActionStart('resources')}
+                    onMouseUp={() => {
+                      handleQuickActionEnd('resources', () => {
+                        navigate('/resources');
+                        triggerHaptic('light');
+                      });
+                    }}
+                    onMouseLeave={handleQuickActionCancel}
+                    onTouchCancel={handleQuickActionCancel}
                     whileHover={hoverAnimation}
                     whileTap={tapAnimation}
                     transition={transitionConfig}
-                    className="bg-white border border-slate-200 hover:border-indigo-200 p-4.5 rounded-[20px] cursor-pointer shadow-sm relative overflow-hidden flex flex-col justify-between h-32 group"
+                    className="bg-white border border-slate-200 hover:border-indigo-200 p-4.5 rounded-[20px] cursor-pointer shadow-sm relative overflow-hidden flex flex-col justify-between h-32 group select-none"
                   >
                     <div className="absolute top-0 right-0 w-16 h-16 bg-slate-50 rounded-full -mr-6 -mt-6 group-hover:scale-110 transition-transform" />
                     <div className="w-8 h-8 rounded-full bg-indigo-50 text-[#4F46E5] flex items-center justify-center mb-2 shrink-0">
@@ -794,20 +930,54 @@ const Home: React.FC = () => {
                         Locate verified high-ground sanctuaries and clinics.
                       </p>
                     </div>
+
+                    <AnimatePresence>
+                      {longPressedCardId === 'resources' && (
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.96 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.96 }}
+                          className="absolute inset-0 bg-slate-900/95 text-white p-4 flex flex-col justify-between z-20 rounded-[20px] text-left pointer-events-none"
+                        >
+                          <div className="space-y-1">
+                            <span className="text-[10px] font-bold text-indigo-400 tracking-wider uppercase font-sans flex items-center gap-1.5">
+                              <MapPin size={12} /> Emergency Sanctuaries
+                            </span>
+                            <p className="text-[11px] text-slate-200 leading-normal font-sans pt-1">
+                              Provides real-time GPS locations and resources for Merti high-ground sanctuaries and secure humanitarian zones.
+                            </p>
+                          </div>
+                          <span className="text-[9px] text-indigo-300 font-sans italic">Release to dismiss</span>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </motion.div>
 
                   {/* Action 4: Emergency Help */}
                   <motion.div
-                    onClick={() => {
-                      setIsUSSDOpen(true);
-                      triggerHaptic('light');
+                    onTouchStart={() => handleQuickActionStart('emergency')}
+                    onTouchEnd={(e) => {
+                      e.preventDefault();
+                      handleQuickActionEnd('emergency', () => {
+                        setIsUSSDOpen(true);
+                        triggerHaptic('light');
+                      });
                     }}
+                    onMouseDown={() => handleQuickActionStart('emergency')}
+                    onMouseUp={() => {
+                      handleQuickActionEnd('emergency', () => {
+                        setIsUSSDOpen(true);
+                        triggerHaptic('light');
+                      });
+                    }}
+                    onMouseLeave={handleQuickActionCancel}
+                    onTouchCancel={handleQuickActionCancel}
                     whileHover={hoverAnimation}
                     whileTap={tapAnimation}
                     transition={transitionConfig}
-                    className="bg-slate-50 border border-slate-200 hover:border-indigo-200 p-4.5 rounded-[20px] cursor-pointer shadow-sm relative overflow-hidden flex flex-col justify-between h-32 group"
+                    className="bg-white border border-slate-200 hover:border-indigo-200 p-4.5 rounded-[20px] cursor-pointer shadow-sm relative overflow-hidden flex flex-col justify-between h-32 group select-none"
                   >
-                    <div className="absolute top-0 right-0 w-16 h-16 bg-white rounded-full -mr-6 -mt-6 group-hover:scale-110 transition-transform" />
+                    <div className="absolute top-0 right-0 w-16 h-16 bg-slate-50 rounded-full -mr-6 -mt-6 group-hover:scale-110 transition-transform" />
                     <div className="w-8 h-8 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mb-2 shrink-0">
                       <ShieldAlert size={16} />
                     </div>
@@ -820,6 +990,27 @@ const Home: React.FC = () => {
                         Trigger cellular triangulated backups offline.
                       </p>
                     </div>
+
+                    <AnimatePresence>
+                      {longPressedCardId === 'emergency' && (
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.96 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.96 }}
+                          className="absolute inset-0 bg-slate-900/95 text-white p-4 flex flex-col justify-between z-20 rounded-[20px] text-left pointer-events-none"
+                        >
+                          <div className="space-y-1">
+                            <span className="text-[10px] font-bold text-indigo-400 tracking-wider uppercase font-sans flex items-center gap-1.5">
+                              <ShieldAlert size={12} /> Dial Backup
+                            </span>
+                            <p className="text-[11px] text-slate-200 leading-normal font-sans pt-1">
+                              Immediately fires offline USSD packets and distress signals to county coordinators using satellite fallback grids.
+                            </p>
+                          </div>
+                          <span className="text-[9px] text-indigo-300 font-sans italic">Release to dismiss</span>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </motion.div>
                 </div>
               </div>
@@ -830,37 +1021,85 @@ const Home: React.FC = () => {
                   <h2 className="text-sm font-semibold text-slate-800">
                     My Protection Desk
                   </h2>
-                  <span className="text-[10px] text-slate-400 font-medium">Who can help me?</span>
+                  <button
+                    onClick={() => {
+                      if (supportLinks.length > 0 || sanctuaries.length > 0) {
+                        setSupportLinks([]);
+                        setSanctuaries([]);
+                        triggerHaptic('warning');
+                      } else {
+                        setSupportLinks(initialSupportLinks);
+                        setSanctuaries(initialSanctuaries);
+                        triggerHaptic('success');
+                      }
+                    }}
+                    className="text-[10px] text-indigo-600 hover:text-indigo-750 font-bold cursor-pointer underline select-none"
+                  >
+                    {(supportLinks.length > 0 || sanctuaries.length > 0) ? 'Simulate Empty' : 'Restore Connections'}
+                  </button>
                 </div>
 
                 <div className="bg-white border border-slate-200 rounded-[20px] p-5 space-y-4 shadow-sm">
                   
                   {/* Open Cases and updates status review */}
                   <div>
-                    <h3 className="text-xs font-semibold text-slate-800 mb-2 flex items-center gap-1.5">
-                      <EyeOff size={13} className="text-slate-400" />
-                      <span>Active anonymous safeguarding concerns</span>
+                    <h3 className="text-xs font-semibold text-slate-800 mb-2 flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <EyeOff size={13} className="text-slate-400" />
+                        <span>Active anonymous reports</span>
+                      </div>
+                      {anonymousReportIds.length > 0 && (
+                        <button
+                          onClick={() => {
+                            localStorage.setItem('bonga_anonymous_reports', JSON.stringify([]));
+                            setAnonymousReportIds([]);
+                            triggerHaptic('warning');
+                          }}
+                          className="text-[9px] text-[#4F46E5] hover:underline font-semibold"
+                        >
+                          Clear
+                        </button>
+                      )}
                     </h3>
                     
                     {anonymousReportIds.length === 0 ? (
-                      <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 text-center">
-                        <p className="text-[11px] text-slate-500 font-normal leading-normal">
-                          All reports resolved. No open identity logs are cached under your profile.
-                        </p>
+                      <div className="bg-slate-50/55 border border-slate-150 border-dashed rounded-xl p-4 text-center flex flex-col items-center justify-center gap-1.5 py-5.5">
+                        <div className="w-8 h-8 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center shrink-0">
+                          <EyeOff size={14} className="text-slate-450" />
+                        </div>
+                        <div className="space-y-0.5">
+                          <p className="text-[11px] font-semibold text-slate-700">No active alerts</p>
+                          <p className="text-[10px] text-slate-400 leading-normal max-w-[210px] mx-auto">
+                            Safeguarding logs are clear. No open threat or custom anonymous reports are cached.
+                          </p>
+                        </div>
                       </div>
                     ) : (
                       <div className="space-y-2 max-h-24 overflow-y-auto">
                         {anonymousReportIds.slice(0, 2).map((item, idx) => (
-                          <div key={idx} className="bg-slate-50 border border-slate-100 p-2 rounded-xl flex items-center justify-between">
+                          <div key={idx} className="bg-slate-50 border border-slate-100 p-2 rounded-xl flex items-center justify-between group">
                             <div className="space-y-0.5">
-                              <span className="text-[10px] font-mono text-[#4F46E5]">
+                              <span className="text-[10px] font-mono text-[#4F46E5] font-semibold">
                                 #BNG-{item.substring(0, 6).toUpperCase()}
                               </span>
                               <p className="text-[10px] text-slate-500">Safeguarding priority alert</p>
                             </div>
-                            <span className="px-2 py-0.5 bg-indigo-50 border border-indigo-100 text-[#4F46E5] text-[9px] font-semibold rounded-full">
-                              Under active review
-                            </span>
+                            <div className="flex items-center gap-1.5">
+                              <span className="px-2 py-0.5 bg-indigo-50 border border-indigo-100 text-[#4F46E5] text-[9px] font-semibold rounded-full">
+                                Active review
+                              </span>
+                              <button
+                                onClick={() => {
+                                  const updated = anonymousReportIds.filter(id => id !== item);
+                                  localStorage.setItem('bonga_anonymous_reports', JSON.stringify(updated));
+                                  setAnonymousReportIds(updated);
+                                  triggerHaptic('light');
+                                }}
+                                className="p-1 hover:bg-rose-50 text-slate-350 hover:text-rose-500 rounded transition-colors"
+                              >
+                                <X size={11} />
+                              </button>
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -877,31 +1116,48 @@ const Home: React.FC = () => {
                       <span>Verified local support links</span>
                     </h3>
                     
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                          <span className="text-xs text-slate-800">Isiolo Crisis Support Node</span>
+                    {supportLinks.length === 0 ? (
+                      <div className="bg-slate-50/55 border border-slate-150 border-dashed rounded-xl p-4 text-center flex flex-col items-center justify-center gap-1.5 py-4">
+                        <div className="w-8 h-8 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center shrink-0">
+                          <Users size={14} className="text-slate-450" />
                         </div>
-                        <span className="text-[10px] text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full">
-                          Ready & Active
-                        </span>
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                          <span className="text-xs text-slate-800">Red Cross Response Lead</span>
+                        <div className="space-y-0.5">
+                          <p className="text-[11px] font-semibold text-slate-700">Responders unlinked</p>
+                          <p className="text-[10px] text-slate-400 leading-normal max-w-[210px] mx-auto">
+                            Support feeds are disconnected. No active community safeguarding guides are loaded.
+                          </p>
                         </div>
-                        <span className="text-[10px] text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full">
-                          Available
-                        </span>
                       </div>
-                    </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {supportLinks.map((link) => (
+                          <div key={link.id} className="flex items-center justify-between group">
+                            <div className="flex items-center gap-2">
+                              <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                              <span className="text-xs text-slate-800">{link.name}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full">
+                                {link.status}
+                              </span>
+                              <button
+                                onClick={() => {
+                                  setSupportLinks(prev => prev.filter(l => l.id !== link.id));
+                                  triggerHaptic('light');
+                                }}
+                                className="p-1 opacity-0 group-hover:opacity-100 text-slate-350 hover:text-slate-500 rounded transition-opacity"
+                              >
+                                <X size={11} />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   {/* Divider */}
-                  <div className="h-px bg-slate-100" />
+                  <div className="h-px bg-slate-150" />
 
                   {/* Nearby support distance status */}
                   <div>
@@ -910,23 +1166,40 @@ const Home: React.FC = () => {
                       <span>Sanctuaries closest to you</span>
                     </h3>
 
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-xs text-slate-600">
-                        <span className="font-medium text-slate-800">Merti Sanctuary Zone</span>
-                        <div className="flex items-center gap-2 font-sans text-[10px]">
-                          <span className="text-indigo-600 font-semibold bg-indigo-50 px-1.5 py-0.5 rounded">12 spaces open</span>
-                          <span className="text-slate-400">1.2km</span>
+                    {sanctuaries.length === 0 ? (
+                      <div className="bg-slate-50/55 border border-slate-150 border-dashed rounded-xl p-4 text-center flex flex-col items-center justify-center gap-1.5 py-4">
+                        <div className="w-8 h-8 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center shrink-0">
+                          <MapPin size={14} className="text-slate-450" />
+                        </div>
+                        <div className="space-y-0.5">
+                          <p className="text-[11px] font-semibold text-slate-700">Safe harbors unmapped</p>
+                          <p className="text-[10px] text-slate-400 leading-normal max-w-[210px] mx-auto">
+                            Secure beacons are offline. Coordinate evacuation points over local USSD channels.
+                          </p>
                         </div>
                       </div>
-
-                      <div className="flex items-center justify-between text-xs text-slate-600">
-                        <span className="font-medium text-slate-800">Isiolo High Safe Center</span>
-                        <div className="flex items-center gap-2 font-sans text-[10px]">
-                          <span className="text-indigo-600 font-semibold bg-indigo-50 px-1.5 py-0.5 rounded">24 spaces open</span>
-                          <span className="text-slate-400">4.5km</span>
-                        </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {sanctuaries.map((shelter) => (
+                          <div key={shelter.id} className="flex items-center justify-between text-xs text-slate-600 group">
+                            <span className="font-medium text-slate-800">{shelter.name}</span>
+                            <div className="flex items-center gap-2 font-sans text-[10px]">
+                              <span className="text-indigo-600 font-semibold bg-indigo-50 px-1.5 py-0.5 rounded">{shelter.spaces} spaces open</span>
+                              <span className="text-slate-400">{shelter.distance}</span>
+                              <button
+                                onClick={() => {
+                                  setSanctuaries(prev => prev.filter(s => s.id !== shelter.id));
+                                  triggerHaptic('light');
+                                }}
+                                className="p-1 opacity-0 group-hover:opacity-100 text-slate-350 hover:text-slate-500 rounded transition-opacity"
+                              >
+                                <X size={11} />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                    </div>
+                    )}
                   </div>
 
                 </div>
@@ -940,65 +1213,74 @@ const Home: React.FC = () => {
                 <h2 className="text-sm font-semibold text-slate-800">
                   Recent Safety Updates
                 </h2>
-                <span className="text-[10px] text-slate-400 font-medium">What changed recently?</span>
+                <button
+                  onClick={() => {
+                    if (recentUpdates.length > 0) {
+                      setRecentUpdates([]);
+                      triggerHaptic('warning');
+                    } else {
+                      setRecentUpdates(initialRecentUpdates);
+                      triggerHaptic('success');
+                    }
+                  }}
+                  className="text-[10px] text-indigo-600 hover:text-indigo-750 font-bold cursor-pointer underline select-none"
+                >
+                  {recentUpdates.length > 0 ? 'Clear All Updates' : 'Restore Updates'}
+                </button>
               </div>
 
               <div className="bg-white border border-slate-200 rounded-[20px] p-5 space-y-4 shadow-sm">
                 
-                {/* Micro Feed Update 1 */}
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-teal-50 text-teal-600 flex items-center justify-center shrink-0 mt-0.5">
-                    <Check size={14} />
-                  </div>
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-semibold text-slate-900 leading-none">Merti Sanctuary stock verified</span>
-                      <span className="text-[9px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full font-medium">Verified</span>
+                {recentUpdates.length === 0 ? (
+                  <div className="py-7 text-center flex flex-col items-center justify-center gap-2 py-6">
+                    <div className="w-9 h-9 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-100 shadow-sm shrink-0">
+                      <Activity size={18} className="text-slate-400" />
                     </div>
-                    <p className="text-xs text-slate-400 font-normal leading-normal">
-                      Emergency food stores, hygiene, and medical supply packs checked and fully updated. Ready for immediate intake.
-                    </p>
-                    <span className="text-[10px] text-slate-400 font-mono font-normal">Just now · Safety coordinator</span>
-                  </div>
-                </div>
-
-                <div className="h-px bg-slate-100" />
-
-                {/* Micro Feed Update 2 */}
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
-                    <Info size={14} />
-                  </div>
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-semibold text-slate-900 leading-none">Regional river level safe</span>
-                      <span className="text-[9px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full font-medium">Normal</span>
+                    <div className="space-y-0.5">
+                      <p className="text-[11px] font-semibold text-slate-700">No recent activity</p>
+                      <p className="text-[10px] text-slate-400 leading-normal max-w-[280px] mx-auto">
+                        The county safety grid is quiet and stable. No new alerts or transmitter changes have been received.
+                      </p>
                     </div>
-                    <p className="text-xs text-slate-400 font-normal leading-normal">
-                      River Ewaso Ng'iro flood sensors indicating steady flows, comfortably below emergency warnings.
-                    </p>
-                    <span className="text-[10px] text-slate-400 font-mono font-normal">15m ago · Hydro-Sensor Net</span>
                   </div>
-                </div>
-
-                <div className="h-px bg-slate-100" />
-
-                {/* Micro Feed Update 3 */}
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 mt-0.5">
-                    <Radio size={14} className="animate-pulse" />
+                ) : (
+                  <div className="space-y-4">
+                    {recentUpdates.map((item, index) => (
+                      <div key={item.id}>
+                        <div className="flex items-start gap-4 relative group">
+                          <div className={`w-8 h-8 rounded-full ${item.bgClass} flex items-center justify-center shrink-0 mt-0.5`}>
+                            {item.icon === 'check' && <Check size={14} />}
+                            {item.icon === 'info' && <Info size={14} />}
+                            {item.icon === 'radio' && <Radio size={14} className="animate-pulse" />}
+                          </div>
+                          <div className="space-y-1 flex-1 pr-6">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-xs font-semibold text-slate-900 leading-none">{item.title}</span>
+                              <span className={`text-[9px] ${item.type === 'verified' || item.type === 'normal' ? 'text-emerald-700 bg-emerald-50' : 'text-amber-700 bg-amber-50'} px-1.5 py-0.5 rounded-full font-medium`}>
+                                {item.badge}
+                              </span>
+                            </div>
+                            <p className="text-xs text-slate-500 font-normal leading-normal">
+                              {item.description}
+                            </p>
+                            <span className="text-[10px] text-slate-400 font-mono font-normal block">{item.time} · {item.author}</span>
+                          </div>
+                          <button
+                            onClick={() => {
+                              setRecentUpdates(prev => prev.filter(u => u.id !== item.id));
+                              triggerHaptic('light');
+                            }}
+                            className="absolute right-0 top-0 opacity-0 group-hover:opacity-100 p-1 text-slate-300 hover:text-rose-500 rounded transition-opacity"
+                            title="Dismiss Update"
+                          >
+                            <X size={12} />
+                          </button>
+                        </div>
+                        {index < recentUpdates.length - 1 && <div className="h-px bg-slate-100 mt-4" />}
+                      </div>
+                    ))}
                   </div>
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-semibold text-slate-900 leading-none">Local transmitter sync confirmed</span>
-                      <span className="text-[9px] text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded-full font-medium">Backup Ready</span>
-                    </div>
-                    <p className="text-xs text-slate-400 font-normal leading-normal">
-                      Secondary low-frequency analog radio meshes established. Active and ready to route SMS messages if primary grid falls.
-                    </p>
-                    <span className="text-[10px] text-slate-400 font-mono font-normal">1h ago · County Telecom Node</span>
-                  </div>
-                </div>
+                )}
 
               </div>
             </div>
