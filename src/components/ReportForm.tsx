@@ -29,9 +29,7 @@ import {
   Info,
   ChevronDown,
   Lock,
-  Loader2,
-  Copy,
-  Check
+  Loader2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
@@ -44,23 +42,6 @@ const ISIOLO_SUBCOUNTIES = [
   'Sericho',
   'Oldonyiro',
   'Chari'
-];
-
-const SUBCOUNTY_DETAILS: Record<string, string> = {
-  'Isiolo Central': 'County Headquarters & Main Referral Grid',
-  'Garba Tulla': 'Southeastern Sector & Border Coordination',
-  'Merti': 'Northern Hub & Ewaso Nyiro River Basin',
-  'Kinna': 'Southern Livestock Reserve Area',
-  'Sericho': 'Eastern Arid Border Ward',
-  'Oldonyiro': 'Western Highlands & Community Rangelands',
-  'Chari': 'Central-North Pastoralist Corridors'
-};
-
-const QUICK_PHRASES = [
-  '⚠️ Immediate FGM prevention rescue needed.',
-  'ℹ️ Urgent domestic support & secure lodging.',
-  '🩺 Medical facility routing support requested.',
-  '⚖️ Human rights advocate legal counsel needed.'
 ];
 
 interface CategoryOption {
@@ -185,12 +166,6 @@ const ReportForm: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittingStep, setSubmittingStep] = useState<number>(0);
   const [submitted, setSubmitted] = useState(false);
-  const [submittedId, setSubmittedId] = useState<string>('');
-  const [copied, setCopied] = useState(false);
-
-  // Custom location dropdown states
-  const [isLocationDropdownOpen, setIsLocationDropdownOpen] = useState(false);
-  const [isFloodDropdownOpen, setIsFloodDropdownOpen] = useState(false);
 
   // Protection Flow Fields
   const [selectedCategory, setSelectedCategory] = useState<CategoryOption['value']>('Gender-Based Violence (GBV)');
@@ -274,7 +249,6 @@ const ReportForm: React.FC = () => {
       const localReportIds: string[] = JSON.parse(localStorage.getItem('bonga_anonymous_reports') || '[]');
       localReportIds.push(docRef.id);
       localStorage.setItem('bonga_anonymous_reports', JSON.stringify(localReportIds));
-      setSubmittedId(docRef.id);
     };
 
     await runSecurityHandshakesAndSubmit(reportSubmitTask);
@@ -299,7 +273,6 @@ const ReportForm: React.FC = () => {
       const localReportIds: string[] = JSON.parse(localStorage.getItem('bonga_anonymous_reports') || '[]');
       localReportIds.push(docRef.id);
       localStorage.setItem('bonga_anonymous_reports', JSON.stringify(localReportIds));
-      setSubmittedId(docRef.id);
     };
 
     await runSecurityHandshakesAndSubmit(reportSubmitTask);
@@ -307,8 +280,6 @@ const ReportForm: React.FC = () => {
 
   const handleSMSFloodSubmit = () => {
     setFloodDataSentViaSMS(true);
-    const smsTicket = `SMS-CELL-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
-    setSubmittedId(smsTicket);
     setTimeout(() => {
       setFloodDataSentViaSMS(false);
       setSubmitted(true);
@@ -328,143 +299,36 @@ const ReportForm: React.FC = () => {
   ];
 
   if (submitted) {
-    const handleCopyTicket = () => {
-      if (submittedId) {
-        navigator.clipboard.writeText(submittedId);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      }
-    };
-
     return (
-      <div className="max-w-md mx-auto my-4 bg-white border border-slate-150 rounded-3xl shadow-lg p-6 font-sans space-y-5 text-center relative overflow-hidden">
-        {/* Subtle decorative subtle green gradient overlay */}
-        <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-emerald-400 via-emerald-500 to-teal-500" />
+      <div className="p-6 text-center max-w-md mx-auto flex flex-col items-center justify-center my-8 bg-white border border-slate-100 rounded-3xl shadow-sm font-sans">
+        <motion.div
+          initial={{ scale: 0.8, rotate: -15 }}
+          animate={{ scale: 1, rotate: 0 }}
+          className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mb-5 border border-emerald-150 shadow-xs"
+        >
+          <CheckCircle2 size={32} />
+        </motion.div>
         
-        <div className="flex flex-col items-center pt-2">
-          <motion.div
-            initial={{ scale: 0.3, opacity: 0 }}
-            animate={{ scale: [1.1, 1], opacity: 1 }}
-            transition={{ type: "spring", stiffness: 200, damping: 15 }}
-            className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mb-4 border border-emerald-100 shadow-sm relative font-sans"
-          >
-            <CheckCircle2 size={30} />
-            <span className="absolute animate-ping rounded-full w-full h-full border border-emerald-400 opacity-20" />
-          </motion.div>
-          
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-[10px] font-black uppercase tracking-wider text-emerald-700 border border-emerald-100/50 mb-1.5 font-sans">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            Signal Accepted securely
-          </div>
+        <h2 className="text-base font-extrabold text-slate-900 tracking-tight mb-2 uppercase">
+          Transmission Secure
+        </h2>
+        <p className="text-xs text-slate-500 mb-6 leading-relaxed max-w-[320px]">
+          Your protective report telemetry has been received. Identifying browser logs have been safely wiped to preserve complete server anonymity.
+        </p>
 
-          <h2 className="text-sm font-extrabold text-slate-900 tracking-tight leading-none uppercase font-sans">
-            Transmission Certified
-          </h2>
-          <p className="text-[10.5px] text-slate-450 font-medium leading-relaxed max-w-[320px] mt-1.5 font-sans">
-            Your telemetry has successfully crossed the secure county gateway. All digital browser logs and cookies have been scrubbed locally to maintain absolute user identity shields.
-          </p>
-        </div>
-
-        {/* Audit Ticket Display */}
-        {submittedId && (
-          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4.5 space-y-2.5 text-left md:space-y-3 relative font-sans">
-            <div className="flex justify-between items-center">
-              <span className="text-[9px] font-black uppercase text-slate-450 tracking-widest block pl-0.5">
-                County Hash Reference
-              </span>
-              <button
-                type="button"
-                onClick={handleCopyTicket}
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-500 hover:text-[#4F46E5] hover:border-[#4F46E5] transition-all text-[10px] font-bold cursor-pointer shadow-2xs"
-              >
-                {copied ? (
-                  <>
-                    <Check size={11} className="text-emerald-500 animate-pulse" />
-                    <span className="text-emerald-600">Copied!</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy size={11} />
-                    <span>Copy Token</span>
-                  </>
-                )}
-              </button>
-            </div>
-            
-            <div className="py-2.5 px-3.5 bg-slate-100/80 rounded-xl border border-slate-200 flex items-center justify-between">
-              <code className="text-xs font-mono font-bold text-slate-800 tracking-wider select-all">
-                {submittedId}
-              </code>
-              <Lock size={11} className="text-slate-400" />
-            </div>
-
-            {/* Quick Summary Receipt */}
-            <div className="border-t border-dashed border-slate-200 pt-3 mt-1 text-[10.5px] space-y-1.5 font-medium text-slate-500">
-              <div className="flex justify-between">
-                <span>Intake Stream:</span>
-                <span className="text-slate-900 font-semibold text-right">
-                  {selectedFlow === 'protection' ? selectedCategory : 'Hydrological Stream'}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span>Location Grid:</span>
-                <span className="text-slate-900 font-semibold text-right">
-                  {selectedFlow === 'protection' ? subcounty : floodLocation}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span>Security Mode:</span>
-                <span className="text-emerald-600 font-extrabold uppercase text-[9px] tracking-wider text-right">
-                  {isAnonymous ? 'Absolute Anonymity Active' : 'Verified Signature'}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span>Client Timestamp:</span>
-                <span className="text-slate-950 font-mono text-[9.5px] text-right">
-                  {new Date().toLocaleTimeString()} (County Local)
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Secure Advisory Guidelines */}
-        <div className="bg-amber-50/40 border border-amber-200/50 rounded-2xl p-4 text-left space-y-1.5 font-sans">
-          <span className="text-[10px] font-black uppercase text-amber-850 tracking-wider block pl-0.5">
-            ⚠️ Safety Protocol Notice
-          </span>
-          <p className="text-[10px] leading-relaxed text-amber-900/80 font-medium">
-            If you are in danger or suspect your physical handset is being monitored by others, use the <strong className="font-extrabold text-amber-750">Quick Activity Wipe</strong> below. This instantly removes local browser trace cache and navigates away immediately.
-          </p>
-        </div>
-
-        {/* Success Action Buttons */}
-        <div className="space-y-2 pt-1 font-sans">
-          <button 
-            type="button"
-            onClick={() => {
-              setSubmitted(false);
-              setSelectedFlow('none');
-              setProtectionStep(1);
-              setDescription('');
-              setLandmark('');
-              setSelectedIndicators([]);
-            }} 
-            className="w-full py-3 bg-purple-primary hover:bg-[#4F46E5]/90 text-white text-[10.5px] font-black uppercase tracking-widest rounded-2xl shadow-sm transition-all active:scale-[0.98] cursor-pointer inline-flex items-center justify-center gap-1.5"
-          >
-            <span>Back to Safety Portal</span>
-            <ArrowRight size={13} />
-          </button>
-
-          <button 
-            type="button"
-            onClick={handleQuickExit}
-            className="w-full py-2.5 bg-white hover:bg-rose-50 text-rose-600 border border-rose-200 text-[10px] font-black uppercase tracking-wider rounded-2xl transition-all cursor-pointer flex items-center justify-center gap-1.5"
-          >
-            <EyeOff size={11} />
-            Wipe Activity & Ghost Exit
-          </button>
-        </div>
+        <button 
+          onClick={() => {
+            setSubmitted(false);
+            setSelectedFlow('none');
+            setProtectionStep(1);
+            setDescription('');
+            setLandmark('');
+            setSelectedIndicators([]);
+          }} 
+          className="w-full py-3 bg-purple-primary hover:bg-purple-dark text-white text-[11px] font-black uppercase tracking-widest rounded-2xl shadow-md transition-all active:scale-[0.98] cursor-pointer"
+        >
+          Back to Safety Portal
+        </button>
       </div>
     );
   }
@@ -738,28 +602,8 @@ const ReportForm: React.FC = () => {
                       className="w-full bg-slate-50/50 border border-slate-200 focus:border-purple-primary rounded-xl text-xs font-semibold p-3.5 outline-none placeholder:text-slate-300 text-slate-800 transition-colors resize-none leading-relaxed"
                       required
                     />
-                    <div className="flex justify-between items-center text-[9px] font-bold text-slate-400">
-                      <span>Tap a template below to append instantly</span>
-                      <span>Chars: {description.length} (Max 5,000)</span>
-                    </div>
-
-                    {/* Quick Input Templates */}
-                    <div className="space-y-1 pt-1.5 pl-0.5">
-                      <div className="flex flex-wrap gap-1.5">
-                        {QUICK_PHRASES.map((phrase, idx) => (
-                          <button
-                            key={idx}
-                            type="button"
-                            onClick={() => {
-                              const cleaned = phrase.replace(/^[^\s]+\s/, ''); // strip emoji
-                              setDescription(prev => prev ? `${prev}\n${cleaned}` : cleaned);
-                            }}
-                            className="bg-slate-50 hover:bg-purple-primary/5 hover:text-[#4F46E5] hover:border-[#4F46E5]/40 border border-slate-200 transition-all rounded-lg px-2 py-1 text-[9px] font-bold text-slate-600 cursor-pointer"
-                          >
-                            {phrase}
-                          </button>
-                        ))}
-                      </div>
+                    <div className="text-right text-[9px] font-bold text-slate-400">
+                      Chars: {description.length} (Max 5,000)
                     </div>
                   </div>
 
@@ -816,60 +660,24 @@ const ReportForm: React.FC = () => {
                         Selecting exact wards prevents rescue delays.
                       </span>
                       
-                      <div className="relative">
-                        <button
-                          type="button"
-                          onClick={() => setIsLocationDropdownOpen(!isLocationDropdownOpen)}
-                          className="w-full flex justify-between items-center bg-slate-50 border border-slate-200 hover:border-[#4F46E5] rounded-xl px-4 py-3 text-xs font-bold text-slate-800 transition-all cursor-pointer shadow-2xs pl-3.5 pr-4"
-                        >
-                          <span className="flex items-center gap-2">
-                            <span className="text-slate-500">📍</span>
-                            <span>{subcounty}</span>
-                          </span>
-                          <ChevronDown size={14} className={`text-slate-400 transition-transform duration-200 ${isLocationDropdownOpen ? 'rotate-180' : ''}`} />
-                        </button>
-                        
-                        <AnimatePresence>
-                          {isLocationDropdownOpen && (
-                            <motion.div
-                              initial={{ opacity: 0, y: -8 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              exit={{ opacity: 0, y: -8 }}
-                              className="absolute z-20 top-[108%] left-0 w-full bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden max-h-[220px] overflow-y-auto"
+                      <div className="grid grid-cols-2 gap-2">
+                        {ISIOLO_SUBCOUNTIES.map((sub) => {
+                          const isSelected = subcounty === sub;
+                          return (
+                            <button
+                              key={sub}
+                              type="button"
+                              onClick={() => setSubcounty(sub)}
+                              className={`py-2 px-3 border rounded-xl text-left text-[11px] font-bold transition-all truncate cursor-pointer ${
+                                isSelected 
+                                  ? 'border-purple-primary bg-purple-primary/5 text-purple-primary font-extrabold'
+                                  : 'border-slate-200 bg-white text-slate-650 hover:border-slate-300'
+                              }`}
                             >
-                              <div className="p-1 space-y-0.5 font-sans">
-                                {ISIOLO_SUBCOUNTIES.map((sub) => {
-                                  const isSelected = subcounty === sub;
-                                  const details = SUBCOUNTY_DETAILS[sub] || 'Isiolo County Regional Cluster';
-                                  return (
-                                    <button
-                                      key={sub}
-                                      type="button"
-                                      onClick={() => {
-                                        setSubcounty(sub);
-                                        setIsLocationDropdownOpen(false);
-                                      }}
-                                      className={`w-full px-3.5 py-2.5 rounded-xl text-left flex items-start gap-3 transition-all cursor-pointer hover:bg-slate-50 ${
-                                        isSelected ? 'bg-purple-50/80 hover:bg-purple-50 text-purple-950 font-bold font-sans' : 'text-slate-705 font-sans'
-                                      }`}
-                                    >
-                                      <span className="text-sm shrink-0">📍</span>
-                                      <div className="space-y-0.5">
-                                        <span className="text-[11px] font-bold block leading-normal">{sub}</span>
-                                        <span className="text-[9px] text-slate-400 font-semibold block leading-normal">{details}</span>
-                                      </div>
-                                      {isSelected && (
-                                        <span className="ml-auto text-[#4F46E5] text-[8px] font-bold shrink-0 uppercase tracking-wider bg-purple-100 py-0.5 px-2 rounded-md font-sans">
-                                          Selected
-                                        </span>
-                                      )}
-                                    </button>
-                                  );
-                                })}
-                              </div>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
+                              📍 {sub}
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
 
@@ -1028,59 +836,16 @@ const ReportForm: React.FC = () => {
                   Isiolo Subcounty Zone
                 </label>
                 <div className="relative">
-                  <button
-                    type="button"
-                    onClick={() => setIsFloodDropdownOpen(!isFloodDropdownOpen)}
-                    className="w-full flex justify-between items-center bg-slate-50 border border-slate-150 hover:border-cyan-500 rounded-xl px-4 py-3 text-xs font-semibold text-slate-800 transition-all cursor-pointer shadow-2xs pl-3.5 pr-4"
+                  <select
+                    value={floodLocation}
+                    onChange={(e) => setFloodLocation(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-150 rounded-xl py-2.5 px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:border-cyan-500 transition-colors cursor-pointer appearance-none"
                   >
-                    <span className="flex items-center gap-2">
-                      <span className="text-slate-505">📍</span>
-                      <span>{floodLocation}</span>
-                    </span>
-                    <ChevronDown size={14} className={`text-slate-400 transition-transform duration-200 ${isFloodDropdownOpen ? 'rotate-180' : ''}`} />
-                  </button>
-                  
-                  <AnimatePresence>
-                    {isFloodDropdownOpen && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -8 }}
-                        className="absolute z-20 top-[108%] left-0 w-full bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden max-h-[220px] overflow-y-auto"
-                      >
-                        <div className="p-1 space-y-0.5 font-sans">
-                          {ISIOLO_SUBCOUNTIES.map((sub) => {
-                            const isSelected = floodLocation === sub;
-                            const details = SUBCOUNTY_DETAILS[sub] || 'Isiolo County Regional Cluster';
-                            return (
-                              <button
-                                key={sub}
-                                type="button"
-                                onClick={() => {
-                                  setFloodLocation(sub);
-                                  setIsFloodDropdownOpen(false);
-                                }}
-                                className={`w-full px-3.5 py-2.5 rounded-xl text-left flex items-start gap-3 transition-all cursor-pointer hover:bg-slate-50 ${
-                                  isSelected ? 'bg-cyan-50 hover:bg-cyan-55/70 text-cyan-950 font-bold font-sans' : 'text-slate-705 font-sans'
-                                }`}
-                              >
-                                <span className="text-sm shrink-0">📍</span>
-                                <div className="space-y-0.5">
-                                  <span className="text-[11px] font-bold block leading-normal">{sub}</span>
-                                  <span className="text-[9px] text-slate-400 font-semibold block leading-normal">{details}</span>
-                                </div>
-                                {isSelected && (
-                                  <span className="ml-auto text-cyan-600 text-[8px] font-bold shrink-0 uppercase tracking-wider bg-cyan-100 py-0.5 px-2 rounded-md font-sans">
-                                    Selected
-                                  </span>
-                                )}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                    {ISIOLO_SUBCOUNTIES.map((sub) => (
+                      <option key={sub} value={sub}>{sub}</option>
+                    ))}
+                  </select>
+                  <ChevronDown size={13} className="text-slate-400 absolute right-3 top-3.5 pointer-events-none" />
                 </div>
               </div>
 
