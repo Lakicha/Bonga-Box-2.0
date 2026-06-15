@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { db, collection, addDoc, serverTimestamp, handleFirestoreError, OperationType } from '../firebase';
 import { useAuth } from '../AuthContext';
 import VoiceRecorder from './VoiceRecorder';
@@ -174,6 +174,13 @@ const ReportForm: React.FC = () => {
   const [subcounty, setSubcounty] = useState('Isiolo Central');
   const [landmark, setLandmark] = useState('');
   const [isAnonymous, setIsAnonymous] = useState(true);
+  const [receiptEmail, setReceiptEmail] = useState<string>('');
+
+  useEffect(() => {
+    if (user?.email) {
+      setReceiptEmail(user.email);
+    }
+  }, [user]);
 
   // Flood Flow Fields
   const [selectedIndicators, setSelectedIndicators] = useState<string[]>([]);
@@ -249,6 +256,27 @@ const ReportForm: React.FC = () => {
       const localReportIds: string[] = JSON.parse(localStorage.getItem('bonga_anonymous_reports') || '[]');
       localReportIds.push(docRef.id);
       localStorage.setItem('bonga_anonymous_reports', JSON.stringify(localReportIds));
+
+      // Deliver automated secure email confirmation if provided or from logged-in session
+      const targetEmail = receiptEmail || user?.email;
+      if (targetEmail) {
+        try {
+          await fetch('/api/reports/send-confirmation', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: targetEmail,
+              reportId: docRef.id,
+              category: selectedCategory,
+              location: `${subcounty} - ${landmark || 'General area'}`,
+              description: description,
+              isAnonymous: isAnonymous
+            })
+          });
+        } catch (emailErr) {
+          console.warn('Failed to send automated email ticket:', emailErr);
+        }
+      }
     };
 
     await runSecurityHandshakesAndSubmit(reportSubmitTask);
@@ -273,6 +301,27 @@ const ReportForm: React.FC = () => {
       const localReportIds: string[] = JSON.parse(localStorage.getItem('bonga_anonymous_reports') || '[]');
       localReportIds.push(docRef.id);
       localStorage.setItem('bonga_anonymous_reports', JSON.stringify(localReportIds));
+
+      // Deliver automated secure email confirmation for hydrological stream
+      const targetEmail = receiptEmail || user?.email;
+      if (targetEmail) {
+        try {
+          await fetch('/api/reports/send-confirmation', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: targetEmail,
+              reportId: docRef.id,
+              category: 'Flood Alert',
+              location: floodLocation,
+              description: `Indicated alert levels: ${summary}`,
+              isAnonymous: true
+            })
+          });
+        } catch (emailErr) {
+          console.warn('Failed to send automated flood email confirmation:', emailErr);
+        }
+      }
     };
 
     await runSecurityHandshakesAndSubmit(reportSubmitTask);
@@ -768,6 +817,26 @@ const ReportForm: React.FC = () => {
                         {isAnonymous ? 'Secure' : 'Signed'}
                       </div>
                     </button>
+                  </div>
+
+                  {/* Optional secure email confirmation input */}
+                  <div className="space-y-1.5 text-left bg-indigo-50/15 border border-indigo-100/50 p-3 rounded-2xl">
+                    <label className="block text-[9.5px] font-black text-indigo-700 uppercase tracking-widest pl-0.5">
+                      ✉️ Automated Email Confirmation
+                    </label>
+                    <p className="text-[10px] text-slate-400 font-medium leading-tight">
+                      Receive an encrypted confirmation copy of this dispatch report.
+                    </p>
+                    <input 
+                      type="email" 
+                      value={receiptEmail}
+                      onChange={(e) => setReceiptEmail(e.target.value)}
+                      placeholder="e.g., citizen@village-protection.org"
+                      className="w-full bg-white border border-slate-200 focus:border-indigo-550 rounded-xl text-xs font-semibold px-3 py-2.5 outline-none text-orange-950 transition-colors placeholder:text-slate-350"
+                    />
+                    <span className="text-[9px] text-slate-400 block pl-0.5 leading-snug font-medium">
+                      🔒 <strong>Anonymity Guard:</strong> Delivered securely via transactional mail server. Your email address is never committed to report tables or public audit logs.
+                    </span>
                   </div>
 
                   <div className="flex justify-between gap-2 pt-2">

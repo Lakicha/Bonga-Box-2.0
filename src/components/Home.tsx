@@ -98,9 +98,16 @@ const Home: React.FC = () => {
   const [longPressedCardId, setLongPressedCardId] = useState<string | null>(null);
   const quickActionHoldTimer = useRef<NodeJS.Timeout | null>(null);
   const quickActionIsHoldActive = useRef<boolean>(false);
+  const quickActionStartPos = useRef<{ x: number; y: number } | null>(null);
 
-  const handleQuickActionStart = (id: string) => {
+  const handleQuickActionStart = (id: string, clientX?: number, clientY?: number) => {
     quickActionIsHoldActive.current = false;
+    if (clientX !== undefined && clientY !== undefined) {
+      quickActionStartPos.current = { x: clientX, y: clientY };
+    } else {
+      quickActionStartPos.current = null;
+    }
+
     if (quickActionHoldTimer.current) {
       clearTimeout(quickActionHoldTimer.current);
     }
@@ -111,15 +118,28 @@ const Home: React.FC = () => {
     }, 450);
   };
 
+  const handleQuickActionMove = (clientX: number, clientY: number) => {
+    if (!quickActionStartPos.current) return;
+    const diffX = Math.abs(clientX - quickActionStartPos.current.x);
+    const diffY = Math.abs(clientY - quickActionStartPos.current.y);
+    if (diffX > 10 || diffY > 10) {
+      handleQuickActionCancel();
+    }
+  };
+
   const handleQuickActionEnd = (id: string, defaultAction: () => void) => {
     if (quickActionHoldTimer.current) {
       clearTimeout(quickActionHoldTimer.current);
       quickActionHoldTimer.current = null;
     }
     const hadHoldActive = quickActionIsHoldActive.current;
+    const isCancelled = quickActionStartPos.current === null;
+
     setLongPressedCardId(null);
     quickActionIsHoldActive.current = false;
-    if (!hadHoldActive) {
+    quickActionStartPos.current = null;
+
+    if (!hadHoldActive && !isCancelled) {
       defaultAction();
     }
   };
@@ -131,6 +151,7 @@ const Home: React.FC = () => {
     }
     setLongPressedCardId(null);
     quickActionIsHoldActive.current = false;
+    quickActionStartPos.current = null;
   };
 
   // Verified support contacts & sanctuaries
@@ -775,7 +796,16 @@ const Home: React.FC = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* Action 1: Report Safely */}
                   <motion.div
-                    onTouchStart={() => handleQuickActionStart('report')}
+                    onTouchStart={(e) => {
+                      if (e.touches && e.touches[0]) {
+                        handleQuickActionStart('report', e.touches[0].clientX, e.touches[0].clientY);
+                      }
+                    }}
+                    onTouchMove={(e) => {
+                      if (e.touches && e.touches[0]) {
+                        handleQuickActionMove(e.touches[0].clientX, e.touches[0].clientY);
+                      }
+                    }}
                     onTouchEnd={(e) => {
                       e.preventDefault();
                       handleQuickActionEnd('report', () => {
@@ -783,7 +813,8 @@ const Home: React.FC = () => {
                         triggerHaptic('light');
                       });
                     }}
-                    onMouseDown={() => handleQuickActionStart('report')}
+                    onMouseDown={(e) => handleQuickActionStart('report', e.clientX, e.clientY)}
+                    onMouseMove={(e) => handleQuickActionMove(e.clientX, e.clientY)}
                     onMouseUp={() => {
                       handleQuickActionEnd('report', () => {
                         navigate('/report');
@@ -835,7 +866,16 @@ const Home: React.FC = () => {
 
                   {/* Action 2: Talk to a Counselor */}
                   <motion.div
-                    onTouchStart={() => handleQuickActionStart('support')}
+                    onTouchStart={(e) => {
+                      if (e.touches && e.touches[0]) {
+                        handleQuickActionStart('support', e.touches[0].clientX, e.touches[0].clientY);
+                      }
+                    }}
+                    onTouchMove={(e) => {
+                      if (e.touches && e.touches[0]) {
+                        handleQuickActionMove(e.touches[0].clientX, e.touches[0].clientY);
+                      }
+                    }}
                     onTouchEnd={(e) => {
                       e.preventDefault();
                       handleQuickActionEnd('support', () => {
@@ -843,7 +883,8 @@ const Home: React.FC = () => {
                         triggerHaptic('light');
                       });
                     }}
-                    onMouseDown={() => handleQuickActionStart('support')}
+                    onMouseDown={(e) => handleQuickActionStart('support', e.clientX, e.clientY)}
+                    onMouseMove={(e) => handleQuickActionMove(e.clientX, e.clientY)}
                     onMouseUp={() => {
                       handleQuickActionEnd('support', () => {
                         navigate('/support');
@@ -895,7 +936,16 @@ const Home: React.FC = () => {
 
                   {/* Action 3: Find Safe Services */}
                   <motion.div
-                    onTouchStart={() => handleQuickActionStart('resources')}
+                    onTouchStart={(e) => {
+                      if (e.touches && e.touches[0]) {
+                        handleQuickActionStart('resources', e.touches[0].clientX, e.touches[0].clientY);
+                      }
+                    }}
+                    onTouchMove={(e) => {
+                      if (e.touches && e.touches[0]) {
+                        handleQuickActionMove(e.touches[0].clientX, e.touches[0].clientY);
+                      }
+                    }}
                     onTouchEnd={(e) => {
                       e.preventDefault();
                       handleQuickActionEnd('resources', () => {
@@ -903,7 +953,8 @@ const Home: React.FC = () => {
                         triggerHaptic('light');
                       });
                     }}
-                    onMouseDown={() => handleQuickActionStart('resources')}
+                    onMouseDown={(e) => handleQuickActionStart('resources', e.clientX, e.clientY)}
+                    onMouseMove={(e) => handleQuickActionMove(e.clientX, e.clientY)}
                     onMouseUp={() => {
                       handleQuickActionEnd('resources', () => {
                         navigate('/resources');
@@ -955,7 +1006,16 @@ const Home: React.FC = () => {
 
                   {/* Action 4: Emergency Help */}
                   <motion.div
-                    onTouchStart={() => handleQuickActionStart('emergency')}
+                    onTouchStart={(e) => {
+                      if (e.touches && e.touches[0]) {
+                        handleQuickActionStart('emergency', e.touches[0].clientX, e.touches[0].clientY);
+                      }
+                    }}
+                    onTouchMove={(e) => {
+                      if (e.touches && e.touches[0]) {
+                        handleQuickActionMove(e.touches[0].clientX, e.touches[0].clientY);
+                      }
+                    }}
                     onTouchEnd={(e) => {
                       e.preventDefault();
                       handleQuickActionEnd('emergency', () => {
@@ -963,7 +1023,8 @@ const Home: React.FC = () => {
                         triggerHaptic('light');
                       });
                     }}
-                    onMouseDown={() => handleQuickActionStart('emergency')}
+                    onMouseDown={(e) => handleQuickActionStart('emergency', e.clientX, e.clientY)}
+                    onMouseMove={(e) => handleQuickActionMove(e.clientX, e.clientY)}
                     onMouseUp={() => {
                       handleQuickActionEnd('emergency', () => {
                         setIsUSSDOpen(true);
